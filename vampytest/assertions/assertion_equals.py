@@ -1,14 +1,25 @@
 __all__ = ('AssertionEquals',)
 
 from . import assertion_states as CONDITION_STATES
-from .assertion_base import AssertionBase
-from .exceptions import AssertionException
+from .assertion_conditional_base import AssertionConditionalBase
 
-class AssertionEquals(AssertionBase):
+
+class AssertionEquals(AssertionConditionalBase):
     """
-    Quality condition.
+    Asserts equality.
+    
+    Attributes
+    ----------
+    state : `str`
+        The condition's state.
+    exception : `None`, `BaseException`
+        Exception raised by the condition if any.
+    parameter_1 : `Any`
+        First parameter to assert equality with.
+    parameter_2 : `Any`
+        The second parameter to assert equality with.
     """
-    __slots__ = ('exception', 'parameter_1', 'parameter_2',)
+    __slots__ = ('parameter_1', 'parameter_2',)
     
     def __new__(cls, parameter_1, parameter_2):
         """
@@ -20,40 +31,27 @@ class AssertionEquals(AssertionBase):
             First parameter to assert equality with.
         parameter_2 : `Any`
             The second parameter to assert equality with.
-        
-        
         """
-        self = object.__new__(cls)
-        self.state = CONDITION_STATES.CREATED
+        self = AssertionConditionalBase.__new__(cls)
         
-        self.exception = None
         self.parameter_1 = parameter_1
         self.parameter_2 = parameter_2
         
-        try:
-            equality_return = parameter_1 == parameter_2
-            
-            if equality_return:
-                passed = True
-            else:
-                passed = False
+        self.state = CONDITION_STATES.CREATED
         
-        except BaseException as err:
-            self.state = CONDITION_STATES.FAILED
-            self.exception = err
-            
-        else:
-            if passed:
-                self.state = CONDITION_STATES.PASSED
-                return equality_return
-            
-            self.state = CONDITION_STATES.FAILED
+        return self.invoke()
         
-        try:
-            raise AssertionException(self)
-        finally:
-            # Remove self reference, so garbage collector wont fail
-            self = None
+    
+    def invoke_condition(self):
+        """
+        Invokes equality operator on the 2 parameters of the assertion.
+        
+        Returns
+        -------
+        condition_return : `Any`
+            The value returned by the condition.
+        """
+        return self.parameter_1 == self.parameter_2
     
     
     def __repr__(self):
@@ -65,10 +63,5 @@ class AssertionEquals(AssertionBase):
             
             repr_parts.append(', parameter_2=')
             repr_parts.append(repr(self.parameter_2))
-            
-            exception = self.exception
-            if (exception is not None):
-                repr_parts.append(', exception=')
-                repr_parts.append(repr(self.exception))
-        
+
         return "".join(repr_parts)

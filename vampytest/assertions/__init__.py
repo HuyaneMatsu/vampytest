@@ -1,5 +1,5 @@
 """
-Test conditions
+Test assertions
 
 Examples
 --------
@@ -21,8 +21,9 @@ def test_returning_cake():
     return 'cake'
 ```
 """
-from .condition_base import *
-from .condition_equals import *
+from .assertion_base import *
+from .assertion_conditional_base import *
+from .assertion_equals import *
 from .assertion_states import *
 from .exceptions import *
 
@@ -32,8 +33,9 @@ CONDITION_STATES = assertion_states
 __all__ = (
     'CONDITION_STATES',
     
-    *condition_base.__all__,
-    *condition_equals.__all__,
+    *assertion_base.__all__,
+    *assertion_conditional_base.__all__,
+    *assertion_equals.__all__,
     *assertion_states.__all__,
     *exceptions.__all__,
 )
