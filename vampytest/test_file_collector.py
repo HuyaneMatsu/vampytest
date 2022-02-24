@@ -1,4 +1,4 @@
-__all__ = ('collect_test_files',)
+__all__ = ('collect_test_files', )
 
 from os import listdir as list_directory
 from os.path import isabs as is_absolute_path_name, isdir as is_directory, isfile as is_file, join as join_paths
