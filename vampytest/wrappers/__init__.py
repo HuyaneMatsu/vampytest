@@ -1,21 +1,24 @@
 """
-Test wrappers used to enhance our test experience.
+Test assertions
 
 Examples
 --------
 ```
 import vampytest
 
-def test_equals():
-    vampytest.assert_equals(5, 5)
+@vampytest.mark_as_test
+def is_do_not_have_test_name():
+    pass
 
 
-def test_raises():
-    with vampytest.raises(TypeError):
-        'nice' + 69
+@vampytest.with_parameters('cake', 'cake')
+def test_is_equal(p1, p2):
+    vampytest.assert_equals(p1, p2)
 
-def test_contains():
-    vampytest.assert_contains(range(7), 5)
+
+@vampytest.returning('cake')
+def test_returning_cake():
+    return 'cake'
 ```
 """
 

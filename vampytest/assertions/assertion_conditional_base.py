@@ -33,7 +33,7 @@ class AssertionConditionalBase(AssertionBase):
         
         This method is a generator.
         """
-        for repr_parts in AssertionBase._cursed_repr_builder():
+        for repr_parts in AssertionBase._cursed_repr_builder(self):
             yield repr_parts
             
             exception = self.exception
@@ -82,7 +82,7 @@ class AssertionConditionalBase(AssertionBase):
             self = None
     
     
-    def invoke_condition():
+    def invoke_condition(self):
         """
         Invokes the condition.
         
