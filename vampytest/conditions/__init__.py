@@ -1,5 +1,5 @@
 """
-Test wrappers used to enhance our test experience.
+Test conditions
 
 Examples
 --------
@@ -22,9 +22,5 @@ def test_returning_cake():
 ```
 """
 
-from .base import *
-
-
 __all__ = (
-    *base.__all__,
 )
