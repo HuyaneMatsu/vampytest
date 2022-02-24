@@ -1,7 +1,6 @@
 __all__ = ('TestFile', )
 
-from os.path import sep as separator
-
+from .utils import get_short_path_repr
 
 class TestFile:
     """
@@ -40,8 +39,12 @@ class TestFile:
         """Returns the hash value of the test file."""
         return hash(self.path)
     
-    # TODO
-    
     def __repr__(self):
         """Returns the representation of a test file."""
-        return ''
+        repr_parts = ['<', self.__class__.__name__]
+        
+        repr_parts.append(' path=')
+        repr_parts.append(get_short_path_repr(self.path))
+        
+        repr_parts.append('>')
+        return ''.join(repr_parts)
