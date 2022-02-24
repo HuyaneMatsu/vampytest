@@ -1,7 +1,10 @@
-__all__ = ()
+__all__ = ('WrapperBase', )
 
-class BaseTestWrapper:
+
+class WrapperBase:
     """
     Base class for test wrappers defining shared functionality.
+    
+    wrapped : `bool`
     """
     pass
