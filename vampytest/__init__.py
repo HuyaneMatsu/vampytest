@@ -1,4 +1,4 @@
-from .conditions import *
+from .assertions import *
 from .wrappers import *
 
 from .test_case import *
@@ -7,7 +7,7 @@ from .test_file_collector import *
 from .utils import *
 
 __all__ = (
-    *conditions.__all__,
+    *assertions.__all__,
     *wrappers.__all__,
     
     *test_case.__all__,

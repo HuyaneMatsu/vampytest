@@ -1,20 +1,20 @@
-__all__ = ('get_condition_state_name', )
+__all__ = ('get_assertion_state_name', )
 
 NONE = 0
 CREATED = 1
 FAILED = 2
 PASSED = 3
 
-DEFAULT_CONDITION_STATE_NAME = 'unknown'
+DEFAULT_ASSERTION_STATE_NAME = 'unknown'
 
-CONDITION_STATE_TO_NAME = {
+ASSERTION_STATE_TO_NAME = {
     NONE: 'none',
     CREATED: 'created',
     FAILED: 'failed',
     PASSED: 'passed',
 }
 
-def get_condition_state_name(state):
+def get_assertion_state_name(state):
     """
     Returns the condition state's name.
     
@@ -28,4 +28,4 @@ def get_condition_state_name(state):
     state_name : `str`
         The condition state's value.
     """
-    return CONDITION_STATE_TO_NAME.get(state, DEFAULT_CONDITION_STATE_NAME)
+    return ASSERTION_STATE_TO_NAME.get(state, DEFAULT_ASSERTION_STATE_NAME)

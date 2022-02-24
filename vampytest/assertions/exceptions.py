@@ -1,6 +1,6 @@
-__all__ = ('ConditionException', )
+__all__ = ('AssertionException', )
 
-class ConditionException(BaseException):
+class AssertionException(BaseException):
     """
     Raised when an exception fails.
     
