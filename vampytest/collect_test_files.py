@@ -12,6 +12,20 @@ def collect_test_files(path):
 
 
 def iter_collect_test_files(path):
+    """
+    Iterates over the given directory or file path.
+    
+    This function is an iterable generator.
+    
+    Parameters
+    ----------
+    path : `str`
+        Source path of file or directory.
+    
+    Yields
+    ------
+    test_file : ``TestFile``
+    """
     # pretty weird case
     if is_file(path):
         yield TestFile(path)
@@ -19,7 +33,22 @@ def iter_collect_test_files(path):
     if is_directory(path):
         yield from iter_tests_from_directory(path)
 
+
 def iter_tests_from_directory(directory_path):
+    """
+    Iterates over a directory discovering test files.
+    
+    This function is an iterable generator.
+    
+    Parameters
+    ----------
+    directory_path : `str`
+        Path to the directory.
+    
+    Yields
+    ------
+    test_file : ``TestFile``
+    """
     for file_name in list_directory(directory_path):
         file_path = join_paths(directory_path, file_name)
         
@@ -27,8 +56,11 @@ def iter_tests_from_directory(directory_path):
             if (
                 file_name == 'test.py' or
                 (
-                    file_name.startswith('.py') and
+                    file_name.startswith('test_') and
                     file_name.endswith('.py')
                 )
             ):
                 yield TestFile(file_path)
+        
+        if is_directory(file_path):
+            yield from iter_tests_from_directory(file_path)
