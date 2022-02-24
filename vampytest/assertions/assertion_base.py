@@ -1,8 +1,8 @@
 __all__ = ('AssertionBase',)
 
-
 from . import assertion_states as CONDITION_STATES
 from .assertion_states import get_assertion_state_name
+
 
 class AssertionBase:
     """

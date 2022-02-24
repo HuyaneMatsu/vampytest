@@ -1,10 +1,10 @@
-__all__ = ('AssertionEquals',)
+__all__ = ('AssertionContains',)
 
 from . import assertion_states as CONDITION_STATES
 from .assertion_conditional_base import AssertionConditionalBase
 
 
-class AssertionEquals(AssertionConditionalBase):
+class AssertionContains(AssertionConditionalBase):
     """
     Asserts equality.
     
@@ -15,15 +15,15 @@ class AssertionEquals(AssertionConditionalBase):
     exception : `None`, `BaseException`
         Exception raised by the condition if any.
     value_1 : `Any`
-        First value to assert equality with.
+        First value to assert contains with.
     value_2 : `Any`
-        The second value to assert equality with.
+        The second value to assert contains with.
     """
     __slots__ = ('value_1', 'value_2',)
     
     def __new__(cls, value_1, value_2):
         """
-        Asserts whether the two values are equal. Fails the test if not.
+        Asserts whether the the first value contains the second one.
         
         Parameters
         ----------
@@ -51,7 +51,7 @@ class AssertionEquals(AssertionConditionalBase):
         condition_return : `Any`
             The value returned by the condition.
         """
-        return self.value_1 == self.value_2
+        return self.value_1 in self.value_2
     
     
     def __repr__(self):

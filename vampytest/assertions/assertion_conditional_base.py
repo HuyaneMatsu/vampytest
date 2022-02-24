@@ -4,6 +4,7 @@ from . import assertion_states as CONDITION_STATES
 from .assertion_base import AssertionBase
 from .exceptions import AssertionException
 
+
 class AssertionConditionalBase(AssertionBase):
     """
     Base class for conditional assertions.
@@ -77,7 +78,7 @@ class AssertionConditionalBase(AssertionBase):
         try:
             raise AssertionException(self)
         finally:
-            # Remove self reference, so garbage collector wont fail
+            # Remove self reference, so garbage collection wont fail
             self = None
     
     
