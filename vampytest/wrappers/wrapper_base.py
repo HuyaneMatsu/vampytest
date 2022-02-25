@@ -1,5 +1,6 @@
 __all__ = ('WrapperBase', )
 
+from .helpers import hash_object
 
 class WrapperBase:
     """
@@ -7,7 +8,8 @@ class WrapperBase:
     
     Attributes
     ----------
-    wrapped : `Any`
+    wrapped : `None`, `Any`
+        The wrapped test.
     """
     __slots__ = ('wrapped', )
     
@@ -61,14 +63,66 @@ class WrapperBase:
         return self.__call__(other)
     
     
-    def __repr__(self):
-        """Returns the wrapper's representation."""
+    def _cursed_repr_builder(self):
+        """
+        Representation builder helper.
+        
+        This method is a generator.
+        
+        Examples
+        --------
+        ```
+        for field_added, repr_parts in self._cursed_repr_builder():
+            if not field_added:
+                repr_parts.append(',')
+            
+            repr_parts.append(' oh no')
+        
+        return "".join(repr_parts)
+        ```
+        """
         repr_parts = ['<', self.__class__.__name__]
         
         wrapped = self.wrapped
-        if (wrapped is not None):
+        if (wrapped is None):
             repr_parts.append(' wrapped=')
             repr_parts.append(repr(wrapped))
+            
+            field_added = True
+        else:
+            field_added = False
+        
+        yield field_added, repr_parts
         
         repr_parts.append('>')
         return ''.join(repr_parts)
+    
+    
+    def __repr__(self):
+        """Returns the wrapper's representation."""
+        for field_added, repr_parts in self._cursed_repr_builder():
+            pass
+        
+        return ''.join(repr_parts)
+    
+    
+    def __hash__(self):
+        """Returns the wrapper's representation."""
+        wrapped = self.wrapped
+        if wrapped is None:
+            hash_value = 0
+        else:
+            hash_value = hash_object(wrapped)
+        
+        return hash_value
+    
+    
+    def __eq__(self, other):
+        """return whether the two wrappers are equal."""
+        if type(self) is not type(other):
+            return NotImplemented
+        
+        if self.wrapped != other.wrapped:
+            return False
+        
+        return True

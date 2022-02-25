@@ -1,64 +1,10 @@
 __all__ = ('AssertionRaising', )
 
+from ..helpers import un_nest_exception_types
+
 from . import assertion_states as CONDITION_STATES
 from .assertion_base import AssertionBase
 from .exceptions import AssertionException
-
-
-
-def un_nest_exception_types(exceptions):
-    """
-    Un-wraps the given `exceptions` recursively.
-    
-    Parameters
-    ----------
-    exceptions : `tuple` of (`BaseException`, ...)
-        The exceptions to unwrap.
-    
-    Returns
-    -------
-    exceptions : `set` of ``BaseException``
-    
-    Raises
-    ------
-    TypeError
-        If an element's type is incorrect.
-    """
-    return set(iter_un_nest_exception_types(exceptions))
-
-
-def iter_un_nest_exception_types(exceptions):
-    """
-    Called by ``un_nest_exception_types`` or by itself to unwrap the exceptions.
-    
-    This method is an iterable generator.
-    
-    Parameters
-    ----------
-    exceptions : `tuple` of (`BaseException`, ...)
-        The exceptions to unwrap.
-    
-    Yields
-    ------
-    exception : `BaseException`
-    
-    Raises
-    ------
-    TypeError
-        If an element's type is incorrect.
-    """
-    if isinstance(exceptions, tuple):
-        for exception in exceptions:
-            yield from iter_un_nest_exception_types(exception)
-    
-    
-    if issubclass(exceptions, BaseException):
-        yield exceptions
-    
-    
-    raise TypeError(
-        f'`exceptions` can be `tuple` of (`BaseException`, ...)`, got {exceptions.__class__.__name__}; {exceptions!r}.'
-    )
 
 
 class AssertionRaising(AssertionBase):
@@ -70,7 +16,7 @@ class AssertionRaising(AssertionBase):
     state : `str`
         The condition's state.
     exception : `None`, `BaseException`
-        Exception raised by the condition if any.
+        Exception raised within the context block if any.
     accept_sub_classes : `bool`
         Whether subclasses are accepted as well.
     exception_types : `set` of ``BaseException``

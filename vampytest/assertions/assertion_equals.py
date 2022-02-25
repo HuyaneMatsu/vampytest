@@ -40,7 +40,7 @@ class AssertionEquals(AssertionConditionalBase):
         self.state = CONDITION_STATES.CREATED
         
         return self.invoke()
-        
+    
     
     def invoke_condition(self):
         """
