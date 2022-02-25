@@ -22,6 +22,7 @@ def test_returning_cake():
 ```
 """
 
+from .exceptions import *
 from .wrapper_base import *
 from .wrapper_parameterised import *
 from .wrapper_parameterised_returning import *
@@ -43,6 +44,7 @@ __all__ = (
     'skip_if',
     'with_parameters',
     
+    *exceptions.__all__,
     *wrapper_base.__all__,
     *wrapper_parameterised.__all__,
     *wrapper_parameterised_returning.__all__,
