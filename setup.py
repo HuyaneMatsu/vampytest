@@ -45,9 +45,12 @@ setup(
     long_description = README,
     long_description_content_type = 'text/markdown',
     name = 'vampytest',
-    package_dir={'': 'vampytest'},
+    packages = [
+        'vampytest',
+        'vampytest.assertions',
+        'vampytest.wrappers',
+    ],
     python_requires = '>=3.6',
-    py_modules=["vampytest"],
-    url = 'https://github.com/HuyaneMatsu/hata',
+    url = 'https://github.com/HuyaneMatsu/vampytest',
     version = version,
 )
