@@ -63,6 +63,11 @@ class WrapperBase:
         return self.__call__(other)
     
     
+    def __rmatmul__(self, other):
+        """Returns `self(other)`"""
+        return self.__call__(other)
+        
+    
     def _cursed_repr_builder(self):
         """
         Representation builder helper.

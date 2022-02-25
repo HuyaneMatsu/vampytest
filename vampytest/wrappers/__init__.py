@@ -6,10 +6,6 @@ Examples
 ```
 import vampytest
 
-@vampytest.mark_as_test
-def is_do_not_have_test_name():
-    pass
-
 
 @vampytest.call_with('cake', 'cake')
 def test_is_equal(p1, p2):
@@ -28,7 +24,6 @@ from .wrapper_base import *
 from .wrapper_combined import *
 from .wrapper_skip import *
 from .wrapper_skip_conditional import *
-from .wrapper_test_marker import *
 
 returning = wrapper_combined.returning_constructor
 raising = wrapper_combined.raising_constructor
@@ -36,10 +31,8 @@ call_with = wrapper_combined.call_with_constructor
 
 from .wrapper_skip import WrapperSkip as skip
 from .wrapper_skip_conditional import WrapperSkipConditional as skip_if
-from .wrapper_test_marker import WrapperTestMarker as mark_as_test
 
 __all__ = (
-    'mark_as_test'
     'raising',
     'returning',
     'skip',
