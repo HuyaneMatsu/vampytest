@@ -1,4 +1,4 @@
-__all__ = ('WrapperCombined',)
+__all__ = ('WrapperCall',)
 
 from ..helpers import un_nest_exception_types
 
@@ -8,7 +8,7 @@ from .helpers import hash_dict, hash_tuple, hash_set, try_hash_method
 from .wrapper_base import WrapperBase
 
 
-class WrapperCombined(WrapperBase):
+class WrapperCall(WrapperBase):
     """
     Combined wrapper supporting `call_with`, `returning` and `raising`.
     
@@ -301,7 +301,7 @@ class WrapperCombined(WrapperBase):
         
         Returns
         -------
-        new : ``WrapperCombined``
+        new : ``WrapperCall``
         """
         exception_types = un_nest_exception_types(exception_types)
         if not exception_types:
@@ -332,7 +332,7 @@ class WrapperCombined(WrapperBase):
         
         Returns
         -------
-        new : ``WrapperCombined``
+        new : ``WrapperCall``
         """
         exception_types = un_nest_exception_types(exception_types)
         if not exception_types:
@@ -358,7 +358,7 @@ class WrapperCombined(WrapperBase):
         
         Returns
         -------
-        self : ``WrapperCombined``
+        self : ``WrapperCall``
         """
         return cls(
             returning = (returning, ),
@@ -376,7 +376,7 @@ class WrapperCombined(WrapperBase):
         
         Returns
         -------
-        new : ``WrapperCombined``
+        new : ``WrapperCall``
         """
         return type(self)(
             self.wrapped,
@@ -400,7 +400,7 @@ class WrapperCombined(WrapperBase):
         
         Returns
         -------
-        self : ``WrapperParameterised``
+        self : ``WrapperCall``
         """
         return cls(
             call_with = (positional_parameters, keyword_parameters),
@@ -420,7 +420,7 @@ class WrapperCombined(WrapperBase):
         
         Returns
         -------
-        new : ``WrapperParameterised``
+        new : ``WrapperCall``
         """
         return type(self)(
             self.wrapped,

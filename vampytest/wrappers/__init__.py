@@ -21,13 +21,13 @@ def test_returning_cake():
 from .exceptions import *
 from .helpers import *
 from .wrapper_base import *
-from .wrapper_combined import *
+from .wrapper_call import *
 from .wrapper_skip import *
 from .wrapper_skip_conditional import *
 
-returning = wrapper_combined.returning_constructor
-raising = wrapper_combined.raising_constructor
-call_with = wrapper_combined.call_with_constructor
+returning = WrapperCall.returning_constructor
+raising = WrapperCall.raising_constructor
+call_with = WrapperCall.call_with_constructor
 
 from .wrapper_skip import WrapperSkip as skip
 from .wrapper_skip_conditional import WrapperSkipConditional as skip_if
@@ -42,10 +42,7 @@ __all__ = (
     *exceptions.__all__,
     *helpers.__all__,
     *wrapper_base.__all__,
-    *wrapper_combined.__all__,
-    *wrapper_parameterised.__all__,
-    *wrapper_returning.__all__,
+    *wrapper_call.__all__,
     *wrapper_skip.__all__,
     *wrapper_skip_conditional.__all__,
-    *wrapper_test_marker.__all__,
 )

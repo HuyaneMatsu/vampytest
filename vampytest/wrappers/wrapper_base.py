@@ -131,3 +131,15 @@ class WrapperBase:
             return False
         
         return True
+    
+    
+    def do_skip(self):
+        """
+        Whether the test should be skipped.
+        
+        Returns
+        -------
+        do_skip : `bool`
+            Always returns false.
+        """
+        return False
