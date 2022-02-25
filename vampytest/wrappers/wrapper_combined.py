@@ -10,7 +10,7 @@ from .wrapper_base import WrapperBase
 
 class WrapperCombined(WrapperBase):
     """
-    Combined wrapper supporting `with_parameters`, `returning` and `raising`.
+    Combined wrapper supporting `call_with`, `returning` and `raising`.
     
     Attributes
     ----------
@@ -24,21 +24,21 @@ class WrapperCombined(WrapperBase):
         Whether raised exceptions of the test should be checked.
     is_returning : `bool`
         Whether returned value of the test should be checked.
-    is_with_parameters : `bool`
+    is_call_with : `bool`
         Whether the test should be called with specific parameters.
     keyword_parameters : `None`, `dict` of (`str`, `Any`) items
-        Keyword parameters to call the test with if ``.is_with_parameters``.
+        Keyword parameters to call the test with if ``.is_call_with``.
     positional_parameters : `None`, `tuple` of `Any`
-        Positional parameter to call the test with if ``.is_with_parameters``.
+        Positional parameter to call the test with if ``.is_call_with``.
     value : `None`, `Any`
         The expected returned value of the test if ``.is_returning``.
     """
     __slots__ = (
-        'accept_sub_classes', 'exceptions', 'is_raising', 'is_returning', 'is_with_parameters', 'keyword_parameters',
+        'accept_sub_classes', 'exceptions', 'is_raising', 'is_returning', 'is_call_with', 'keyword_parameters',
         'positional_parameters', 'value'
     )
     
-    def __new__(cls, wrapped=None, *, raising=None, returning=None, with_parameters=None):
+    def __new__(cls, wrapped=None, *, raising=None, returning=None, call_with=None):
         """
         Creates a new combined test wrapper.
         
@@ -50,7 +50,7 @@ class WrapperCombined(WrapperBase):
             Whether the test is raising.
         returning : `None`, `tuple` (`Any`) = `None`, Optional (Keyword only)
             Whether the test is returning.
-        with_parameters : `None`, `tuple` (`tuple` of `Any`, `dict` of (`str`, `Any`) items) = `None`
+        call_with : `None`, `tuple` (`tuple` of `Any`, `dict` of (`str`, `Any`) items) = `None`
                 , Optional (Keyword only)
             Whether the test should be called with parameters.
         """
@@ -73,14 +73,14 @@ class WrapperCombined(WrapperBase):
             value = returning[0]
         
         
-        if with_parameters is None:
-            is_with_parameters = False
+        if call_with is None:
+            is_call_with = False
             keyword_parameters = None
             positional_parameters = None
         
         else:
-            is_with_parameters = True
-            positional_parameters, keyword_parameters = with_parameters
+            is_call_with = True
+            positional_parameters, keyword_parameters = call_with
         
         
         self = object.__new__(cls)
@@ -90,7 +90,7 @@ class WrapperCombined(WrapperBase):
         self.exceptions = exceptions
         self.is_raising = is_raising
         self.is_returning = is_returning
-        self.is_with_parameters = is_with_parameters
+        self.is_call_with = is_call_with
         self.keyword_parameters = keyword_parameters
         self.positional_parameters = positional_parameters
         self.value = value
@@ -125,15 +125,15 @@ class WrapperCombined(WrapperBase):
     
     
     @property
-    def with_parameters_key(self):
+    def call_with_key(self):
         """
         Returns the wrapper's raising key.
         
         Returns
         -------
-        with_parameters_key : `None`, `tuple` (`tuple` of `Any`, `dict` of (`str`, `Any`) items)
+        call_with_key : `None`, `tuple` (`tuple` of `Any`, `dict` of (`str`, `Any`) items)
         """
-        if self.is_with_parameters:
+        if self.is_call_with:
             return (self.positional_parameters, self.keyword_parameters)
     
     
@@ -163,15 +163,15 @@ class WrapperCombined(WrapperBase):
             
                 repr_parts.apped('returning')
             
-            is_with_parameters = self.is_with_parameters
+            is_call_with = self.is_call_with
             
-            if is_with_parameters:
+            if is_call_with:
                 if type_field_added:
                     repr_parts.append(', ')
                 else:
                     type_field_added = True
             
-                repr_parts.apped('with_parameters')
+                repr_parts.apped('call_with')
             
             repr_parts.append(')')
             
@@ -198,7 +198,7 @@ class WrapperCombined(WrapperBase):
                 repr_parts.append(reprlib.repr(self.value))
             
             
-            if is_with_parameters:
+            if is_call_with:
                 positional_parameters = self.positional_parameters
                 if positional_parameters:
                     if field_added:
@@ -234,7 +234,7 @@ class WrapperCombined(WrapperBase):
             hash_value ^= try_hash_method(self.value)
         
         
-        if self.is_with_parameters:
+        if self.is_call_with:
             hash_value ^= hash_tuple(self.positional_parameters)
             hash_value ^= hash_dict(self.keyword_parameters)
         
@@ -266,11 +266,11 @@ class WrapperCombined(WrapperBase):
             if self.value != other.value:
                 return False
         
-        is_with_parameters = self.is_with_parameters
-        if is_with_parameters != other.is_with_parameters:
+        is_call_with = self.is_call_with
+        if is_call_with != other.is_call_with:
             return False
         
-        if is_with_parameters:
+        if is_call_with:
             if self.positional_parameters != other.positional_parameters:
                 return False
             
@@ -342,7 +342,7 @@ class WrapperCombined(WrapperBase):
             self.wrapped,
             raising = (exception_types, accept_sub_classes),
             returning = self.returning_key,
-            with_parameters = self.with_parameters_key,
+            call_with = self.call_with_key,
         )
     
     
@@ -382,12 +382,12 @@ class WrapperCombined(WrapperBase):
             self.wrapped,
             raising = self.raising_key,
             returning = (returning, ),
-            with_parameters = self.with_parameters_key,
+            call_with = self.call_with_key,
         )
     
     
     @classmethod
-    def with_parameters_constructor(cls, *positional_parameters, **keyword_parameters):
+    def call_with_constructor(cls, *positional_parameters, **keyword_parameters):
         """
         Creates new parameterised wrapper.
         
@@ -403,11 +403,11 @@ class WrapperCombined(WrapperBase):
         self : ``WrapperParameterised``
         """
         return cls(
-            with_parameters = (positional_parameters, keyword_parameters),
+            call_with = (positional_parameters, keyword_parameters),
         )
     
     
-    def with_parameters(self, *positional_parameters, **keyword_parameters):
+    def call_with(self, *positional_parameters, **keyword_parameters):
         """
         Creates a new parameterised wrapper extending self.
         
@@ -426,5 +426,5 @@ class WrapperCombined(WrapperBase):
             self.wrapped,
             raising = self.raising_key,
             returning = self.returning_key,
-            with_parameters = (positional_parameters, keyword_parameters),
+            call_with = (positional_parameters, keyword_parameters),
         )

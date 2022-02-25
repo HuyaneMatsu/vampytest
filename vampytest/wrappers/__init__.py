@@ -11,7 +11,7 @@ def is_do_not_have_test_name():
     pass
 
 
-@vampytest.with_parameters('cake', 'cake')
+@vampytest.call_with('cake', 'cake')
 def test_is_equal(p1, p2):
     vampytest.assert_equals(p1, p2)
 
@@ -32,7 +32,7 @@ from .wrapper_test_marker import *
 
 returning = wrapper_combined.returning_constructor
 raising = wrapper_combined.raising_constructor
-with_parameters = wrapper_combined.with_parameters_constructor
+call_with = wrapper_combined.call_with_constructor
 
 from .wrapper_skip import WrapperSkip as skip
 from .wrapper_skip_conditional import WrapperSkipConditional as skip_if
@@ -44,7 +44,7 @@ __all__ = (
     'returning',
     'skip',
     'skip_if',
-    'with_parameters',
+    'call_with',
     
     *exceptions.__all__,
     *helpers.__all__,
