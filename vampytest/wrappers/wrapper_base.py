@@ -1,6 +1,11 @@
 __all__ = ('WrapperBase', )
 
-from .helpers import hash_object
+from ..helpers import hash_object
+
+
+# Will be resolved later
+WrapperChainer = NotImplemented
+
 
 class WrapperBase:
     """
@@ -41,9 +46,6 @@ class WrapperBase:
         RuntimeError
             Wrapper already called.
         """
-        if (self.wrapped is not None):
-            raise RuntimeError(f'Wrapped already wrapped; self={self!r}, to_wrap={to_wrap!r}.')
-        
         if isinstance(to_wrap, WrapperChainer):
             to_wrap.append(self)
             return to_wrap
@@ -53,6 +55,10 @@ class WrapperBase:
             wrapper_chainer.append(self)
             wrapper_chainer.append(to_wrap)
             return wrapper_chainer
+        
+        
+        if (self.wrapped is not None):
+            raise RuntimeError(f'Wrapped already wrapped; self={self!r}, to_wrap={to_wrap!r}.')
         
         self.wrapped = to_wrap
         return self
@@ -143,3 +149,57 @@ class WrapperBase:
             Always returns false.
         """
         return False
+    
+    
+    def check_conflicts(self):
+        """
+        Checks whether the wrapper has internal conflict.
+        
+        Returns
+        ------
+        wrapper_conflict: `None`, ``WrapperConflict``
+        """
+        pass
+    
+    
+    def check_conflict_with(self, other):
+        """
+        Checks whether the wrapper has conflict with the other one.
+        
+        Returns
+        ------
+        wrapper_conflict: `None`, ``WrapperConflict``
+        """
+        pass
+    
+    
+    def has_bound_test(self):
+        """
+        Returns whether the wrapper wraps a test.
+        
+        Returns
+        -------
+        has_bound_test : `bool`
+        """
+        return (self.wrapped is not None)
+    
+    
+    def unbind_test(self):
+        """
+        Unbinds the wrappers test.
+        
+        Returns
+        -------
+        test : `Any`
+        
+        Raises
+        ------
+        RuntimeError
+            The wrapper had no test or already unbind.
+        """
+        wrapped = self.wrapped
+        if wrapped is None:
+            raise RuntimeError(f'The wrapper had no test or already unbind; self={self!r}.')
+        
+        self.wrapped = None
+        return wrapped
