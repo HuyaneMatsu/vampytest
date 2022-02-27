@@ -178,7 +178,7 @@ class TestFile:
         
         tests = []
         
-        for name, value in module.__dir__.items():
+        for name, value in module.__dict__.items():
             if is_test(name, value):
                 tests.append(TestCase(name, value))
         

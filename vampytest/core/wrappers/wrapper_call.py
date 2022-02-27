@@ -386,6 +386,46 @@ class WrapperCall(WrapperBase):
         )
     
     
+    def returning_itself(self):
+        """
+        Creates a new retuning wrapper checking for whether the input value matches the returned one.
+        
+        Returns
+        -------
+        new : ``WrapperCall``
+        
+        Raises
+        ------
+        ValueError
+            The
+        """
+        if not self.is_call_with:
+            raise ValueError(
+                f'Call wrapper cannot check for return value if it has no parameters added; self={self!r}.'
+            )
+        
+        positional_parameters = self.positional_parameters
+        keyword_parameters = self.keyword_parameters
+        
+        if len(positional_parameters) + len(keyword_parameters) != 1:
+            raise ValueError(
+                f'``.returning_itself`` is only applicable if the wrapper has 1 parameter added; '
+                f'self={self!r}.'
+            )
+        
+        if positional_parameters:
+            value = positional_parameters[0]
+        else:
+            value = next(iter(keyword_parameters.values()))
+        
+        return type(self)(
+            self.wrapped,
+            raising = self.raising_key,
+            returning = (value, ),
+            call_with = self.call_with_key,
+        )
+    
+    
     @classmethod
     def call_with_constructor(cls, *positional_parameters, **keyword_parameters):
         """
@@ -393,9 +433,9 @@ class WrapperCall(WrapperBase):
         
         Parameters
         ----------
-        positional_parameters : `tuple` of `Any`
+        *positional_parameters : `tuple` of `Any`
             Positional parameter to call the test with.
-        keyword_parameters : `dict` of (`str`, `Any`) items
+        **keyword_parameters : `dict` of (`str`, `Any`) items
             Keyword parameters to call the test with.
         
         Returns
@@ -413,9 +453,9 @@ class WrapperCall(WrapperBase):
         
         Parameters
         ----------
-        positional_parameters : `tuple` of `Any`
+        *positional_parameters : `tuple` of `Any`
             Positional parameter to call the test with.
-        keyword_parameters : `dict` of (`str`, `Any`) items
+        **keyword_parameters : `dict` of (`str`, `Any`) items
             Keyword parameters to call the test with.
         
         Returns
