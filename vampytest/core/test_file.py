@@ -57,17 +57,19 @@ class TestFile:
     
     Attributes
     ----------
+    import_route : `str`
+        Import route from the base path to import the file from.
+    module : `None`, `ModuleType`
+        The module of the test file. Only set when the first call is made to it.
     path : `str`
         Absolute path to the file.
     tests : `None`, `list` of ``TestCase``
         The collected tests from the file if any. These tests are on collected after calling ``.get_tests`` for
         the first time.
-    module : `None`, `ModuleType`
-        The module of the test file. Only set when the first call is made to it.
     """
-    __slots__ = ('path', 'tests')
+    __slots__ = ('import_route', 'module', 'path', 'tests')
     
-    def __new__(cls, path):
+    def __new__(cls, path, path_parts):
         """
         Creates an new test file.
         
@@ -75,8 +77,19 @@ class TestFile:
         ----------
         path : `str`
             Absolute path to the file.
+        path_parts: `list` of `str`
+            Path parts from base path to teh file.
         """
+        if path_parts:
+            last_path_part = path_parts[-1]
+            if last_path_part.endswith('.py'):
+                path_parts[-1] = last_path_part[:-len('.py')]
+        
+        import_route = '.'.join(path_parts)
+        
         self = object.__new__(cls)
+        self.module = None
+        self.import_route = import_route
         self.path = path
         self.tests = None
         return self
@@ -114,8 +127,26 @@ class TestFile:
         -------
         module : `ModuleType`
         """
-        # TODO
-        raise NotImplementedError
+        module = self.module
+        if (module is None):
+            module = self._get_module()
+        
+        return module
+    
+    
+    def _get_module(self):
+        """
+        Loads the test the's module.
+        
+        Called by ``.get_module` when first time getting the module.
+        
+        Returns
+        -------
+        module : `ModuleType`
+        """
+        module = __import__(self.import_route)
+        self.module = module
+        return module
     
     
     def get_tests(self):

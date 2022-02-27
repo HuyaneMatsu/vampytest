@@ -1,17 +1,30 @@
 __all__ = ('collect_test_files', )
 
 from os import listdir as list_directory
-from os.path import isabs as is_absolute_path_name, isdir as is_directory, isfile as is_file, join as join_paths
+from os.path import isdir as is_directory, isfile as is_file, join as join_paths
 
 from .test_file import TestFile
 
-# TODO
 
-def collect_test_files(path):
-    return list(iter_collect_test_files(path))
+def collect_test_files(base_path, path_parts):
+    """
+    Collects all the test files from the given directory described by `base_path` and `path_parts` parameters.
+    
+    Parameters
+    ----------
+    base_path : `str`
+        Source path of file or directory.
+    path_parts : `list` of `str`
+        A list of path parts within the base directory to collect from.
+    
+    Returns
+    -------
+    test_files : `list` of ``TestFile``
+    """
+    return list(iter_collect_test_files(base_path, path_parts))
 
 
-def iter_collect_test_files(path):
+def iter_collect_test_files(base_path, path_parts):
     """
     Iterates over the given directory or file path.
     
@@ -19,19 +32,28 @@ def iter_collect_test_files(path):
     
     Parameters
     ----------
-    path : `str`
+    base_path : `str`
         Source path of file or directory.
+    path_parts : `list` of `str`
+        A list of path parts within the base directory to collect from.
     
     Yields
     ------
     test_file : ``TestFile``
     """
     # pretty weird case
+    path_parts = path_parts.copy()
+    path = join_paths(base_path, *path_parts)
     if is_file(path):
-        yield TestFile(path)
+        yield TestFile(path, path_parts)
+        return
     
     if is_directory(path):
-        yield from iter_tests_from_directory(path, False)
+        yield from iter_tests_from_directory(path, path_parts, False)
+        return
+    
+    # no more cases
+    return
 
 
 def is_test_file_name(file_name):
@@ -84,7 +106,7 @@ def is_test_directory_name(directory_name):
     return False
 
 
-def iter_tests_from_directory(directory_path, within_test_directory):
+def iter_tests_from_directory(directory_path, path_parts, within_test_directory):
     """
     Iterates over a directory discovering test files.
     
@@ -103,10 +125,13 @@ def iter_tests_from_directory(directory_path, within_test_directory):
     """
     for file_name in list_directory(directory_path):
         file_path = join_paths(directory_path, file_name)
+        path_parts.append(file_name)
         
         if is_file(file_path):
             if within_test_directory and is_test_file_name(file_name):
-                yield TestFile(file_path)
+                yield TestFile(file_path, path_parts)
         
         if is_directory(file_path):
-            yield from iter_tests_from_directory(file_path, is_test_directory_name(file_name))
+            yield from iter_tests_from_directory(file_path, path_parts, is_test_directory_name(file_name))
+        
+        del path_parts[-1]
