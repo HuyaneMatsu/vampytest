@@ -1,5 +1,7 @@
 __all__ = ('TestFile', )
 
+import sys
+
 from .utils import get_short_path_repr
 from .test_case import TestCase
 from .wrappers import WrapperBase
@@ -144,7 +146,9 @@ class TestFile:
         -------
         module : `ModuleType`
         """
-        module = __import__(self.import_route)
+        import_route = self.import_route
+        __import__(import_route)
+        module = sys.modules[import_route]
         self.module = module
         return module
     

@@ -65,8 +65,9 @@ class WrapperChainer(WrapperBase):
     def __repr__(self):
         """Returns the wrapper chainer's representation."""
         for field_added, repr_parts in self._cursed_repr_builder():
-            if not field_added:
+            if field_added:
                 repr_parts.append(',')
+            
             repr_parts.append(' wrappers=')
             repr_parts.append(repr(self.wrappers))
         

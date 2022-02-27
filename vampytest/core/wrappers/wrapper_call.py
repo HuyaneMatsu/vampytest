@@ -151,7 +151,7 @@ class WrapperCall(WrapperBase):
                 else:
                     type_field_added = True
                 
-                repr_parts.apped('raising')
+                repr_parts.append('raising')
             
             
             is_returning = self.is_returning
@@ -161,7 +161,7 @@ class WrapperCall(WrapperBase):
                 else:
                     type_field_added = True
             
-                repr_parts.apped('returning')
+                repr_parts.append('returning')
             
             is_call_with = self.is_call_with
             
@@ -171,7 +171,7 @@ class WrapperCall(WrapperBase):
                 else:
                     type_field_added = True
             
-                repr_parts.apped('call_with')
+                repr_parts.append('call_with')
             
             repr_parts.append(')')
             
@@ -182,7 +182,7 @@ class WrapperCall(WrapperBase):
                 else:
                     field_added = True
                 
-                repr_parts.append('exceptions=')
+                repr_parts.append(' exceptions=')
                 repr_parts.append(repr(self.exceptions))
                 
                 repr_parts.append(', accept_sub_classes=')
@@ -206,7 +206,7 @@ class WrapperCall(WrapperBase):
                     else:
                         field_added = True
                     
-                    repr_parts.append('positional_parameters=')
+                    repr_parts.append(' positional_parameters=')
                     repr_parts.append(reprlib.repr(positional_parameters))
                 
                 keyword_parameters = self.keyword_parameters
@@ -216,7 +216,7 @@ class WrapperCall(WrapperBase):
                     else:
                         field_added = True
                     
-                    repr_parts.append('keyword_parameters=')
+                    repr_parts.append(' keyword_parameters=')
                     repr_parts.append(reprlib.repr(keyword_parameters))
             
         return ''.join(repr_parts)
@@ -397,7 +397,7 @@ class WrapperCall(WrapperBase):
         Raises
         ------
         ValueError
-            The
+            The wrapper is not parameterised, or incorrect amount parameters registered.
         """
         if not self.is_call_with:
             raise ValueError(

@@ -46,18 +46,37 @@ class WrapperBase:
         RuntimeError
             Wrapper already called.
         """
-        if isinstance(to_wrap, WrapperChainer):
-            to_wrap.append(self)
-            return to_wrap
+        if to_wrap is None:
+            raise RuntimeError(f'Cannot wrap `None`; self={self!r}.')
+        
+        
+        wrapped = self.wrapped
         
         if isinstance(to_wrap, WrapperBase):
-            wrapper_chainer = WrapperChainer(to_wrap.wrapped)
+            
+            if (wrapped is not None) and (to_wrap.wrapped is not None):
+                raise RuntimeError(
+                    f'Both self and other wrappers are already wrapped; self={self!r}; other={to_wrap!r}.'
+                )
+            
+            if isinstance(to_wrap, WrapperChainer):
+                to_wrap.append(self)
+                
+                if (wrapped is not None):
+                    to_wrap(wrapped)
+                
+                return to_wrap
+            
+            if wrapped is None:
+                wrapped = to_wrap.wrapped
+            
+            wrapper_chainer = WrapperChainer(wrapped)
             wrapper_chainer.append(self)
             wrapper_chainer.append(to_wrap)
             return wrapper_chainer
         
         
-        if (self.wrapped is not None):
+        if (wrapped is not None):
             raise RuntimeError(f'Wrapped already wrapped; self={self!r}, to_wrap={to_wrap!r}.')
         
         self.wrapped = to_wrap
