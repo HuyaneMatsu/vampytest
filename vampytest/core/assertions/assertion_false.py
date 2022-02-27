@@ -15,6 +15,8 @@ class AssertionValueEvaluationFalse(AssertionConditionalBase1Value):
         The condition's state.
     exception : `None`, `BaseException`
         Exception raised by the condition if any.
+    reverse : `bool`
+        Whether the condition should be reversed.
     value_1 : `Any`
         First value to assert.
     """

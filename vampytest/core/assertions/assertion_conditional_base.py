@@ -6,6 +6,7 @@ from .exceptions import AssertionException
 
 from scarletio import copy_docs
 
+
 class AssertionConditionalBase(AssertionBase):
     """
     Base class for conditional assertions.
@@ -16,15 +17,23 @@ class AssertionConditionalBase(AssertionBase):
         The condition's state.
     exception : `None`, `BaseException`
         Exception raised by the condition if any.
+    reverse : `bool`
+        Whether the condition should be reversed.
     """
-    __slots__ = ('exception', )
+    __slots__ = ('exception', 'reverse')
     
-    def __new__(cls):
+    def __new__(cls, *, reverse=False):
         """
         Creates an new conditional assertion instance.
+        
+        Parameters
+        ----------
+        reverse : `bool` = `False`, Optional (Keyword only)
+            Whether the condition should be reversed.
         """
         self = AssertionBase.__new__(cls)
         self.exception = None
+        self.reverse = self.reverse
         return self
     
     
@@ -33,10 +42,16 @@ class AssertionConditionalBase(AssertionBase):
         for repr_parts in AssertionBase._cursed_repr_builder(self):
             yield repr_parts
             
+            reverse = self.reverse
+            if reverse:
+                repr_parts.append(', reverse=')
+                repr_parts.append(repr(reverse))
+                
+            
             exception = self.exception
             if (exception is not None):
                 repr_parts.append(', exception=')
-                repr_parts.append(repr(self.exception))
+                repr_parts.append(repr(exception))
     
     
     def invoke(self):
@@ -66,6 +81,9 @@ class AssertionConditionalBase(AssertionBase):
             self.exception = err
             
         else:
+            if self.reverse:
+                passed = not passed
+            
             if passed:
                 self.state = CONDITION_STATES.PASSED
                 return condition_return
@@ -101,12 +119,14 @@ class AssertionConditionalBase1Value(AssertionConditionalBase):
         The condition's state.
     exception : `None`, `BaseException`
         Exception raised by the condition if any.
+    reverse : `bool`
+        Whether the condition should be reversed.
     value_1 : `Any`
         The value to call the condition on.
     """
     __slots__ = ('value_1',)
 
-    def __new__(cls, value_1):
+    def __new__(cls, value_1, *, reverse=False):
         """
         Asserts whether the two values are equal. Fails the test if not.
         
@@ -116,8 +136,10 @@ class AssertionConditionalBase1Value(AssertionConditionalBase):
             First value to assert equality with.
         value_2 : `Any`
             The second value to assert equality with.
+        reverse : `bool` = `False`, Optional (Keyword only)
+            Whether the condition should be reversed.
         """
-        self = AssertionConditionalBase.__new__(cls)
+        self = AssertionConditionalBase.__new__(cls, reverse=reverse)
         
         self.value_1 = value_1
         
@@ -146,6 +168,8 @@ class AssertionConditionalBase2Value(AssertionConditionalBase1Value):
         The condition's state.
     exception : `None`, `BaseException`
         Exception raised by the condition if any.
+    reverse : `bool`
+        Whether the condition should be reversed.
     value_1 : `Any`
         The value to call the condition on.
     value_2 : `Any`
@@ -153,7 +177,7 @@ class AssertionConditionalBase2Value(AssertionConditionalBase1Value):
     """
     __slots__ = ('value_2',)
     
-    def __new__(cls, value_1, value_2):
+    def __new__(cls, value_1, value_2, *, reverse=False):
         """
         Asserts whether the two values are equal. Fails the test if not.
         
@@ -163,8 +187,10 @@ class AssertionConditionalBase2Value(AssertionConditionalBase1Value):
             First value to assert equality with.
         value_2 : `Any`
             The second value to assert equality with.
+        reverse : `bool` = `False`, Optional (Keyword only)
+            Whether the condition should be reversed.
         """
-        self = AssertionConditionalBase.__new__(cls)
+        self = AssertionConditionalBase.__new__(cls, reverse=reverse)
         
         self.value_1 = value_1
         self.value_2 = value_2
