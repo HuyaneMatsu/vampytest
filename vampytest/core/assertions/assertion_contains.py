@@ -7,7 +7,7 @@ from scarletio import copy_docs
 
 class AssertionContains(AssertionConditionalBase2Value):
     """
-    Asserts whether the first value contains the second.
+    Asserts whether the second value contains the first.
     
     Attributes
     ----------

@@ -26,5 +26,6 @@ class AssertionValueEvaluationTrue(AssertionConditionalBase1Value):
     def invoke_condition(self):
         return self.value_1
 
+
 assert_ = AssertionValueEvaluationTrue
 assert_true = AssertionValueEvaluationTrue

@@ -6,7 +6,7 @@ from scarletio import copy_docs
 
 class AssertionNotContains(AssertionConditionalBase2Value):
     """
-    Asserts whether `value_1` not contains `value_2`.
+    Asserts whether the second value not contains the first one.
     
     Attributes
     ----------
