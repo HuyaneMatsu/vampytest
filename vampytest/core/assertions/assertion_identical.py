@@ -1,13 +1,13 @@
-__all__ = ('AssertionNotEquals', 'assert_ne', 'assert_not_eq', 'assert_not_equals')
+__all__ = ('AssertionIdentical', 'assert_is', 'assert_identical')
 
 from .assertion_conditional_base import AssertionConditionalBase2Value
 
 from scarletio import copy_docs
 
 
-class AssertionNotEquals(AssertionConditionalBase2Value):
+class AssertionIdentical(AssertionConditionalBase2Value):
     """
-    Asserts not equality.
+    Asserts whether two objects are identical.
     
     Attributes
     ----------
@@ -16,16 +16,15 @@ class AssertionNotEquals(AssertionConditionalBase2Value):
     exception : `None`, `BaseException`
         Exception raised by the condition if any.
     value_1 : `Any`
-        First value to assert equality with.
+        First value to assert identity with.
     value_2 : `Any`
-        The second value to assert equality with.
+        The second value to assert identity with.
     """
-    __slots__ = ()
+    __slots__ = ('value_1', 'value_2',)
     
     @copy_docs(AssertionConditionalBase2Value.invoke_condition)
     def invoke_condition(self):
-        return self.value_1 != self.value_2
+        return self.value_1 is self.value_2
 
-assert_ne = AssertionNotEquals
-assert_not_eq = AssertionNotEquals
-assert_not_equals = AssertionNotEquals
+assert_is = AssertionIdentical
+assert_identical = AssertionIdentical

@@ -1,4 +1,4 @@
-__all__ = ('AssertionRaising', )
+__all__ = ('AssertionRaising', 'assert_raises')
 
 from ..helpers import un_nest_exception_types
 
@@ -95,3 +95,6 @@ class AssertionRaising(AssertionBase):
         
         self.state = CONDITION_STATES.FAILED
         return False
+
+
+assert_raises = AssertionRaising

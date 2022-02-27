@@ -1,4 +1,4 @@
-__all__ = ('AssertionEquals',)
+__all__ = ('AssertionEquals', 'assert_eq', 'assert_equals')
 
 from .assertion_conditional_base import AssertionConditionalBase2Value
 
@@ -25,3 +25,7 @@ class AssertionEquals(AssertionConditionalBase2Value):
     @copy_docs(AssertionConditionalBase2Value.invoke_condition)
     def invoke_condition(self):
         return self.value_1 == self.value_2
+
+
+assert_eq = AssertionEquals
+assert_equals = AssertionEquals

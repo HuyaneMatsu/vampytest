@@ -1,13 +1,12 @@
-__all__ = ('AssertionNotEquals', 'assert_ne', 'assert_not_eq', 'assert_not_equals')
+__all__ = ('AssertionNotContains', 'assert_not_contains', 'assert_not_in')
 
 from .assertion_conditional_base import AssertionConditionalBase2Value
 
 from scarletio import copy_docs
 
-
-class AssertionNotEquals(AssertionConditionalBase2Value):
+class AssertionNotContains(AssertionConditionalBase2Value):
     """
-    Asserts not equality.
+    Asserts whether `value_1` not contains `value_2`.
     
     Attributes
     ----------
@@ -16,16 +15,16 @@ class AssertionNotEquals(AssertionConditionalBase2Value):
     exception : `None`, `BaseException`
         Exception raised by the condition if any.
     value_1 : `Any`
-        First value to assert equality with.
+        First value to assert contains with.
     value_2 : `Any`
-        The second value to assert equality with.
+        The second value to assert contains with.
     """
     __slots__ = ()
     
     @copy_docs(AssertionConditionalBase2Value.invoke_condition)
     def invoke_condition(self):
-        return self.value_1 != self.value_2
+        return self.value_1 not in self.value_2
 
-assert_ne = AssertionNotEquals
-assert_not_eq = AssertionNotEquals
-assert_not_equals = AssertionNotEquals
+
+assert_not_contains = AssertionNotContains
+assert_not_in = AssertionNotContains

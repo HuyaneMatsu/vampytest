@@ -1,12 +1,13 @@
-__all__ = ('AssertionContains',)
+__all__ = ('AssertionContains', 'assert_contains', 'assert_in',)
 
-from . import assertion_states as CONDITION_STATES
 from .assertion_conditional_base import AssertionConditionalBase2Value
+
+from scarletio import copy_docs
 
 
 class AssertionContains(AssertionConditionalBase2Value):
     """
-    Asserts equality.
+    Asserts whether the first value contains the second.
     
     Attributes
     ----------
@@ -21,13 +22,9 @@ class AssertionContains(AssertionConditionalBase2Value):
     """
     __slots__ = ()
     
+    @copy_docs(AssertionConditionalBase2Value.invoke_condition)
     def invoke_condition(self):
-        """
-        Invokes equality operator on the 2 values of the assertion.
-        
-        Returns
-        -------
-        condition_return : `Any`
-            The value returned by the condition.
-        """
         return self.value_1 in self.value_2
+
+assert_contains = AssertionContains
+assert_in = AssertionContains

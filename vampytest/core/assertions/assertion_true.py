@@ -1,4 +1,4 @@
-__all__ = ('AssertionValueEvaluationTrue',)
+__all__ = ('AssertionValueEvaluationTrue', 'assert_', 'assert_true',)
 
 from .assertion_conditional_base import AssertionConditionalBase1Value
 
@@ -23,3 +23,6 @@ class AssertionValueEvaluationTrue(AssertionConditionalBase1Value):
     @copy_docs(AssertionConditionalBase1Value.invoke_condition)
     def invoke_condition(self):
         return self.value_1
+
+assert_ = AssertionValueEvaluationTrue
+assert_true = AssertionValueEvaluationTrue
