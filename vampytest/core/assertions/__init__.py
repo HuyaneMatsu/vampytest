@@ -24,6 +24,7 @@ from .assertion_contains import *
 from .assertion_equals import *
 from .assertion_false import *
 from .assertion_identity import *
+from .assertion_not_equals import *
 from .assertion_raising import *
 from .assertion_states import *
 from .assertion_true import *
@@ -31,6 +32,7 @@ from .exceptions import *
 
 
 # Define more friendly names
+
 CONDITION_STATES = assertion_states
 
 from .assertion_contains import AssertionContains as assert_contains
@@ -38,6 +40,8 @@ from .assertion_equals import AssertionEquals as assert_eq
 from .assertion_equals import AssertionEquals as assert_equals
 from .assertion_false import AssertionValueEvaluationFalse as assert_false
 from .assertion_identity import AssertionIdentity as assert_identity
+from .assertion_not_equals import AssertionNotEquals as assert_ne
+from .assertion_not_equals import AssertionNotEquals as assert_not_equals
 from .assertion_raising import AssertionRaising as assert_raises
 from .assertion_true import AssertionValueEvaluationTrue as assert_true
 
@@ -49,6 +53,8 @@ __all__ = (
     'assert_equals',
     'assert_false',
     'assert_identity',
+    'assert_ne',
+    'assert_not_equals',
     'assert_raises',
     'assert_true',
     
@@ -59,6 +65,7 @@ __all__ = (
     *assertion_equals.__all__,
     *assertion_false.__all__,
     *assertion_identity.__all__,
+    *assertion_not_equals.__all__,
     *assertion_states.__all__,
     *assertion_true.__all__,
     *exceptions.__all__,
