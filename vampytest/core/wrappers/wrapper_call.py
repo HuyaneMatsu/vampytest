@@ -7,6 +7,8 @@ from ..helpers import hash_dict, hash_set, hash_tuple, try_hash_method, un_nest_
 from .wrapper_conflict import WrapperConflict
 from .wrapper_base import WrapperBase
 
+from scarletio import copy_docs
+
 
 class WrapperCall(WrapperBase):
     """
@@ -98,47 +100,8 @@ class WrapperCall(WrapperBase):
         return self
     
     
-    @property
-    def raising_key(self):
-        """
-        Returns the wrapper's raising key.
-        
-        Returns
-        -------
-        raising_key : `None`, `tuple` (`set` of ``BaseException``, `bool`)
-        """
-        if self.is_raising:
-            return (self.exceptions, self.accept_sub_classes)
-    
-    
-    @property
-    def returning_key(self):
-        """
-        Returns the wrapper's raising key.
-        
-        Returns
-        -------
-        raising_key : `None`, `tuple` (`set` of ``BaseException``, `bool`)
-        """
-        if self.is_raising:
-            return (self.value, )
-    
-    
-    @property
-    def call_with_key(self):
-        """
-        Returns the wrapper's raising key.
-        
-        Returns
-        -------
-        call_with_key : `None`, `tuple` (`tuple` of `Any`, `dict` of (`str`, `Any`) items)
-        """
-        if self.is_call_with:
-            return (self.positional_parameters, self.keyword_parameters)
-    
-    
+    @copy_docs(WrapperBase.__repr__)
     def __repr__(self):
-        """Returns the parameterised wrapper's representation."""
         for field_added, repr_parts in self._cursed_repr_builder():
             
             repr_parts.append(' (')
@@ -222,8 +185,8 @@ class WrapperCall(WrapperBase):
         return ''.join(repr_parts)
     
     
+    @copy_docs(WrapperBase.__hash__)
     def __hash__(self):
-        """Returns the parameterised wrapper's representation."""
         hash_value = WrapperBase.__hash__(self)
         
         if self.is_raising:
@@ -242,8 +205,8 @@ class WrapperCall(WrapperBase):
         return hash_value
     
     
+    @copy_docs(WrapperBase.__eq__)
     def __eq__(self, other):
-        """Returns whether the two combined wrappers are the same."""
         if type(self) is not type(other):
             return NotImplemented
         
@@ -279,7 +242,91 @@ class WrapperCall(WrapperBase):
         
         return True
     
+    
+    @copy_docs(WrapperBase.check_conflicts)
+    def check_conflicts(self):
+        if self.is_raising and self.is_returning:
+            return WrapperConflict(
+                self,
+                reason = 'A call wrapper cannot be returning & raising at the same time.',
+            )
+    
+    
+    @copy_docs(WrapperBase.check_conflict_with)
+    def check_conflict_with(self, other):
+        if not isinstance(other, type(self)):
+            return
+        
+        
+        self_input_field_count = self.is_call_with
+        self_output_field_count = self.is_raising + self.is_returning
+        
+        other_input_count = other.is_call_with
+        other_output_field_count = other.is_raising + other.is_returning
+        
+        if (self_input_field_count + self_output_field_count) == (other_input_count + other_output_field_count):
+            # Both defined input and output, so we accept both.
+            return
+        
+        
+        if (self_input_field_count + self_output_field_count) != (other_input_count + other_output_field_count):
+            # Both should define input and output at the same time if any does.
+            return WrapperConflict(
+                self,
+                other,
+                reason = (
+                    'Call wrappers must be either just parameterising / returning / raising, or '
+                    'parameterising & (returning / raising) at the same time.'
+                )
+            )
+        
+        
+        if (self_output_field_count + other_output_field_count) == 2:
+            return WrapperConflict(
+                self,
+                other,
+                reason = 'Just returning / raising wrappers cannot be combined.'
+            )
+    
 
+    @property
+    def raising_key(self):
+        """
+        Returns the wrapper's raising key.
+        
+        Returns
+        -------
+        raising_key : `None`, `tuple` (`set` of ``BaseException``, `bool`)
+        """
+        if self.is_raising:
+            return (self.exceptions, self.accept_sub_classes)
+    
+    
+    @property
+    def returning_key(self):
+        """
+        Returns the wrapper's raising key.
+        
+        Returns
+        -------
+        raising_key : `None`, `tuple` (`set` of ``BaseException``, `bool`)
+        """
+        if self.is_raising:
+            return (self.value, )
+    
+    
+    @property
+    def call_with_key(self):
+        """
+        Returns the wrapper's raising key.
+        
+        Returns
+        -------
+        call_with_key : `None`, `tuple` (`tuple` of `Any`, `dict` of (`str`, `Any`) items)
+        """
+        if self.is_call_with:
+            return (self.positional_parameters, self.keyword_parameters)
+    
     
     def raising_constructor(cls,  *exception_types, accept_sub_classes=True):
         """
@@ -468,66 +515,3 @@ class WrapperCall(WrapperBase):
             returning = self.returning_key,
             call_with = (positional_parameters, keyword_parameters),
         )
-    
-    
-    def check_conflicts(self):
-        """
-        Checks whether the wrapper has internal conflict.
-        
-        Call wrappers cannot be returning and raising at the same time.
-        
-        Returns
-        ------
-        wrapper_conflict: `None`, ``WrapperConflict``
-        """
-        if self.is_raising and self.is_returning:
-            return WrapperConflict(
-                self,
-                reason = 'A call wrapper cannot be returning & raising at the same time.',
-            )
-    
-    
-    def check_conflict_with(self, other):
-        """
-        Checks whether the wrapper has conflict with the other one.
-        
-        Two test cannot be wrapped to just a raising and returning wrapper. Tests also cannot be wrapped to mixed
-        wrappers if return or raise is already defined.
-        
-        Returns
-        ------
-        wrapper_conflict: `None`, ``WrapperConflict``
-        """
-        if not isinstance(other, type(self)):
-            return
-        
-        
-        self_input_field_count = self.is_call_with
-        self_output_field_count = self.is_raising + self.is_returning
-        
-        other_input_count = other.is_call_with
-        other_output_field_count = other.is_raising + other.is_returning
-        
-        if (self_input_field_count + self_output_field_count) == (other_input_count + other_output_field_count):
-            # Both defined input and output, so we accept both.
-            return
-        
-        
-        if (self_input_field_count + self_output_field_count) != (other_input_count + other_output_field_count):
-            # Both should define input and output at the same time if any does.
-            return WrapperConflict(
-                self,
-                other,
-                reason = (
-                    'Call wrappers must be either just parameterising / returning / raising, or '
-                    'parameterising & (returning / raising) at the same time.'
-                )
-            )
-        
-        
-        if (self_output_field_count + other_output_field_count) == 2:
-            return WrapperConflict(
-                self,
-                other,
-                reason = 'Just returning / raising wrappers cannot be combined.'
-            )

@@ -23,7 +23,11 @@ def run_tests_in(base_path, path_parts):
         stdout.write(f'Collected {len(test_files)} test files\n')
         
         for test_file in test_files:
-            tests = test_file.get_tests()
+            try:
+                test_file.get_tests()
+            except BaseException as err:
+                
+                return
     
     finally:
         if base_path_in_system_paths:

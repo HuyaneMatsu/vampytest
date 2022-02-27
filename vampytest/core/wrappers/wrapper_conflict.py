@@ -1,6 +1,9 @@
-__all__ = ()
+__all__ = ('WrapperConflict',)
 
-class WrapperConflict:
+from scarletio import RichAttributeErrorBaseType
+
+
+class WrapperConflict(RichAttributeErrorBaseType):
     """
     Raised when 2 wrappers have conflict with each other.
     

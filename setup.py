@@ -44,6 +44,9 @@ setup(
     ],
     description = 'A vampy test framework',
     include_package_data = True,
+    install_requires = [
+        'scarletio',
+    ],
     license = 'MIT',
     long_description = README,
     long_description_content_type = 'text/markdown',

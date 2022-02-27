@@ -2,6 +2,8 @@ __all__ = ('WrapperSkipConditional', )
 
 from .wrapper_skip import WrapperSkip
 
+from scarletio import copy_docs
+
 
 class WrapperSkipConditional(WrapperSkip):
     """
@@ -11,6 +13,8 @@ class WrapperSkipConditional(WrapperSkip):
     ----------
     wrapped : `None`, `Any`
         The wrapped test.
+    skip : `bool`
+        Whether the test should be skipped.
     """
     __slots__ = ('skip', )
     
@@ -30,13 +34,13 @@ class WrapperSkipConditional(WrapperSkip):
         return self
     
     
+    @copy_docs(WrapperSkip.__repr__)
     def __repr__(self):
-        """Returns the conditional skip wrapper's representation."""
         return f'<{self.__class__.__name__} skip={self.skip}>'
     
     
+    @copy_docs(WrapperSkip.__eq__)
     def __eq__(self, other):
-        """Returns whether the two conditional skip wrappers are the same."""
         if type(self) is type(other):
             if self.wrapped != other.wrapped:
                 return False
@@ -58,17 +62,11 @@ class WrapperSkipConditional(WrapperSkip):
         return NotImplemented
     
     
+    @copy_docs(WrapperSkip.__hash__)
     def __hash__(self):
-        """Returns the condition skip wrapper's hash value."""
         return self.skip
     
     
+    @copy_docs(WrapperSkip.do_skip)
     def do_skip(self):
-        """
-        Whether the test should be skipped.
-        
-        Returns
-        -------
-        do_skip : `bool`
-        """
         return self.skip

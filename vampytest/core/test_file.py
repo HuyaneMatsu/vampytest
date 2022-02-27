@@ -6,6 +6,8 @@ from .utils import get_short_path_repr
 from .test_case import TestCase
 from .wrappers import WrapperBase
 
+from scarletio import RichAttributeErrorBaseType
+
 
 def is_test_name(name):
     """
@@ -53,7 +55,7 @@ def is_test(name, value):
     return callable(value)
     
 
-class TestFile:
+class TestFile(RichAttributeErrorBaseType):
     """
     Describes a test file.
     

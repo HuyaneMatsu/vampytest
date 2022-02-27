@@ -1,10 +1,11 @@
 __all__ = ('AssertionEquals',)
 
-from . import assertion_states as CONDITION_STATES
-from .assertion_conditional_base import AssertionConditionalBase
+from .assertion_conditional_base import AssertionConditionalBase2Value
+
+from scarletio import copy_docs
 
 
-class AssertionEquals(AssertionConditionalBase):
+class AssertionEquals(AssertionConditionalBase2Value):
     """
     Asserts equality.
     
@@ -19,49 +20,8 @@ class AssertionEquals(AssertionConditionalBase):
     value_2 : `Any`
         The second value to assert equality with.
     """
-    __slots__ = ('value_1', 'value_2',)
+    __slots__ = ()
     
-    def __new__(cls, value_1, value_2):
-        """
-        Asserts whether the two values are equal. Fails the test if not.
-        
-        Parameters
-        ----------
-        value_1 : `Any`
-            First value to assert equality with.
-        value_2 : `Any`
-            The second value to assert equality with.
-        """
-        self = AssertionConditionalBase.__new__(cls)
-        
-        self.value_1 = value_1
-        self.value_2 = value_2
-        
-        self.state = CONDITION_STATES.CREATED
-        
-        return self.invoke()
-    
-    
+    @copy_docs(AssertionConditionalBase2Value.invoke_condition)
     def invoke_condition(self):
-        """
-        Invokes equality operator on the 2 values of the assertion.
-        
-        Returns
-        -------
-        condition_return : `Any`
-            The value returned by the condition.
-        """
         return self.value_1 == self.value_2
-    
-    
-    def __repr__(self):
-        """Returns the representation of the equality condition."""
-        for repr_parts in self._cursed_repr_builder():
-            
-            repr_parts.append(', value_1=')
-            repr_parts.append(repr(self.value_1))
-            
-            repr_parts.append(', value_2=')
-            repr_parts.append(repr(self.value_2))
-
-        return "".join(repr_parts)

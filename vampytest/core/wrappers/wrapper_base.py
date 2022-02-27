@@ -2,12 +2,13 @@ __all__ = ('WrapperBase', )
 
 from ..helpers import hash_object
 
-
-# Will be resolved later
-WrapperChainer = NotImplemented
+from scarletio import RichAttributeErrorBaseType, include
 
 
-class WrapperBase:
+WrapperChainer = include('WrapperChainer')
+
+
+class WrapperBase(RichAttributeErrorBaseType):
     """
     Base class for test wrappers defining shared functionality.
     
@@ -165,7 +166,6 @@ class WrapperBase:
         Returns
         -------
         do_skip : `bool`
-            Always returns false.
         """
         return False
     

@@ -5,8 +5,10 @@ import reprlib
 from .helpers import hash_object
 from .wrappers import WrapperBase
 
+from scarletio import RichAttributeErrorBaseType
 
-class TestCase:
+
+class TestCase(RichAttributeErrorBaseType):
     """
     Represents a test.
     

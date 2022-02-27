@@ -4,7 +4,10 @@ from ..helpers import hash_set
 
 from .wrapper_base import WrapperBase
 
+from scarletio import copy_docs, export
 
+
+@export
 class WrapperChainer(WrapperBase):
     """
     Attributes
@@ -31,25 +34,8 @@ class WrapperChainer(WrapperBase):
         return self
     
     
+    @copy_docs(WrapperBase.__call__)
     def __call__(self, to_wrap):
-        """
-        Calls the wrapper.
-        
-        Parameters
-        ----------
-        to_wrap : `Any`
-            The object to wrap. It can be either a function or an another wrapper.
-        
-        Returns
-        -------
-        to_wrap : ``WrapperBase``
-            The same or a newly created wrapper.
-        
-        Raises
-        ------
-        RuntimeError
-            Wrapper already called.
-        """
         if isinstance(to_wrap, WrapperBase):
             self.append(to_wrap)
             return self
@@ -62,8 +48,8 @@ class WrapperChainer(WrapperBase):
         return self
     
     
+    @copy_docs(WrapperBase.__repr__)
     def __repr__(self):
-        """Returns the wrapper chainer's representation."""
         for field_added, repr_parts in self._cursed_repr_builder():
             if field_added:
                 repr_parts.append(',')
@@ -74,15 +60,15 @@ class WrapperChainer(WrapperBase):
         return ''.join(repr_parts)
     
     
+    @copy_docs(WrapperBase.__hash__)
     def __hash__(self):
-        """Returns the wrapper chainer's hash value."""
         hash_value = WrapperBase.__hash__(self)
         hash_value ^= hash_set(self.wrappers)
         return hash_value
     
     
+    @copy_docs(WrapperBase.__eq__)
     def __eq__(self, other):
-        """Returns whether the two wrapper chainers are the same."""
         if type(self) is not type(other):
             return NotImplemented
         
@@ -92,14 +78,8 @@ class WrapperChainer(WrapperBase):
         return True
     
     
+    @copy_docs(WrapperBase.do_skip)
     def do_skip(self):
-        """
-        Whether the test should be skipped.
-        
-        Returns
-        -------
-        do_skip : `bool`
-        """
         for wrapper in self.wrappers:
             if wrapper.do_skip():
                 return True
@@ -107,16 +87,8 @@ class WrapperChainer(WrapperBase):
         return False
     
     
+    @copy_docs(WrapperBase.check_conflicts)
     def check_conflicts(self):
-        """
-        Checks whether the wrapper has internal conflict.
-        
-        Chained wrappers check conflicts within themselves.
-        
-        Returns
-        ------
-        wrapper_conflict : `None`, ``WrapperConflict``
-        """
         wrappers = list(self.wrappers)
         for wrapper in wrappers:
             wrapper_conflict = wrapper.check_conflicts()
@@ -153,10 +125,3 @@ class WrapperChainer(WrapperBase):
         
         
         self.wrappers.add(wrapper)
-
-
-# Resolve circular imports
-
-from .import wrapper_base
-wrapper_base.WrapperChainer = WrapperChainer
-del wrapper_base
