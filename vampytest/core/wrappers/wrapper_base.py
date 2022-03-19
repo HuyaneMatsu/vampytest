@@ -222,3 +222,99 @@ class WrapperBase(RichAttributeErrorBaseType):
         
         self.wrapped = None
         return wrapped
+    
+    
+    def iter_wrappers(self):
+        """
+        Iterates over the wrappers encapsulated by this wrapper. This method is used to un-nest wrapper groups if
+        required.
+        
+        This method is an iterable generator.
+        
+        Yields
+        ------
+        wrapper : ``WrapperBase``
+        """
+        yield self
+    
+    
+    def is_ignored_when_testing(self):
+        """
+        Returns whether the wrapper can be ignore when testing, but is used instead for just pre-checks.
+        
+        Returns
+        -------
+        is_ignored_when_testing : `bool`
+        """
+        return True
+    
+    
+    def is_mutually_exclusive_with(self, other):
+        """
+        Returns whether the wrapper is mutually exclusive with the other one.
+        
+        Parameters
+        ----------
+        other : ``WrapperBase``
+        
+        Returns
+        -------
+        is_mutually_exclusive_with : `bool`
+        """
+        return False
+    
+    
+    def context(self, test_handle):
+        """
+        Context over a test handle.
+        
+        This method is a generator.
+        
+        Parameters
+        ----------
+        test_handle : ``TestHandle``
+            The parent test handle.
+        
+        Yields
+        ------
+        step_result : ``TestResult``, ``CallState``, ``ResultState``
+        
+        Example Implementation
+        ----------------------
+        ```py
+        # before first yield we might check the test handle out and return a `TestResult` if something is wrong.
+        
+        if everything is not good:
+            return TestResult(test_handle)....
+        
+        # If we find everything good, we will get back a `CallState` on our yield
+        call_state = yield
+        
+        # We might modify the parameters of the call state with `.with_parameters` method
+        call_state = call_state.with_parameters(positional, keyword)
+        
+        # If something is wrong, we can return a `TestResult` again.
+        if everything is not good:
+            return TestResult(test_handle)....
+        
+        # If everything is good, we yield back our call state. At this time we will get back a `ResultState` on our
+        # yield.
+        
+        result_state = yield call_state
+        
+        # We might check the result state and modify it, or again return a `TestResult` if something is wrong.
+        
+        if everything is not good:
+            return TestResult(test_handle)....
+        
+        # To modify the result state, use the `.with_return` or the `.with_exception` methods.
+        result_state = result_state.with_return(None)
+        result_state = result_state.with_exception(None)
+        
+        At the end yield back our `result_state`
+        yield result_state
+        ```
+        """
+        call_state = yield None
+        result_state = yield call_state
+        yield result_state

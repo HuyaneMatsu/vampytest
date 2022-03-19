@@ -3,6 +3,7 @@ __all__ = ('WrapperCall',)
 import reprlib
 
 from ..helpers import hash_dict, hash_set, hash_tuple, try_hash_method, un_nest_exception_types
+from ..test_result import TestResult
 
 from .wrapper_conflict import WrapperConflict
 from .wrapper_base import WrapperBase
@@ -18,26 +19,26 @@ class WrapperCall(WrapperBase):
     ----------
     wrapped : `Any`
         The wrapped test.
-    accept_sub_classes : `bool`
+    raising_exceptions_exact_type : `bool`
         Whether exception subclasses are accepted as well if ``.is_raising``.
-    exceptions : `None`, `set` of ``BaseException``
-        The exceptions expected to be raised if ``.is_raising``.
+    raising_exceptions : `None`, `set` of ``BaseException``
+        The raising_exceptions expected to be raised if ``.is_raising``.
     is_raising : `bool`
-        Whether raised exceptions of the test should be checked.
+        Whether raised raising_exceptions of the test should be checked.
     is_returning : `bool`
         Whether returned value of the test should be checked.
     is_call_with : `bool`
         Whether the test should be called with specific parameters.
-    keyword_parameters : `None`, `dict` of (`str`, `Any`) items
+    calling_keyword_parameters : `None`, `dict` of (`str`, `Any`) items
         Keyword parameters to call the test with if ``.is_call_with``.
-    positional_parameters : `None`, `tuple` of `Any`
+    calling_positional_parameters : `None`, `tuple` of `Any`
         Positional parameter to call the test with if ``.is_call_with``.
-    value : `None`, `Any`
+    returning_value : `None`, `Any`
         The expected returned value of the test if ``.is_returning``.
     """
     __slots__ = (
-        'accept_sub_classes', 'exceptions', 'is_raising', 'is_returning', 'is_call_with', 'keyword_parameters',
-        'positional_parameters', 'value'
+        'calling_keyword_parameters', 'calling_positional_parameters', 'is_call_with', 'is_raising', 'is_returning',
+        'raising_exceptions', 'raising_exceptions_exact_type', 'returning_value'
     )
     
     def __new__(cls, wrapped=None, *, raising=None, returning=None, call_with=None):
@@ -58,44 +59,44 @@ class WrapperCall(WrapperBase):
         """
         if raising is None:
             is_raising = False
-            exceptions = None
-            accept_sub_classes = None
+            raising_exceptions = None
+            raising_exceptions_exact_type = None
         
         else:
             is_raising = True
-            exceptions, accept_sub_classes = raising
+            raising_exceptions, raising_exceptions_exact_type = raising
         
         
         if returning is None:
             is_returning = False
-            value = None
+            returning_value = None
         
         else:
             is_returning = True
-            value = returning[0]
+            returning_value = returning[0]
         
         
         if call_with is None:
             is_call_with = False
-            keyword_parameters = None
-            positional_parameters = None
+            calling_keyword_parameters = None
+            calling_positional_parameters = None
         
         else:
             is_call_with = True
-            positional_parameters, keyword_parameters = call_with
+            calling_positional_parameters, calling_keyword_parameters = call_with
         
         
         self = object.__new__(cls)
         self.wrapped = wrapped
         
-        self.accept_sub_classes = accept_sub_classes
-        self.exceptions = exceptions
+        self.raising_exceptions_exact_type = raising_exceptions_exact_type
+        self.raising_exceptions = raising_exceptions
         self.is_raising = is_raising
         self.is_returning = is_returning
         self.is_call_with = is_call_with
-        self.keyword_parameters = keyword_parameters
-        self.positional_parameters = positional_parameters
-        self.value = value
+        self.calling_keyword_parameters = calling_keyword_parameters
+        self.calling_positional_parameters = calling_positional_parameters
+        self.returning_value = returning_value
         
         return self
     
@@ -145,11 +146,11 @@ class WrapperCall(WrapperBase):
                 else:
                     field_added = True
                 
-                repr_parts.append(' exceptions=')
-                repr_parts.append(repr(self.exceptions))
+                repr_parts.append(' raising_exceptions=')
+                repr_parts.append(repr(self.raising_exceptions))
                 
-                repr_parts.append(', accept_sub_classes=')
-                repr_parts.append(repr(self.accept_sub_classes))
+                repr_parts.append(', raising_exceptions_exact_type=')
+                repr_parts.append(repr(self.raising_exceptions_exact_type))
             
             if is_returning:
                 if field_added:
@@ -157,30 +158,30 @@ class WrapperCall(WrapperBase):
                 else:
                     field_added = True
                 
-                repr_parts.append(' value=')
-                repr_parts.append(reprlib.repr(self.value))
+                repr_parts.append(' self.returning_value=')
+                repr_parts.append(reprlib.repr(self.returning_value))
             
             
             if is_call_with:
-                positional_parameters = self.positional_parameters
-                if positional_parameters:
+                calling_positional_parameters = self.calling_positional_parameters
+                if calling_positional_parameters:
                     if field_added:
                         repr_parts.append(',')
                     else:
                         field_added = True
                     
-                    repr_parts.append(' positional_parameters=')
-                    repr_parts.append(reprlib.repr(positional_parameters))
+                    repr_parts.append(' calling_positional_parameters=')
+                    repr_parts.append(reprlib.repr(calling_positional_parameters))
                 
-                keyword_parameters = self.keyword_parameters
-                if keyword_parameters:
+                calling_keyword_parameters = self.calling_keyword_parameters
+                if calling_keyword_parameters:
                     if field_added:
                         repr_parts.append(',')
                     else:
                         field_added = True
                     
-                    repr_parts.append(' keyword_parameters=')
-                    repr_parts.append(reprlib.repr(keyword_parameters))
+                    repr_parts.append(' calling_keyword_parameters=')
+                    repr_parts.append(reprlib.repr(calling_keyword_parameters))
             
         return ''.join(repr_parts)
     
@@ -190,16 +191,16 @@ class WrapperCall(WrapperBase):
         hash_value = WrapperBase.__hash__(self)
         
         if self.is_raising:
-            hash_value ^= hash_set(self.exceptions)
-            hash_value ^= self.accept_sub_classes
+            hash_value ^= hash_set(self.raising_exceptions)
+            hash_value ^= self.raising_exceptions_exact_type
         
         if self.is_returning:
-            hash_value ^= try_hash_method(self.value)
+            hash_value ^= try_hash_method(self.returning_value)
         
         
         if self.is_call_with:
-            hash_value ^= hash_tuple(self.positional_parameters)
-            hash_value ^= hash_dict(self.keyword_parameters)
+            hash_value ^= hash_tuple(self.calling_positional_parameters)
+            hash_value ^= hash_dict(self.calling_keyword_parameters)
         
         
         return hash_value
@@ -215,10 +216,10 @@ class WrapperCall(WrapperBase):
             return False
         
         if is_raising:
-            if self.exceptions != other.exceptions:
+            if self.raising_exceptions != other.raising_exceptions:
                 return False
             
-            if self.accept_sub_classes != other.accept_sub_classes:
+            if self.raising_exceptions_exact_type != other.raising_exceptions_exact_type:
                 return False
         
         is_returning = self.is_returning
@@ -226,7 +227,7 @@ class WrapperCall(WrapperBase):
             return False
         
         if is_returning:
-            if self.value != other.value:
+            if self.returning_value != other.returning_value:
                 return False
         
         is_call_with = self.is_call_with
@@ -234,10 +235,10 @@ class WrapperCall(WrapperBase):
             return False
         
         if is_call_with:
-            if self.positional_parameters != other.positional_parameters:
+            if self.calling_positional_parameters != other.calling_positional_parameters:
                 return False
             
-            if self.keyword_parameters != other.keyword_parameters:
+            if self.calling_keyword_parameters != other.calling_keyword_parameters:
                 return False
         
         return True
@@ -288,7 +289,86 @@ class WrapperCall(WrapperBase):
                 reason = 'Just returning / raising wrappers cannot be combined.'
             )
     
-
+    
+    @copy_docs(WrapperBase.is_ignored_when_testing)
+    def is_ignored_when_testing(self):
+        return False
+    
+    
+    @copy_docs(WrapperBase.is_mutually_exclusive_with)
+    def is_mutually_exclusive_with(self, other):
+        if type(self) is not type(other):
+            return False
+        
+        if self.is_call_with and other.is_call_with:
+            return True
+        
+        return False
+    
+    
+    @copy_docs(WrapperBase.context)
+    def context(self, test_handle):
+        call_state = yield None
+        
+        if self.is_call_with:
+            call_state = call_state.with_parameters(
+                self.calling_positional_parameters,
+                self.calling_keyword_parameters,
+            )
+        
+        result_state = yield call_state
+        
+        if self.is_raising:
+            raised_exception = result_state.raised_exception
+            raising_exceptions = self.raising_exceptions
+            raising_exceptions_exact_type = self.raising_exceptions_exact_type
+            if raised_exception is None:
+                return TestResult(test_handle).with_exception(
+                    raising_exceptions,
+                    None,
+                    raising_exceptions_exact_type,
+                )
+            
+            if raising_exceptions_exact_type:
+                for exception in raising_exceptions:
+                    if isinstance(raised_exception, exception):
+                        passed = True
+                        break
+                else:
+                    passed = False
+            
+            else:
+                for exception in raising_exceptions:
+                    if type(raised_exception) is exception:
+                        passed = True
+                        break
+                else:
+                    passed = False
+            
+            if not passed:
+                return TestResult(test_handle).with_exception(
+                    raising_exceptions,
+                    raised_exception,
+                    raising_exceptions_exact_type,
+                )
+            
+            if passed:
+                result_state = result_state.with_exception(None)
+        
+        elif self.is_returning:
+            raised_exception = result_state.raised_exception
+            if (raised_exception is not None):
+                return TestResult(test_handle).with_exception(None, raised_exception, False)
+            
+            returned_value = result_state.returned
+            returning_value = self.returning_value
+            
+            if returned_value != returning_value:
+                return TestResult(test_handle).with_exception(None, raised_exception, False)
+        
+        yield result_state
+    
+    
     @property
     def raising_key(self):
         """
@@ -299,7 +379,7 @@ class WrapperCall(WrapperBase):
         raising_key : `None`, `tuple` (`set` of ``BaseException``, `bool`)
         """
         if self.is_raising:
-            return (self.exceptions, self.accept_sub_classes)
+            return (self.raising_exceptions, self.raising_exceptions_exact_type)
     
     
     @property
@@ -312,7 +392,7 @@ class WrapperCall(WrapperBase):
         raising_key : `None`, `tuple` (`set` of ``BaseException``, `bool`)
         """
         if self.is_raising:
-            return (self.value, )
+            return (self.returning_value, )
     
     
     @property
@@ -325,10 +405,10 @@ class WrapperCall(WrapperBase):
         call_with_key : `None`, `tuple` (`tuple` of `Any`, `dict` of (`str`, `Any`) items)
         """
         if self.is_call_with:
-            return (self.positional_parameters, self.keyword_parameters)
+            return (self.calling_positional_parameters, self.calling_keyword_parameters)
     
     
-    def raising_constructor(cls,  *exception_types, accept_sub_classes=True):
+    def raising_constructor(cls,  *exception_types, raising_exceptions_exact_type=True):
         """
         Creates a new raising wrapper.
         
@@ -336,7 +416,7 @@ class WrapperCall(WrapperBase):
         ----------
         *exception_types : tuple` of (`BaseException`, ...)
             Exception types to expect.
-        accept_sub_classes : `bool` = `True`
+        raising_exceptions_exact_type : `bool` = `True`
             Whether subclasses are accepted as well.
         
         Raises
@@ -355,11 +435,11 @@ class WrapperCall(WrapperBase):
             raise ValueError('At least 1 exception is required.')
         
         return cls(
-            raising = (exception_types, accept_sub_classes),
+            raising = (exception_types, raising_exceptions_exact_type),
         )
     
     
-    def raising(self,  *exception_types, accept_sub_classes=True):
+    def raising(self,  *exception_types, raising_exceptions_exact_type=True):
         """
         Creates a new raising wrapper extending self.
         
@@ -367,7 +447,7 @@ class WrapperCall(WrapperBase):
         ----------
         *exception_types : tuple` of (`BaseException`, ...)
             Exception types to expect.
-        accept_sub_classes : `bool` = `True`
+        raising_exceptions_exact_type : `bool` = `True`
             Whether subclasses are accepted as well.
         
         Raises
@@ -387,7 +467,7 @@ class WrapperCall(WrapperBase):
         
         return type(self)(
             self.wrapped,
-            raising = (exception_types, accept_sub_classes),
+            raising = (exception_types, raising_exceptions_exact_type),
             returning = self.returning_key,
             call_with = self.call_with_key,
         )
@@ -412,13 +492,13 @@ class WrapperCall(WrapperBase):
         )
     
     
-    def returning(self, returning):
+    def returning(self, returning_value):
         """
         Creates a new returning wrapper extending self.
         
         Parameters
         ----------
-        returning : `Any`
+        returning_value : `Any`
             The expected value to be returned.
         
         Returns
@@ -428,7 +508,7 @@ class WrapperCall(WrapperBase):
         return type(self)(
             self.wrapped,
             raising = self.raising_key,
-            returning = (returning, ),
+            returning = (returning_value, ),
             call_with = self.call_with_key,
         )
     
@@ -451,38 +531,38 @@ class WrapperCall(WrapperBase):
                 f'Call wrapper cannot check for return value if it has no parameters added; self={self!r}.'
             )
         
-        positional_parameters = self.positional_parameters
-        keyword_parameters = self.keyword_parameters
+        calling_positional_parameters = self.calling_positional_parameters
+        calling_keyword_parameters = self.calling_keyword_parameters
         
-        if len(positional_parameters) + len(keyword_parameters) != 1:
+        if len(calling_positional_parameters) + len(calling_keyword_parameters) != 1:
             raise ValueError(
                 f'``.returning_itself`` is only applicable if the wrapper has 1 parameter added; '
                 f'self={self!r}.'
             )
         
-        if positional_parameters:
-            value = positional_parameters[0]
+        if calling_positional_parameters:
+            returning_value = calling_positional_parameters[0]
         else:
-            value = next(iter(keyword_parameters.values()))
+            returning_value = next(iter(calling_keyword_parameters.values()))
         
         return type(self)(
             self.wrapped,
             raising = self.raising_key,
-            returning = (value, ),
+            returning = (returning_value, ),
             call_with = self.call_with_key,
         )
     
     
     @classmethod
-    def call_with_constructor(cls, *positional_parameters, **keyword_parameters):
+    def call_with_constructor(cls, *calling_positional_parameters, **calling_keyword_parameters):
         """
         Creates new parameterised wrapper.
         
         Parameters
         ----------
-        *positional_parameters : `tuple` of `Any`
+        *calling_positional_parameters : `tuple` of `Any`
             Positional parameter to call the test with.
-        **keyword_parameters : `dict` of (`str`, `Any`) items
+        **calling_keyword_parameters : `dict` of (`str`, `Any`) items
             Keyword parameters to call the test with.
         
         Returns
@@ -490,19 +570,19 @@ class WrapperCall(WrapperBase):
         self : ``WrapperCall``
         """
         return cls(
-            call_with = (positional_parameters, keyword_parameters),
+            call_with = (calling_positional_parameters, calling_keyword_parameters),
         )
     
     
-    def call_with(self, *positional_parameters, **keyword_parameters):
+    def call_with(self, *calling_positional_parameters, **calling_keyword_parameters):
         """
         Creates a new parameterised wrapper extending self.
         
         Parameters
         ----------
-        *positional_parameters : `tuple` of `Any`
+        *calling_positional_parameters : `tuple` of `Any`
             Positional parameter to call the test with.
-        **keyword_parameters : `dict` of (`str`, `Any`) items
+        **calling_keyword_parameters : `dict` of (`str`, `Any`) items
             Keyword parameters to call the test with.
         
         Returns
@@ -513,5 +593,5 @@ class WrapperCall(WrapperBase):
             self.wrapped,
             raising = self.raising_key,
             returning = self.returning_key,
-            call_with = (positional_parameters, keyword_parameters),
+            call_with = (calling_positional_parameters, calling_keyword_parameters),
         )

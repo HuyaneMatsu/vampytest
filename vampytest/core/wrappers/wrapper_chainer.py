@@ -108,6 +108,12 @@ class WrapperChainer(WrapperBase):
                     return wrapper_conflict
     
     
+    @copy_docs(WrapperBase.iter_wrappers)
+    def iter_wrappers(self):
+        for wrapper in self.wrappers:
+            yield from wrapper.iter_wrappers()
+    
+    
     def append(self, wrapper):
         """
         Adds a new wrapper to chain up.

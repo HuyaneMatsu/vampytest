@@ -2,6 +2,7 @@ __all__ = ('TestFile', )
 
 import sys
 
+from .exceptions import TestLoadingError
 from .utils import get_short_path_repr
 from .test_case import TestCase
 from .wrappers import WrapperBase
@@ -130,6 +131,11 @@ class TestFile(RichAttributeErrorBaseType):
         Returns
         -------
         module : `ModuleType`
+        
+        Raises
+        ------
+        TestLoadingError
+            Loading test file failed.
         """
         module = self.module
         if (module is None):
@@ -147,9 +153,19 @@ class TestFile(RichAttributeErrorBaseType):
         Returns
         -------
         module : `ModuleType`
+        
+        Raises
+        ------
+        TestLoadingError
+            Loading test file failed.
         """
         import_route = self.import_route
-        __import__(import_route)
+        
+        try:
+            __import__(import_route)
+        except BaseException as err:
+            raise TestLoadingError(err) from None
+        
         module = sys.modules[import_route]
         self.module = module
         return module
@@ -162,6 +178,11 @@ class TestFile(RichAttributeErrorBaseType):
         Returns
         -------
         tests : `list` of ``TestCase``
+        
+        Raises
+        ------
+        TestLoadingError
+            Loading test file failed.
         """
         tests = self.tests
         if (tests is None):
@@ -179,6 +200,11 @@ class TestFile(RichAttributeErrorBaseType):
         Returns
         -------
         tests : `list` of ``TestCase``
+        
+        Raises
+        ------
+        TestLoadingError
+            Loading test file failed.
         """
         module = self.get_module()
         
