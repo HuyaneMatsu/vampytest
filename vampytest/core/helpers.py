@@ -1,6 +1,6 @@
 __all__ = ()
 
-def un_nest_exception_types(exceptions):
+def un_nest_expected_exceptions(exceptions):
     """
     Un-wraps the given `exceptions` recursively.
     
@@ -18,12 +18,12 @@ def un_nest_exception_types(exceptions):
     TypeError
         If an element's type is incorrect.
     """
-    return set(iter_un_nest_exception_types(exceptions))
+    return set(iter_un_nest_expected_exceptions(exceptions))
 
 
-def iter_un_nest_exception_types(exceptions):
+def iter_un_nest_expected_exceptions(exceptions):
     """
-    Called by ``un_nest_exception_types`` or by itself to unwrap the exceptions.
+    Called by ``un_nest_expected_exceptions`` or by itself to unwrap the exceptions.
     
     This method is an iterable generator.
     
@@ -43,10 +43,10 @@ def iter_un_nest_exception_types(exceptions):
     """
     if isinstance(exceptions, tuple):
         for exception in exceptions:
-            yield from iter_un_nest_exception_types(exception)
+            yield from iter_un_nest_expected_exceptions(exception)
     
     
-    if issubclass(exceptions, BaseException):
+    if issubclass(exceptions, BaseException) or isinstance(exceptions, BaseException):
         yield exceptions
     
     
@@ -253,3 +253,50 @@ def maybe_merge_mappings(mapping_1, mapping_2):
             merged = {**mapping_1, **mapping_2}
     
     return merged
+
+
+def try_match_exception(expected_exceptions, received_exception, accept_sub_classes):
+    """
+    Checks whether the received exception matches the preset ones.
+    
+    Parameters
+    ----------
+    expected_exceptions : `set` of `BaseException`
+        The expected exceptions.
+    received_exception : `BaseException`
+        The received exception.
+    accept_sub_classes : `bool`
+        Whether sub classes are allowed.
+    
+    Returns
+    -------
+    exception_matched : `bool`
+    """
+    for expected_exception in expected_exceptions:
+        if isinstance(expected_exception, type):
+            exception_type = expected_exception
+            exception_value = None
+        
+        else:
+            exception_type = type(expected_exception)
+            exception_value = expected_exception
+        
+        
+        if accept_sub_classes:
+            if not isinstance(received_exception, exception_type):
+                continue
+        
+        else:
+            if type(received_exception) is not exception_type:
+                continue
+        
+        if (exception_value is not None) and (exception_value.args != received_exception.args):
+            continue
+        
+        exception_matched = True
+        break
+    
+    else:
+        exception_matched = False
+    
+    return exception_matched

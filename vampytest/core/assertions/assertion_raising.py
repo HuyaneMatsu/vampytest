@@ -1,6 +1,6 @@
 __all__ = ('AssertionRaising', 'assert_raises')
 
-from ..helpers import un_nest_exception_types
+from ..helpers import try_match_exception, un_nest_expected_exceptions
 
 from . import assertion_states as CONDITION_STATES
 from .assertion_base import AssertionBase
@@ -19,7 +19,7 @@ class AssertionRaising(AssertionBase):
         Exception raised within the context block if any.
     accept_sub_classes : `bool`
         Whether subclasses are accepted as well.
-    exception_types : `set` of ``BaseException``
+    expected_exceptions : `set` of ``BaseException``
         The expected exception types.
     
     Examples
@@ -29,15 +29,15 @@ class AssertionRaising(AssertionBase):
         'nice' + 69
     ```
     """
-    __slots__ = ('accept_sub_classes', 'exception', 'exception_types')
+    __slots__ = ('accept_sub_classes', 'exception', 'expected_exceptions')
     
-    def __new__(cls, *exception_types, accept_sub_classes=True):
+    def __new__(cls, *expected_exceptions, accept_sub_classes=True):
         """
         Creates a new raise asserting context manager.
         
         Parameters
         ----------
-        *exception_types : tuple` of (`BaseException`, ...)
+        *expected_exceptions : tuple` of (`BaseException`, ...)
             Exception types to expect.
         accept_sub_classes : `bool` = `True`
             Whether subclasses are accepted as well.
@@ -45,16 +45,16 @@ class AssertionRaising(AssertionBase):
         Raises
         ------
         TypeError
-            If an `exception_types`'s type is incorrect.
+            If an `expected_exceptions`'s type is incorrect.
         ValueError
             If no exception was passed.
         """
-        exception_types = un_nest_exception_types(exception_types)
-        if not exception_types:
+        expected_exceptions = un_nest_expected_exceptions(expected_exceptions)
+        if not expected_exceptions:
             raise ValueError('At least 1 exception is required.')
         
         self = AssertionBase.__new__(cls)
-        self.exception_types = exception_types
+        self.expected_exceptions = expected_exceptions
         
         return self
     
@@ -77,24 +77,16 @@ class AssertionRaising(AssertionBase):
         
         self.exception = exc_val
         
-        if self.accept_sub_classes:
-            for exception_type in self.exception_types:
-                if issubclass(exc_type, exception_type):
-                    exception_type_correct = True
-                    break
-            else:
-                exception_type_correct = False
+        if try_match_exception(self.expected_exceptions, exc_val, self.accept_sub_classes):
+            state = CONDITION_STATES.PASSED
+            silence = True
         
         else:
-            exception_type_correct = (exc_type in self.exception_types)
+            state = CONDITION_STATES.FAILED
+            silence = False
         
-        
-        if exception_type_correct:
-            self.state = CONDITION_STATES.PASSED
-            return True
-        
-        self.state = CONDITION_STATES.FAILED
-        return False
+        self.state = state
+        return silence
 
 
 assert_raises = AssertionRaising
