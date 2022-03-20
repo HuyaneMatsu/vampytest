@@ -44,10 +44,12 @@ def iter_un_nest_expected_exceptions(exceptions):
     if isinstance(exceptions, tuple):
         for exception in exceptions:
             yield from iter_un_nest_expected_exceptions(exception)
-    
+        
+        return
     
     if issubclass(exceptions, BaseException) or isinstance(exceptions, BaseException):
         yield exceptions
+        return
     
     
     raise TypeError(

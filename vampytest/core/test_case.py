@@ -189,8 +189,8 @@ class TestCase(RichAttributeErrorBaseType):
         test = self.test
         
         if (wrapper_groups is None):
-            yield Handle(test)
+            yield Handle(self, test)
         
         else:
             for wrapper_group in wrapper_groups:
-                yield Handle(test, wrapper_group)
+                yield Handle(self, test, wrapper_group)

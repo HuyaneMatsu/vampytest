@@ -2,9 +2,9 @@ __all__ = ('Result',)
 
 from .failures import FailureAsserting, FailureRaising, FailureReturning
 
-from scarletio import RichAttributeErrorBaseType
+from scarletio import RichAttributeErrorBaseType, export
 
-
+@export
 class Result(RichAttributeErrorBaseType):
     """
     Represents a test's result.

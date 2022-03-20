@@ -4,9 +4,11 @@ import reprlib
 
 from .assertions import AssertionException
 from .helpers import hash_dict, hash_list, hash_object, maybe_merge_iterables, maybe_merge_mappings
-from .result import Result
 
-from scarletio import RichAttributeErrorBaseType
+from scarletio import RichAttributeErrorBaseType, include
+
+
+Result = include('Result')
 
 
 class CallState(RichAttributeErrorBaseType):
@@ -312,6 +314,8 @@ class Handle(RichAttributeErrorBaseType):
     
     Attributes
     ----------
+    case : ``TestCase``
+        The parent test case.
     final_call_state : `None`, ``CallState``
         The final call state, with which the test is called.
     final_result_state : `None`, ``ResultState``
@@ -326,15 +330,18 @@ class Handle(RichAttributeErrorBaseType):
         Wrappers wrapping the test.
     """
     __slots__ = (
-        'final_call_state', 'final_result_state', 'original_call_state', 'original_result_state', 'test', 'wrappers'
+        'case', 'final_call_state', 'final_result_state', 'original_call_state', 'original_result_state', 'test',
+        'wrappers'
     )
     
-    def __new__(cls, test, wrappers=None):
+    def __new__(cls, case, test, wrappers=None):
         """
         Creates a new test handle.
         
         Parameters
         ----------
+        case : ``TestCase``
+            The parent test case.
         test : `callable`
             The test to call.
         """
@@ -343,6 +350,7 @@ class Handle(RichAttributeErrorBaseType):
         
         self = object.__new__(cls)
         
+        self.case = case
         self.test = test
         self.wrappers = wrappers
         

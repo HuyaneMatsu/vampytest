@@ -14,6 +14,8 @@ BREAK_LINE = '='*40
 
 def ignore_module_import_frame(file_name, name, line_number, line):
     """
+    Ignores the frame, where the test file was imported.
+    
     Parameters
     ----------
     file_name : `str`
