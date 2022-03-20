@@ -6,17 +6,17 @@ class AssertionException(BaseException):
     
     Attributes
     ----------
-    condition : ``Condition``
-        The failed condition.
+    assertion : ``AssertionBase``
+        The failed assertion.
     """
-    def __init__(self, condition):
+    def __init__(self, assertion):
         """
         Creates a new condition exception.
         
         Parameters
         ----------
-        condition : ``Condition``
-            The failed condition.
+        assertion : ``AssertionBase``
+            The failed assertion.
         """
-        self.condition = condition
-        BaseException.__init__(self, condition)
+        self.assertion = assertion
+        BaseException.__init__(self, assertion)

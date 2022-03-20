@@ -106,3 +106,29 @@ class WrapperConflict(RichAttributeErrorBaseType):
             wrappers.append(wrapper_2)
         
         return frozenset(wrappers)
+    
+    
+    def get_failure_message(self):
+        """
+        Returns the failure message of the wrapper conflict.
+        
+        Returns
+        -------
+        failure_message : `str`
+        """
+        failure_message_parts = ['Wrapper conflict']
+        
+        reason = self.reason
+        if (reason is not None):
+            failure_message_parts.append(': ')
+            failure_message_parts.append(reason)
+        
+        failure_message_parts.append('Between wrappers:\n')
+        failure_message_parts.append(repr(self.wrapper_1))
+        
+        wrapper_2 = self.wrapper_2
+        if (wrapper_2 is not None):
+            failure_message_parts.append('\n')
+            failure_message_parts.append(repr(wrapper_2))
+        
+        return ''.join(failure_message_parts)

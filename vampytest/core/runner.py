@@ -10,6 +10,8 @@ from .test_file_collector import collect_test_files
 from scarletio import render_exception_into
 
 
+BREAK_LINE = '='*40
+
 def ignore_module_import_frame(file_name, name, line_number, line):
     """
     Parameters
@@ -49,7 +51,7 @@ def try_collect_tests(test_file):
         test_file.get_tests()
     except TestLoadingError as err:
         exception_parts = [
-            '='*40,
+            BREAK_LINE,
             '\nException occurred meanwhile loading:\n',
             test_file.path,
             '\n',
@@ -57,7 +59,7 @@ def try_collect_tests(test_file):
         
         render_exception_into(err.source_exception, exception_parts, filter=ignore_module_import_frame)
         
-        exception_parts.append('='*40)
+        exception_parts.append(BREAK_LINE)
         exception_parts.append('\n')
         
         stdout.write(''.join(exception_parts))
@@ -67,6 +69,24 @@ def try_collect_tests(test_file):
         collection_successful = True
     
     return collection_successful
+
+
+def test_result_group_sort_key(test_result_group):
+    """
+    Used to sort result test groups by their name.
+    
+    Parameters
+    ----------
+    test_result_group : ``ResultGroup``
+        Test result group to get sort key of.
+    
+    Returns
+    -------
+    sort_key : `tuple` (`str`, `str`)
+    """
+    case = test_result_group.case
+    key = (case.import_route, case.name)
+    return key
 
 
 def run_tests_in(base_path, path_parts):
@@ -91,11 +111,47 @@ def run_tests_in(base_path, path_parts):
         for test_file in test_files:
             total_test_count += len(test_file.get_tests())
         
-        stdout.write(f'Running {total_test_count} tests of {len(test_files)} files\n')
+        stdout.write(f'Running {total_test_count} tests of {len(test_files)} files\n{BREAK_LINE}\n')
+        
+        test_result_groups = []
+        
         for test_file in test_files:
             for test in test_file.get_tests():
-                test.invoke()
-    
+                test_result_group = test.invoke()
+                test_result_groups.append(test_result_group)
+        
+        test_result_groups.sort(key=test_result_group_sort_key)
+        
+        failed_tests = []
+        passed_test_count = 0
+        skipped_test_count = 0
+        
+        for test_result_group in test_result_groups:
+            if test_result_group.is_skipped():
+                skipped_test_count += 1
+                keyword = 'S'
+            
+            elif test_result_group.is_passed():
+                passed_test_count += 1
+                keyword = 'P'
+            
+            elif test_result_group.is_failed():
+                failed_tests.append(test_result_group)
+                keyword = 'F'
+            
+            else:
+                keyword = '?'
+            
+            case = test_result_group.case
+            
+            stdout.write(f'{keyword} {case.import_route}.{case.name}\n')
+        
+        stdout.write(f'{BREAK_LINE}\n')
+        
+        for test_result_group in failed_tests:
+            for failure_message in test_result_group.iter_failure_messages():
+                stdout.write(failure_message)
+                stdout.write(f'\n{BREAK_LINE}\n')
     
     finally:
         if base_path_in_system_paths:

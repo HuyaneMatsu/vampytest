@@ -2,8 +2,9 @@ __all__ = ('WrapperCall',)
 
 import reprlib
 
+from ..assertions import AssertionException
 from ..helpers import hash_dict, hash_set, hash_tuple, try_hash_method, un_nest_exception_types
-from ..test_result import TestResult
+from ..test_result import Result
 
 from .wrapper_conflict import WrapperConflict
 from .wrapper_base import WrapperBase
@@ -19,20 +20,20 @@ class WrapperCall(WrapperBase):
     ----------
     wrapped : `Any`
         The wrapped test.
-    raising_exceptions_exact_type : `bool`
-        Whether exception subclasses are accepted as well if ``.is_raising``.
-    raising_exceptions : `None`, `set` of ``BaseException``
-        The raising_exceptions expected to be raised if ``.is_raising``.
-    is_raising : `bool`
-        Whether raised raising_exceptions of the test should be checked.
-    is_returning : `bool`
-        Whether returned value of the test should be checked.
-    is_call_with : `bool`
-        Whether the test should be called with specific parameters.
     calling_keyword_parameters : `None`, `dict` of (`str`, `Any`) items
         Keyword parameters to call the test with if ``.is_call_with``.
     calling_positional_parameters : `None`, `tuple` of `Any`
         Positional parameter to call the test with if ``.is_call_with``.
+    is_raising : `bool`
+        Whether raised exceptions of the test should be checked.
+    is_returning : `bool`
+        Whether returned value of the test should be checked.
+    is_call_with : `bool`
+        Whether the test should be called with specific parameters.
+    raising_exceptions_exact_type : `bool`
+        Whether exception subclasses are accepted as well if ``.is_raising``.
+    raising_exceptions : `None`, `set` of ``BaseException``
+        The raising_exceptions expected to be raised if ``.is_raising``.
     returning_value : `None`, `Any`
         The expected returned value of the test if ``.is_returning``.
     """
@@ -307,7 +308,7 @@ class WrapperCall(WrapperBase):
     
     
     @copy_docs(WrapperBase.context)
-    def context(self, test_handle):
+    def context(self, handle):
         call_state = yield None
         
         if self.is_call_with:
@@ -318,53 +319,55 @@ class WrapperCall(WrapperBase):
         
         result_state = yield call_state
         
-        if self.is_raising:
-            raised_exception = result_state.raised_exception
-            raising_exceptions = self.raising_exceptions
-            raising_exceptions_exact_type = self.raising_exceptions_exact_type
-            if raised_exception is None:
-                return TestResult(test_handle).with_exception(
-                    raising_exceptions,
-                    None,
-                    raising_exceptions_exact_type,
-                )
+        # Ignore `AssertionException`-s.
+        raised_exception = result_state.raised_exception
+        if (raised_exception is None) or (not isinstance(raised_exception, AssertionException)):
             
-            if raising_exceptions_exact_type:
-                for exception in raising_exceptions:
-                    if isinstance(raised_exception, exception):
-                        passed = True
-                        break
+            if self.is_raising:
+                raising_exceptions = self.raising_exceptions
+                raising_exceptions_exact_type = self.raising_exceptions_exact_type
+                if raised_exception is None:
+                    return Result(handle).with_exception(
+                        raising_exceptions,
+                        None,
+                        raising_exceptions_exact_type,
+                    )
+                
+                if raising_exceptions_exact_type:
+                    for exception in raising_exceptions:
+                        if isinstance(raised_exception, exception):
+                            passed = True
+                            break
+                    else:
+                        passed = False
+                
                 else:
-                    passed = False
+                    for exception in raising_exceptions:
+                        if type(raised_exception) is exception:
+                            passed = True
+                            break
+                    else:
+                        passed = False
+                
+                if not passed:
+                    return Result(handle).with_exception(
+                        raising_exceptions,
+                        raised_exception,
+                        raising_exceptions_exact_type,
+                    )
+                
+                if passed:
+                    result_state = result_state.with_exception(None)
             
-            else:
-                for exception in raising_exceptions:
-                    if type(raised_exception) is exception:
-                        passed = True
-                        break
-                else:
-                    passed = False
-            
-            if not passed:
-                return TestResult(test_handle).with_exception(
-                    raising_exceptions,
-                    raised_exception,
-                    raising_exceptions_exact_type,
-                )
-            
-            if passed:
-                result_state = result_state.with_exception(None)
-        
-        elif self.is_returning:
-            raised_exception = result_state.raised_exception
-            if (raised_exception is not None):
-                return TestResult(test_handle).with_exception(None, raised_exception, False)
-            
-            returned_value = result_state.returned
-            returning_value = self.returning_value
-            
-            if returned_value != returning_value:
-                return TestResult(test_handle).with_exception(None, raised_exception, False)
+            elif self.is_returning:
+                if (raised_exception is not None):
+                    return Result(handle).with_exception(None, raised_exception, False)
+                
+                returned_value = result_state.returned_value
+                returning_value = self.returning_value
+                
+                if returned_value != returning_value:
+                    return Result(handle).with_return(returning_value, returned_value)
         
         yield result_state
     

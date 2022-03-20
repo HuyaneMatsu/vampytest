@@ -54,6 +54,8 @@ setup(
     packages = [
         'vampytest',
         'vampytest.assertions',
+        'vampytest.result',
+        'vampytest.result.failures',
         'vampytest.wrappers',
     ],
     python_requires = '>=3.6',

@@ -1,9 +1,10 @@
-__all__ = ('CallState', 'ResultState', 'TestHandle',)
+__all__ = ('CallState', 'ResultState', 'Handle',)
 
 import reprlib
 
+from .assertions import AssertionException
 from .helpers import hash_dict, hash_list, hash_object, maybe_merge_iterables, maybe_merge_mappings
-from .test_result import TestResult
+from .result import Result
 
 from scarletio import RichAttributeErrorBaseType
 
@@ -17,7 +18,7 @@ class CallState(RichAttributeErrorBaseType):
     keyword_parameters : `None`, `dict` of (`str`, `Any`) items
         Keyword parameters to the call the test function with.
     positional_parameters : `None`, `list` of `Any`
-        Positional parameters to teh the test function with.
+        Positional parameters to the the test function with.
     """
     __slots__ = ('keyword_parameters', 'positional_parameters')
     
@@ -122,7 +123,7 @@ class CallState(RichAttributeErrorBaseType):
         Parameters
         ----------
         positional_parameters : `None`, `list` of `Any`
-            Positional parameters to teh the test function with.
+            Positional parameters to the the test function with.
         keyword_parameters : `None`, `dict` of (`str`, `Any`) items
             Keyword parameters to the call the test function with.
         
@@ -305,7 +306,7 @@ class ResultState(RichAttributeErrorBaseType):
         return new
 
 
-class TestHandle(RichAttributeErrorBaseType):
+class Handle(RichAttributeErrorBaseType):
     """
     Handles a test.
     
@@ -318,7 +319,7 @@ class TestHandle(RichAttributeErrorBaseType):
     original_call_state : `None`, ``CallState``
         Vanilla call state.
     original_result_state : `None`, ``ResultState``
-        Result state created from teh test's result.
+        Result state created from the test's result.
     test : `callable`
         The test to invoke.
     wrappers : `None`, `tuple` of ``WrapperBase``
@@ -417,7 +418,7 @@ class TestHandle(RichAttributeErrorBaseType):
         
         Returns
         -------
-        test_result : `None`, ``TestResult``
+        test_result : `None`, ``Result``
             Result of the test.
         """
         for test_wrapper_context in test_wrapper_contexts:
@@ -442,7 +443,7 @@ class TestHandle(RichAttributeErrorBaseType):
         
         Returns
         -------
-        test_result : `None`, ``TestResult``
+        test_result : `None`, ``Result``
             Result of the test.
         """
         call_state = CallState()
@@ -461,7 +462,7 @@ class TestHandle(RichAttributeErrorBaseType):
                 if isinstance(enter_result, CallState):
                     call_state = enter_result
                 
-                if isinstance(enter_result, TestResult):
+                if isinstance(enter_result, Result):
                     return enter_result
             
         finally:
@@ -513,7 +514,7 @@ class TestHandle(RichAttributeErrorBaseType):
         
         Returns
         -------
-        test_result : `None`, ``TestResult``
+        test_result : `None`, ``Result``
             Result of the test.
         """
         result_state = self.original_result_state
@@ -531,7 +532,7 @@ class TestHandle(RichAttributeErrorBaseType):
                 if isinstance(exit_result, ResultState):
                     result_state = exit_result
                 
-                if isinstance(exit_result, TestResult):
+                if isinstance(exit_result, Result):
                     return exit_result
             
         finally:
@@ -544,15 +545,17 @@ class TestHandle(RichAttributeErrorBaseType):
         
         Returns
         -------
-        test_result : ``TestResult``
+        test_result : ``Result``
             Result of the test.
         """
-        raised_exception = self.final_test_result.raised_exception
+        test_result = Result(self)
         
-        test_result = TestResult(self)
-        
+        raised_exception = self.final_result_state.raised_exception
         if (raised_exception is not None):
-            test_result = test_result.with_exception(None, raised_exception, False)
+            if isinstance(raised_exception, AssertionException):
+                test_result = test_result.with_assertion(raised_exception.assertion)
+            else:
+                test_result = test_result.with_exception(None, raised_exception, False)
         
         return test_result
     
@@ -563,12 +566,12 @@ class TestHandle(RichAttributeErrorBaseType):
         
         Returns
         -------
-        test_result : ``TestResult``
+        test_result : ``Result``
             Result of the test.
         """
         test_wrapper_contexts = []
         try:
-            self._initialise_test_wrappers_contexts(test_wrapper_contexts)
+            self._initialise_test_wrapper_contexts(test_wrapper_contexts)
             
             test_result = self._start_test_wrapper_contexts(test_wrapper_contexts)
             if (test_result is not None):

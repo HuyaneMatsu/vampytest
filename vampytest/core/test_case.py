@@ -4,8 +4,8 @@ import reprlib
 
 from .helpers import hash_object
 from .wrappers import WrapperBase
-from .test_handle import TestHandle
-from .test_result_group import TestResultGroup
+from .handle import Handle
+from .test_result_group import ResultGroup
 
 from scarletio import RichAttributeErrorBaseType
 
@@ -16,6 +16,8 @@ class TestCase(RichAttributeErrorBaseType):
     
     Attributes
     ----------
+    import_route : `str`
+        Import route to the test's file.
     name : `str`
         The test's name.
     test : `callable`, ``WrapperBase``
@@ -23,14 +25,16 @@ class TestCase(RichAttributeErrorBaseType):
     wrapper : `None`, ``WrapperBase``
         Wrappers containing the test if any.
     """
-    __slots__ = ('name', 'test', 'wrapper')
+    __slots__ = ('import_route', 'name', 'test', 'wrapper')
     
-    def __new__(cls, name, test):
+    def __new__(cls, import_route, name, test):
         """
         Creates a new test case.
         
         Parameters
         ----------
+        import_route : `str`
+            Import route to the test's file.
         name : `str`
             The test's name.
         test : `callable`, ``WrapperBase``
@@ -44,6 +48,7 @@ class TestCase(RichAttributeErrorBaseType):
             test = test
         
         self = object.__new__(cls)
+        self.import_route = import_route
         self.name = name
         self.test = test
         self.wrapper = wrapper
@@ -125,25 +130,24 @@ class TestCase(RichAttributeErrorBaseType):
         
         Returns
         -------
-        test_result : ``TestResult``
+        test_result : ``Result``
         """
+        test_result_group = ResultGroup(self)
         conflict = self.check_conflicts()
         if (conflict is not None):
-            return TestResultGroup(conflict=conflict)
+            return test_result_group.with_conflict(conflict)
         
         if self.do_skip():
-            return TestResultGroup(skipped=True)
+            return test_result_group.as_skipped()
         
-        test_result_group = TestResultGroup()
-        
-        for test_handler in self._iter_test_handles():
-            test_result = test_handler.invoke()
-            test_result_group.add(test_result)
+        for handler in self._iter_handles():
+            test_result = handler.invoke()
+            test_result_group = test_result_group.with_result(test_result)
         
         return test_result_group
     
     
-    def _iter_test_handles(self):
+    def _iter_handles(self):
         """
         Iterates over the test handles of the test case.
         
@@ -151,7 +155,7 @@ class TestCase(RichAttributeErrorBaseType):
         
         Yields
         ------
-        test_handle : ``TestHandle``
+        handle : ``Handle``
         """
         wrapper = self.wrapper
         if (wrapper is None):
@@ -185,8 +189,8 @@ class TestCase(RichAttributeErrorBaseType):
         test = self.test
         
         if (wrapper_groups is None):
-            yield TestHandle(test)
+            yield Handle(test)
         
         else:
             for wrapper_group in wrapper_groups:
-                yield TestHandle(test, wrapper_group)
+                yield Handle(test, wrapper_group)

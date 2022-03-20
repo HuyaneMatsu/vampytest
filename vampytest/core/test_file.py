@@ -83,7 +83,7 @@ class TestFile(RichAttributeErrorBaseType):
         path : `str`
             Absolute path to the file.
         path_parts: `list` of `str`
-            Path parts from base path to teh file.
+            Path parts from base path to the file.
         """
         if path_parts:
             last_path_part = path_parts[-1]
@@ -210,9 +210,11 @@ class TestFile(RichAttributeErrorBaseType):
         
         tests = []
         
+        import_route = self.import_route
+        
         for name, value in module.__dict__.items():
             if is_test(name, value):
-                tests.append(TestCase(name, value))
+                tests.append(TestCase(import_route, name, value))
         
         self.tests = tests
         return tests

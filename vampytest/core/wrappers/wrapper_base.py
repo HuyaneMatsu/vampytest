@@ -264,7 +264,7 @@ class WrapperBase(RichAttributeErrorBaseType):
         return False
     
     
-    def context(self, test_handle):
+    def context(self, handle):
         """
         Context over a test handle.
         
@@ -272,20 +272,24 @@ class WrapperBase(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        test_handle : ``TestHandle``
+        handle : ``Handle``
             The parent test handle.
         
         Yields
         ------
-        step_result : ``TestResult``, ``CallState``, ``ResultState``
+        step_result : ``Result``, ``CallState``, ``ResultState``
+        
+        Returns
+        -------
+        step_result : ``Result``, ``CallState``, ``ResultState``
         
         Example Implementation
         ----------------------
         ```py
-        # before first yield we might check the test handle out and return a `TestResult` if something is wrong.
+        # before first yield we might check the test handle out and return a `Result` if something is wrong.
         
         if everything is not good:
-            return TestResult(test_handle)....
+            return Result(handle)....
         
         # If we find everything good, we will get back a `CallState` on our yield
         call_state = yield
@@ -293,19 +297,19 @@ class WrapperBase(RichAttributeErrorBaseType):
         # We might modify the parameters of the call state with `.with_parameters` method
         call_state = call_state.with_parameters(positional, keyword)
         
-        # If something is wrong, we can return a `TestResult` again.
+        # If something is wrong, we can return a `Result` again.
         if everything is not good:
-            return TestResult(test_handle)....
+            return Result(handle)....
         
         # If everything is good, we yield back our call state. At this time we will get back a `ResultState` on our
         # yield.
         
         result_state = yield call_state
         
-        # We might check the result state and modify it, or again return a `TestResult` if something is wrong.
+        # We might check the result state and modify it, or again return a `Result` if something is wrong.
         
         if everything is not good:
-            return TestResult(test_handle)....
+            return Result(handle)....
         
         # To modify the result state, use the `.with_return` or the `.with_exception` methods.
         result_state = result_state.with_return(None)
