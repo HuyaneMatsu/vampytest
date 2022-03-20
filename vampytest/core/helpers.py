@@ -47,10 +47,15 @@ def iter_un_nest_expected_exceptions(exceptions):
         
         return
     
-    if issubclass(exceptions, BaseException) or isinstance(exceptions, BaseException):
+    if (
+        (
+            isinstance(exceptions, type) and
+            issubclass(exceptions, BaseException)
+        ) or
+        isinstance(exceptions, BaseException)
+    ):
         yield exceptions
         return
-    
     
     raise TypeError(
         f'`exceptions` can be `tuple` of (`BaseException`, ...)`, got {exceptions.__class__.__name__}; {exceptions!r}.'

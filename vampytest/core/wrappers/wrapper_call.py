@@ -500,6 +500,46 @@ class WrapperCall(WrapperBase):
         )
     
     
+    def returning_transformed(self, transformer):
+        """
+        Creates a new returning wrapper transforming the current parameters of the wrapper.
+        
+        Parameters
+        ----------
+        transformer : `callable`
+        
+        Returns
+        -------
+        new : ``WrapperCall``
+        
+        Raises
+        ------
+        ValueError
+            The wrapper is not parameterised, or incorrect amount parameters registered.
+        """
+        if not self.is_call_with:
+            raise ValueError(
+                f'Call wrapper cannot check for return value if it has no parameters added; self={self!r}.'
+            )
+        
+        calling_positional_parameters = self.calling_positional_parameters
+        calling_keyword_parameters = self.calling_keyword_parameters
+        
+        if calling_positional_parameters is None:
+            if calling_keyword_parameters:
+                returning_value = transformer()
+            else:
+                returning_value = transformer(**calling_keyword_parameters)
+        
+        else:
+            if calling_keyword_parameters:
+                returning_value = transformer(*calling_positional_parameters)
+            else:
+                returning_value = transformer(*calling_positional_parameters, **calling_keyword_parameters)
+        
+        return self.returning(returning_value)
+    
+    
     def returning_itself(self):
         """
         Creates a new retuning wrapper checking for whether the input value matches the returned one.
