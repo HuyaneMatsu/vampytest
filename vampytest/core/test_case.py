@@ -2,10 +2,10 @@ __all__ = ('TestCase', )
 
 import reprlib
 
-from .helpers import hash_object
-from .wrappers import WrapperBase
 from .handle import Handle
-from .test_result_group import ResultGroup
+from .helpers import hash_object
+from .result import ResultGroup
+from .wrappers import WrapperBase
 
 from scarletio import RichAttributeErrorBaseType
 

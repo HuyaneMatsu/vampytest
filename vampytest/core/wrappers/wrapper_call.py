@@ -4,7 +4,7 @@ import reprlib
 
 from ..assertions import AssertionException
 from ..helpers import hash_dict, hash_set, hash_tuple, try_hash_method, un_nest_exception_types
-from ..test_result import Result
+from ..result import Result
 
 from .wrapper_conflict import WrapperConflict
 from .wrapper_base import WrapperBase

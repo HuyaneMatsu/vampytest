@@ -13,14 +13,14 @@ class FailureReturning(FailureBase):
     ----------
     handle : ``Handle``
         The test's handle running the test.
-    excepted_value : `None`, `Any`
+    expected_value : `None`, `Any`
         The expected returned value.
     received_value : `None`, `Any`
         The received returned value.
     """
-    __slots__ = ('excepted_value', 'received_value',)
+    __slots__ = ('expected_value', 'received_value',)
     
-    def __new__(cls, handle, excepted_value, received_value):
+    def __new__(cls, handle, expected_value, received_value):
         """
         Creates a new test failure representing a bad return value.
         
@@ -28,13 +28,13 @@ class FailureReturning(FailureBase):
         ----------
         handle : ``Handle``
             The test's handle running the test.
-        excepted_value : `None`, `Any`
+        expected_value : `None`, `Any`
             The expected returned value.
         received_value : `None`, `Any`
             The received returned value.
         """
         self = FailureBase.__new__(cls, handle)
-        self.excepted_value = excepted_value
+        self.expected_value = expected_value
         self.received_value = received_value
         return self
     
@@ -57,6 +57,10 @@ class FailureReturning(FailureBase):
         failure_message_parts = []
         failure_message_parts.append('Unexpected return')
         
-        # TODO
+        failure_message_parts.append('\nExpected: ')
+        failure_message_parts.append(repr(self.expected_value))
+        
+        failure_message_parts.append('\nReceived: ' )
+        failure_message_parts.append(repr(self.received_value))
         
         return ''.join(failure_message_parts)
