@@ -152,6 +152,8 @@ def run_tests_in(base_path, path_parts):
             for failure_message in test_result_group.iter_failure_messages():
                 stdout.write(failure_message)
                 stdout.write(f'\n{BREAK_LINE}\n')
+        
+        stdout.write(f'{len(failed_tests)} failed | {skipped_test_count} skipped | {passed_test_count} passed\n')
     
     finally:
         if base_path_in_system_paths:
