@@ -16,7 +16,7 @@ test_get_short_path_repr = (
     @call_with('/this/game//no/game/no/life').returning('..//no/game/no/life')
     @call_with(f'/{a_100}').returning_itself()
     @call_with(f'{a_10}/{a_100}').returning(f'./{a_100}')
-    @call_with(f'{a_10}/{a_10}').returning(f'./{a_100}')
+    @call_with(f'{a_10}/{a_100}').returning(f'./{a_100}')
     @call_with(f'{a_30}/{a_30}/{a_30}').returning(f'./{a_30}/{a_30}')
     @call_with(f'{a_30}//{a_30}/{a_30}').returning(f'.//{a_30}/{a_30}')
 )
