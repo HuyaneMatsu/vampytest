@@ -20,9 +20,7 @@ setup(
     author_email = 're.ism.tm@gmail.com',
     classifiers = [
         'Development Status :: 2 - Pre-Alpha',
-
-        'License :: OSI Approved :: MIT License',
-
+        
         'Intended Audience :: Developers',
 
         'Operating System :: OS Independent',
@@ -47,16 +45,17 @@ setup(
     install_requires = [
         'scarletio',
     ],
-    license = 'MIT',
+    license = 'DBAD',
     long_description = README,
     long_description_content_type = 'text/markdown',
     name = 'vampytest',
     packages = [
-        'vampytest',
-        'vampytest.assertions',
-        'vampytest.result',
-        'vampytest.result.failures',
-        'vampytest.wrappers',
+        'vampytest.core',
+        'vampytest.core.assertions',
+        'vampytest.core.result',
+        'vampytest.core.result.failures',
+        'vampytest.core.wrappers',
+        'vampytest.main',
     ],
     python_requires = '>=3.6',
     url = 'https://github.com/HuyaneMatsu/vampytest',
