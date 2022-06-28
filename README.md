@@ -1,12 +1,11 @@
 # vampytest
 
-Testing like an awake vampire
+<h5 align="center">
+    Testing like an awake vampire
+</h5>
 
-## Developing vampytest
+<h1></h1>
 
-To install vampytest, along with the tools you need to develop and run tests, \
-run the following in your virtualenv:
-
-```bash
-pip install -e .[dev]
-```
+<p align="center">
+    A Testing library which supports relative imports, because I did not find other one.
+</p>
