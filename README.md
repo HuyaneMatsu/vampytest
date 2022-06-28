@@ -1,4 +1,6 @@
-# vampytest
+<h3 align="center">
+    Vampytest
+</h3>
 
 <h5 align="center">
     Testing like an awake vampire
