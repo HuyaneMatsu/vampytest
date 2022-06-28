@@ -1,7 +1,9 @@
 __all__ = ('run_tests_in', )
 
-from os.path import isfile as is_file, split as split_paths
+from os.path import dirname as get_directory_name, isfile as is_file, split as split_paths
 from sys import path as system_paths
+
+from .. import __package__ as PACKAGE_NAME, __file__ as PACKAGE_ROUTE_FILE
 
 from .exceptions import TestLoadingError
 from .output_writer import OutputWriter
@@ -73,6 +75,29 @@ def try_collect_tests(test_file, output_writer):
     return collection_successful
 
 
+print(PACKAGE_ROUTE_FILE)
+
+
+def setup_test_library_import():
+    """
+    Setups test directory import if not on path instead running it relatively.
+    
+    Returns
+    -------
+    added_system_path : `None`, `str`
+        Returns the added system path if any.
+    """
+    if '.' not in PACKAGE_NAME:
+        return None
+    
+    module_directory = get_directory_name(get_directory_name(PACKAGE_ROUTE_FILE))
+    if module_directory in system_paths:
+        return None
+    
+    system_paths.append(module_directory)
+    return module_directory
+
+
 def test_result_group_sort_key(test_result_group):
     """
     Used to sort result test groups by their name.
@@ -92,6 +117,16 @@ def test_result_group_sort_key(test_result_group):
 
 
 def run_tests_in(base_path, path_parts):
+    """
+    Runs tests from the given `base_path` and collects them the added `path_parts`.
+    
+    Parameters
+    ----------
+    base_path : `str`
+        The path to run tests from.
+    path_parts : `list` of `str`
+        Added path parts to specify from which which directory we want to collect the tests from.
+    """
     if is_file(base_path):
         base_path, file_name = split_paths(base_path)
         path_parts.insert(0, file_name)
@@ -101,6 +136,9 @@ def run_tests_in(base_path, path_parts):
     else:
         system_paths.append(base_path)
         base_path_in_system_paths = False
+    
+    added_module_directory = setup_test_library_import()
+    
     
     output_writer = OutputWriter()
     
@@ -162,9 +200,16 @@ def run_tests_in(base_path, path_parts):
         
         # Close output with an empty line.
         output_writer.write('\n')
+    
     finally:
         if base_path_in_system_paths:
             try:
                 system_paths.remove(base_path)
+            except ValueError:
+                pass
+        
+        if (added_module_directory is not None):
+            try:
+                system_paths.remove(added_module_directory)
             except ValueError:
                 pass
