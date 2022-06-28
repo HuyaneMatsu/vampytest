@@ -54,7 +54,7 @@ def add_route_parts_into(handle, into):
     Parameters
     ----------
     failure : ``Handle``
-        The parent failure to get route of.
+        The parent handler to get route of.
     into : `list` of `str`
         A list to put the string parts into.
     
@@ -67,5 +67,28 @@ def add_route_parts_into(handle, into):
     into.append(case.import_route)
     into.append('.')
     into.append(case.name)
+    
+    return into
+
+
+def add_documentation_into(handle, into):
+    """
+    Adds the documentation into the given list.
+    
+    Parameters
+    ----------
+    failure : ``Handle``
+        The parent handler to get it's test's documentation of.
+    into : `list` of `str`
+        A list to put the string parts into.
+    
+    Returns
+    -------
+    into : `list` of `str`
+    """
+    documentation = handle.get_test_documentation()
+    if (documentation is not None):
+        into.append('\n')
+        into.append(documentation)
     
     return into

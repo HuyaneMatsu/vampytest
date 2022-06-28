@@ -1,4 +1,4 @@
-__all__ = ('AssertionNotIdentical', 'assert_is_not', 'assert_not_identical', 'assert_not_is')
+__all__ = ('AssertionNotIdentical', 'assert_is_not', 'assert_not_id', 'assert_not_identical', 'assert_not_is')
 
 from .assertion_conditional_base import AssertionConditionalBase2Value
 
@@ -28,6 +28,8 @@ class AssertionNotIdentical(AssertionConditionalBase2Value):
     def invoke_condition(self):
         return self.value_1 is not self.value_2
 
+
+assert_not_id = AssertionNotIdentical
 assert_is_not = AssertionNotIdentical
 assert_not_identical = AssertionNotIdentical
 assert_not_is = AssertionNotIdentical

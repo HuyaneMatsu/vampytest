@@ -28,5 +28,6 @@ class AssertionContains(AssertionConditionalBase2Value):
     def invoke_condition(self):
         return self.value_1 in self.value_2
 
+
 assert_contains = AssertionContains
 assert_in = AssertionContains

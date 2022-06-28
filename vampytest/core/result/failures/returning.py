@@ -1,7 +1,7 @@
 __all__ = ('FailureReturning',)
 
 from .base import FailureBase
-from .helpers import add_route_parts_into, render_parameters_into
+from .helpers import add_documentation_into, add_route_parts_into, render_parameters_into
 
 from scarletio import copy_docs
 
@@ -60,6 +60,8 @@ class FailureReturning(FailureBase):
         
         failure_message_parts.append('Unexpected return at: ')
         add_route_parts_into(self.handle, failure_message_parts)
+        
+        add_documentation_into(self.handle, failure_message_parts)
         
         
         failure_message_parts.append('\nParameters: ')

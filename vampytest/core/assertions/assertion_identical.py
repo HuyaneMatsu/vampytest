@@ -1,4 +1,4 @@
-__all__ = ('AssertionIdentical', 'assert_is', 'assert_identical')
+__all__ = ('AssertionIdentical', 'assert_id', 'assert_is', 'assert_identical')
 
 from .assertion_conditional_base import AssertionConditionalBase2Value
 
@@ -28,5 +28,7 @@ class AssertionIdentical(AssertionConditionalBase2Value):
     def invoke_condition(self):
         return self.value_1 is self.value_2
 
+
+assert_id = AssertionIdentical
 assert_is = AssertionIdentical
 assert_identical = AssertionIdentical

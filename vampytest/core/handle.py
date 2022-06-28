@@ -602,3 +602,78 @@ class Handle(RichAttributeErrorBaseType):
         finally:
             for test_wrapper_context in test_wrapper_contexts:
                 test_wrapper_context.close()
+    
+    
+    def get_test_documentation(self):
+        """
+        Returns the test's documentation.
+        
+        Returns
+        -------
+        documentation : `None`, `str`
+        """
+        raw_documentation = getattr(self.test, '__doc__', None)
+        if (raw_documentation is None) or (not isinstance(raw_documentation, str)):
+            return None
+        
+        lines = raw_documentation.split('\n')
+        if not lines:
+            return None
+        
+        for index in range(len(lines)):
+            lines[index] = lines[index].rstrip()
+        
+        indentation_to_remove = 0
+        
+        while True:
+            for line in lines:
+                if len(line) <= indentation_to_remove:
+                    continue
+                
+                if line[indentation_to_remove] in (' ', '\t'):
+                    continue
+                
+                break
+            
+            else:
+                indentation_to_remove += 1
+                continue
+            
+            break
+        
+        
+        for index in range(len(lines)):
+            lines[index] = lines[index][indentation_to_remove:]
+        
+        while True:
+            if lines[-1]:
+                break
+            
+            del lines[-1]
+            if not lines:
+                return None
+        
+        while True:
+            if lines[0]:
+                break
+            
+            del lines[0]
+            continue
+        
+        
+        documentation_parts = []
+        index = 0
+        line_count = len(lines)
+        
+        while True:
+            documentation_parts.append('> ')
+            documentation_parts.append(lines[index])
+            
+            index += 1
+            if index == line_count:
+                break
+            
+            documentation_parts.append('\n')
+            continue
+        
+        return ''.join(documentation_parts)

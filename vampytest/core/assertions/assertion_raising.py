@@ -17,7 +17,7 @@ class AssertionRaising(AssertionBase):
         The condition's state.
     exception : `None`, `BaseException`
         Exception raised within the context block if any.
-    accept_sub_classes : `bool`
+    accept_subtypes : `bool`
         Whether subclasses are accepted as well.
     expected_exceptions : `set` of ``BaseException``
         The expected exception types.
@@ -29,9 +29,9 @@ class AssertionRaising(AssertionBase):
         'nice' + 69
     ```
     """
-    __slots__ = ('accept_sub_classes', 'exception', 'expected_exceptions')
+    __slots__ = ('accept_subtypes', 'exception', 'expected_exceptions')
     
-    def __new__(cls, *expected_exceptions, accept_sub_classes=True):
+    def __new__(cls, *expected_exceptions, accept_subtypes=True):
         """
         Creates a new raise asserting context manager.
         
@@ -39,7 +39,7 @@ class AssertionRaising(AssertionBase):
         ----------
         *expected_exceptions : tuple` of (`BaseException`, ...)
             Exception types to expect.
-        accept_sub_classes : `bool` = `True`
+        accept_subtypes : `bool` = `True`
             Whether subclasses are accepted as well.
         
         Raises
@@ -55,6 +55,7 @@ class AssertionRaising(AssertionBase):
         
         self = AssertionBase.__new__(cls)
         self.expected_exceptions = expected_exceptions
+        self.accept_subtypes = accept_subtypes
         
         return self
     
@@ -77,7 +78,7 @@ class AssertionRaising(AssertionBase):
         
         self.exception = exc_val
         
-        if try_match_exception(self.expected_exceptions, exc_val, self.accept_sub_classes):
+        if try_match_exception(self.expected_exceptions, exc_val, self.accept_subtypes):
             state = CONDITION_STATES.PASSED
             silence = True
         

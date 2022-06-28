@@ -1,7 +1,7 @@
 __all__ = ('FailureAsserting',)
 
 from .base import FailureBase
-from .helpers import add_route_parts_into
+from .helpers import add_documentation_into, add_route_parts_into
 
 from scarletio import copy_docs
 
@@ -52,9 +52,10 @@ class FailureAsserting(FailureBase):
         failure_message_parts = []
         failure_message_parts.append('Assertion failed at: ')
         add_route_parts_into(self.handle,  failure_message_parts)
+        
+        add_documentation_into(self.handle, failure_message_parts)
+        
         failure_message_parts.append('\n')
-        
-        
         failure_message_parts.append(repr(self.assertion))
         
         return ''.join(failure_message_parts)

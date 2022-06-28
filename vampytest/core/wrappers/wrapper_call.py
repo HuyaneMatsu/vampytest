@@ -30,7 +30,7 @@ class WrapperCall(WrapperBase):
         Whether returned value of the test should be checked.
     is_call_with : `bool`
         Whether the test should be called with specific parameters.
-    raising_accept_sub_classes : `bool`
+    raising_accept_subtypes : `bool`
         Whether exception subclasses are accepted as well if ``.is_raising``.
     raising_exceptions : `None`, `set` of ``BaseException``
         The raising_exceptions expected to be raised if ``.is_raising``.
@@ -39,7 +39,7 @@ class WrapperCall(WrapperBase):
     """
     __slots__ = (
         'calling_keyword_parameters', 'calling_positional_parameters', 'is_call_with', 'is_raising', 'is_returning',
-        'raising_exceptions', 'raising_accept_sub_classes', 'returning_value'
+        'raising_exceptions', 'raising_accept_subtypes', 'returning_value'
     )
     
     def __new__(cls, wrapped=None, *, raising=None, returning=None, call_with=None):
@@ -61,11 +61,11 @@ class WrapperCall(WrapperBase):
         if raising is None:
             is_raising = False
             raising_exceptions = None
-            raising_accept_sub_classes = None
+            raising_accept_subtypes = None
         
         else:
             is_raising = True
-            raising_exceptions, raising_accept_sub_classes = raising
+            raising_exceptions, raising_accept_subtypes = raising
         
         
         if returning is None:
@@ -90,7 +90,7 @@ class WrapperCall(WrapperBase):
         self = object.__new__(cls)
         self.wrapped = wrapped
         
-        self.raising_accept_sub_classes = raising_accept_sub_classes
+        self.raising_accept_subtypes = raising_accept_subtypes
         self.raising_exceptions = raising_exceptions
         self.is_raising = is_raising
         self.is_returning = is_returning
@@ -150,8 +150,8 @@ class WrapperCall(WrapperBase):
                 repr_parts.append(' raising_exceptions=')
                 repr_parts.append(repr(self.raising_exceptions))
                 
-                repr_parts.append(', raising_accept_sub_classes=')
-                repr_parts.append(repr(self.raising_accept_sub_classes))
+                repr_parts.append(', raising_accept_subtypes=')
+                repr_parts.append(repr(self.raising_accept_subtypes))
             
             if is_returning:
                 if field_added:
@@ -193,7 +193,7 @@ class WrapperCall(WrapperBase):
         
         if self.is_raising:
             hash_value ^= hash_set(self.raising_exceptions)
-            hash_value ^= self.raising_accept_sub_classes
+            hash_value ^= self.raising_accept_subtypes
         
         if self.is_returning:
             hash_value ^= try_hash_method(self.returning_value)
@@ -220,7 +220,7 @@ class WrapperCall(WrapperBase):
             if self.raising_exceptions != other.raising_exceptions:
                 return False
             
-            if self.raising_accept_sub_classes != other.raising_accept_sub_classes:
+            if self.raising_accept_subtypes != other.raising_accept_subtypes:
                 return False
         
         is_returning = self.is_returning
@@ -325,22 +325,22 @@ class WrapperCall(WrapperBase):
             
             if self.is_raising:
                 raising_exceptions = self.raising_exceptions
-                raising_accept_sub_classes = self.raising_accept_sub_classes
+                raising_accept_subtypes = self.raising_accept_subtypes
                 if raised_exception is None:
                     return Result(handle).with_exception(
                         raising_exceptions,
                         None,
-                        raising_accept_sub_classes,
+                        raising_accept_subtypes,
                     )
                 
-                if try_match_exception(raising_exceptions, raised_exception, raising_accept_sub_classes):
+                if try_match_exception(raising_exceptions, raised_exception, raising_accept_subtypes):
                     result_state = result_state.with_exception(None)
                 
                 else:
                     return Result(handle).with_exception(
                         raising_exceptions,
                         raised_exception,
-                        raising_accept_sub_classes,
+                        raising_accept_subtypes,
                     )
             
             elif self.is_returning:
@@ -366,7 +366,7 @@ class WrapperCall(WrapperBase):
         raising_key : `None`, `tuple` (`set` of ``BaseException``, `bool`)
         """
         if self.is_raising:
-            return (self.raising_exceptions, self.raising_accept_sub_classes)
+            return (self.raising_exceptions, self.raising_accept_subtypes)
     
     
     @property
@@ -395,7 +395,7 @@ class WrapperCall(WrapperBase):
             return (self.calling_positional_parameters, self.calling_keyword_parameters)
     
     
-    def raising_constructor(cls,  *exception_types, raising_accept_sub_classes=True):
+    def raising_constructor(cls,  *exception_types, raising_accept_subtypes=True):
         """
         Creates a new raising wrapper.
         
@@ -403,7 +403,7 @@ class WrapperCall(WrapperBase):
         ----------
         *exception_types : tuple` of (`BaseException`, ...)
             Exception types to expect.
-        raising_accept_sub_classes : `bool` = `True`
+        raising_accept_subtypes : `bool` = `True`
             Whether subclasses are accepted as well.
         
         Raises
@@ -422,11 +422,11 @@ class WrapperCall(WrapperBase):
             raise ValueError('At least 1 exception is required.')
         
         return cls(
-            raising = (exception_types, raising_accept_sub_classes),
+            raising = (exception_types, raising_accept_subtypes),
         )
     
     
-    def raising(self,  *exception_types, raising_accept_sub_classes=True):
+    def raising(self,  *exception_types, raising_accept_subtypes=True):
         """
         Creates a new raising wrapper extending self.
         
@@ -434,7 +434,7 @@ class WrapperCall(WrapperBase):
         ----------
         *exception_types : tuple` of (`BaseException`, ...)
             Exception types to expect.
-        raising_accept_sub_classes : `bool` = `True`
+        raising_accept_subtypes : `bool` = `True`
             Whether subclasses are accepted as well.
         
         Raises
@@ -454,7 +454,7 @@ class WrapperCall(WrapperBase):
         
         return type(self)(
             self.wrapped,
-            raising = (exception_types, raising_accept_sub_classes),
+            raising = (exception_types, raising_accept_subtypes),
             returning = self.returning_key,
             call_with = self.call_with_key,
         )

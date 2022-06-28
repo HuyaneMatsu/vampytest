@@ -28,6 +28,7 @@ class AssertionNotEquals(AssertionConditionalBase2Value):
     def invoke_condition(self):
         return self.value_1 != self.value_2
 
+
 assert_ne = AssertionNotEquals
 assert_not_eq = AssertionNotEquals
 assert_not_equals = AssertionNotEquals

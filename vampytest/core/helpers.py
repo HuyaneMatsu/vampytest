@@ -262,7 +262,7 @@ def maybe_merge_mappings(mapping_1, mapping_2):
     return merged
 
 
-def try_match_exception(expected_exceptions, received_exception, accept_sub_classes):
+def try_match_exception(expected_exceptions, received_exception, accept_subtypes):
     """
     Checks whether the received exception matches the preset ones.
     
@@ -272,7 +272,7 @@ def try_match_exception(expected_exceptions, received_exception, accept_sub_clas
         The expected exceptions.
     received_exception : `BaseException`
         The received exception.
-    accept_sub_classes : `bool`
+    accept_subtypes : `bool`
         Whether sub classes are allowed.
     
     Returns
@@ -289,7 +289,7 @@ def try_match_exception(expected_exceptions, received_exception, accept_sub_clas
             exception_value = expected_exception
         
         
-        if accept_sub_classes:
+        if accept_subtypes:
             if not isinstance(received_exception, exception_type):
                 continue
         

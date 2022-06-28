@@ -33,7 +33,7 @@ class AssertionConditionalBase(AssertionBase):
         """
         self = AssertionBase.__new__(cls)
         self.exception = None
-        self.reverse = self.reverse
+        self.reverse = reverse
         return self
     
     

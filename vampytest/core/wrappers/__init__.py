@@ -22,6 +22,7 @@ from .wrapper_base import *
 from .wrapper_call import *
 from .wrapper_chainer import *
 from .wrapper_conflict import *
+from .wrapper_revert import *
 from .wrapper_skip import *
 from .wrapper_skip_conditional import *
 
@@ -29,12 +30,14 @@ returning = WrapperCall.returning_constructor
 raising = WrapperCall.raising_constructor
 call_with = WrapperCall.call_with_constructor
 
+from .wrapper_revert import WrapperRevert as revert
 from .wrapper_skip import WrapperSkip as skip
 from .wrapper_skip_conditional import WrapperSkipConditional as skip_if
 
 __all__ = (
     'raising',
     'returning',
+    'revert',
     'skip',
     'skip_if',
     'call_with',
@@ -43,6 +46,7 @@ __all__ = (
     *wrapper_call.__all__,
     *wrapper_chainer.__all__,
     *wrapper_conflict.__all__,
+    *wrapper_revert.__all__,
     *wrapper_skip.__all__,
     *wrapper_skip_conditional.__all__,
 )

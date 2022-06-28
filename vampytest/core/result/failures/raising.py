@@ -3,7 +3,7 @@ __all__ = ('FailureRaising',)
 from ...handle import __file__ as VAMPYTEST_HANDLE_FILE_PATH
 
 from .base import FailureBase
-from .helpers import add_route_parts_into, render_parameters_into
+from .helpers import add_documentation_into, add_route_parts_into, render_parameters_into
 
 from scarletio import copy_docs, render_exception_into
 
@@ -43,16 +43,16 @@ class FailureRaising(FailureBase):
     ----------
     handle : ``Handle``
         The test's handle running the test.
-    accept_sub_classes : `bool`
+    accept_subtypes : `bool`
         Whether exception subclasses were allowed.
     expected_exceptions : `None`, `set` of `BaseException`
         Expected raised exceptions.
     exception_received : `None`, `BaseException`
         The received exception.
     """
-    __slots__ = ('accept_sub_classes', 'expected_exceptions', 'exception_received',)
+    __slots__ = ('accept_subtypes', 'expected_exceptions', 'exception_received',)
     
-    def __new__(cls, handle, expected_exceptions, exception_received, accept_sub_classes):
+    def __new__(cls, handle, expected_exceptions, exception_received, accept_subtypes):
         """
         Creates a new raising test failure.
         
@@ -64,13 +64,13 @@ class FailureRaising(FailureBase):
             Expected raised exceptions.
         exception_received : `None`, `BaseException`
             The received exception.
-        accept_sub_classes : `bool`
+        accept_subtypes : `bool`
             Whether exception subclasses were allowed.
         """
         self = FailureBase.__new__(cls, handle)
         self.expected_exceptions = expected_exceptions
         self.exception_received = exception_received
-        self.accept_sub_classes = accept_sub_classes
+        self.accept_subtypes = accept_subtypes
         return self
     
     
@@ -84,10 +84,10 @@ class FailureRaising(FailureBase):
         repr_parts.append(', received_exception=')
         repr_parts.append(repr(self.exception_received))
         
-        accept_sub_classes = self.accept_sub_classes
-        if accept_sub_classes:
-            repr_parts.append(', accept_sub_classes=')
-            repr_parts.append(repr(accept_sub_classes))
+        accept_subtypes = self.accept_subtypes
+        if accept_subtypes:
+            repr_parts.append(', accept_subtypes=')
+            repr_parts.append(repr(accept_subtypes))
         
         repr_parts.append('>')
         return ''.join(repr_parts)
@@ -100,7 +100,8 @@ class FailureRaising(FailureBase):
         failure_message_parts.append('Unexpected exception at: ')
         add_route_parts_into(self.handle, failure_message_parts)
         
-
+        add_documentation_into(self.handle, failure_message_parts)
+        
         failure_message_parts.append('\nParameters: ')
         render_parameters_into(self.handle.final_call_state, failure_message_parts)
         
@@ -126,7 +127,7 @@ class FailureRaising(FailureBase):
                 failure_message_parts.append(expected_exception_representation)
             
             failure_message_parts.append('\nAccept sub-classes: ')
-            failure_message_parts.append('true' if self.accept_sub_classes else 'false')
+            failure_message_parts.append('true' if self.accept_subtypes else 'false')
         
         
         failure_message_parts.append('\nReceived:')
