@@ -1,9 +1,9 @@
 __all__ = ('run_tests_in', )
 
-from os.path import dirname as get_directory_name, isfile as is_file, split as split_paths
-from sys import path as system_paths
+from os.path import isfile as is_file, split as split_paths
+from sys import path as system_paths, modules as system_modules
 
-from .. import __package__ as PACKAGE_NAME, __file__ as PACKAGE_ROUTE_FILE
+from .. import __package__ as PACKAGE_NAME
 
 from .exceptions import TestLoadingError
 from .output_writer import OutputWriter
@@ -75,9 +75,6 @@ def try_collect_tests(test_file, output_writer):
     return collection_successful
 
 
-print(PACKAGE_ROUTE_FILE)
-
-
 def setup_test_library_import():
     """
     Setups test directory import if not on path instead running it relatively.
@@ -87,15 +84,15 @@ def setup_test_library_import():
     added_system_path : `None`, `str`
         Returns the added system path if any.
     """
-    if '.' not in PACKAGE_NAME:
+    split = PACKAGE_NAME.split('.')
+    if len(split) <= 1:
         return None
     
-    module_directory = get_directory_name(get_directory_name(PACKAGE_ROUTE_FILE))
-    if module_directory in system_paths:
-        return None
+    module = __import__(PACKAGE_NAME)
+    for directory_name in split[1:]:
+        module = module.__dict__[directory_name]
     
-    system_paths.append(module_directory)
-    return module_directory
+    system_modules[split[-1]] = module
 
 
 def test_result_group_sort_key(test_result_group):
@@ -137,8 +134,7 @@ def run_tests_in(base_path, path_parts):
         system_paths.append(base_path)
         base_path_in_system_paths = False
     
-    added_module_directory = setup_test_library_import()
-    
+    setup_test_library_import()
     
     output_writer = OutputWriter()
     
@@ -205,11 +201,5 @@ def run_tests_in(base_path, path_parts):
         if base_path_in_system_paths:
             try:
                 system_paths.remove(base_path)
-            except ValueError:
-                pass
-        
-        if (added_module_directory is not None):
-            try:
-                system_paths.remove(added_module_directory)
             except ValueError:
                 pass

@@ -1,5 +1,6 @@
 __all__ = ('FailureRaising',)
 
+from ...assertions import AssertionException
 from ...handle import __file__ as VAMPYTEST_HANDLE_FILE_PATH
 
 from .base import FailureBase
@@ -137,10 +138,9 @@ class FailureRaising(FailureBase):
         
         else:
             failure_message_parts.append('\n')
-            failure_message_parts.append('-'*40)
+            failure_message_parts.append('-' * 80)
             failure_message_parts.append('\n')
             
             render_exception_into(exception_received, failure_message_parts, filter=ignore_invoke_test_frame)
-        
         
         return ''.join(failure_message_parts)

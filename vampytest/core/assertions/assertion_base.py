@@ -57,3 +57,4 @@ class AssertionBase(RichAttributeErrorBaseType):
             pass
         
         return "".join(repr_parts)
+    
