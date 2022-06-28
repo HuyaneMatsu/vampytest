@@ -1,13 +1,13 @@
-__all__ = ('WrapperSkip',)
+__all__ = ('WrapperRevert',)
 
 from .wrapper_base import WrapperBase
 
 from scarletio import copy_docs
 
 
-class WrapperSkip(WrapperBase):
+class WrapperRevert(WrapperBase):
     """
-    Skips the test.
+    Reverts the test's result.
 
     Attributes
     ----------
@@ -18,11 +18,13 @@ class WrapperSkip(WrapperBase):
     
     @copy_docs(WrapperBase.__repr__)
     def __repr__(self):
+        """Returns the conditional skip wrapper's representation."""
         return f'<{self.__class__.__name__}'
     
     
     @copy_docs(WrapperBase.__eq__)
     def __eq__(self, other):
+        """Returns whether the two conditional skip wrappers are the same."""
         if type(self) is not type(other):
             return NotImplemented
         
@@ -31,9 +33,9 @@ class WrapperSkip(WrapperBase):
     
     @copy_docs(WrapperBase.__hash__)
     def __hash__(self):
-        return 1
+        return (1 << 4)
     
     
-    @copy_docs(WrapperBase.do_skip)
-    def do_skip(self):
+    @copy_docs(WrapperBase.do_revert)
+    def do_revert(self):
         return True

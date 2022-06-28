@@ -68,27 +68,44 @@ class ResultGroup(RichAttributeErrorBaseType):
         """Returns the representation of the test result group."""
         repr_parts = ['<', self.__class__.__name__]
         
-        while True:
-            conflict = self.conflict
-            if (conflict is not None):
-                repr_parts.append(' conflict=')
-                repr_parts.append(repr(repr_parts))
-                break
+        
+        
+        conflict = self.conflict
+        if (conflict is None):
+            field_added = False
+        
+        else:
+            repr_parts.append(' conflict=')
+            repr_parts.append(repr(repr_parts))
+            field_added = True
+        
+        
+        results = self.results
+        if (results is not None):
+            if field_added:
+                repr_parts.append(',')
+            else:
+                field_added = True
             
-            results = self.results
-            if (results is not None):
-                repr_parts.append(' results=')
-                repr_parts.append(repr(results))
-                break
+            repr_parts.append(' results=')
+            repr_parts.append(repr(results))
+        
+        
+        if self.skipped:
+            if field_added:
+                repr_parts.append(',')
+            else:
+                field_added = True
             
-            skipped = self.skipped
-            if skipped:
-                repr_parts.append(' skipped=')
-                repr_parts.append(repr(skipped))
-                break
+            repr_parts.append(' skipped')
+        
+        
+        if self.case.do_revert():
+            if field_added:
+                repr_parts.append(',')
             
-            # no more cases
-            break
+            repr_parts.append(' reverted')
+        
         
         repr_parts.append('>')
         return ''.join(repr_parts)
@@ -107,6 +124,9 @@ class ResultGroup(RichAttributeErrorBaseType):
         -------
         self : ``ResultGroup``
         """
+        if self.case.do_revert():
+            test_result.revert()
+        
         results = self.results
         if (results is None):
             results = []

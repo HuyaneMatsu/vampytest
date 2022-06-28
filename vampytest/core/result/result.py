@@ -1,6 +1,6 @@
 __all__ = ('Result',)
 
-from .failures import FailureAsserting, FailureRaising, FailureReturning
+from .failures import FailureAsserting, FailureRaising, FailureReturning, get_reverted_failure_message
 
 from scarletio import RichAttributeErrorBaseType, export
 
@@ -14,9 +14,11 @@ class Result(RichAttributeErrorBaseType):
     handle : ``Handle``
         The test's handle running the test.
     failures : `None`, `list` of ``FailureBase``
-        test failures.
+        Test failures.
+    reverted : `bool`
+        Whether the test result is reverted.
     """
-    __slots__ = ('handle', 'failures')
+    __slots__ = ('handle', 'failures', 'reverted')
     
     def __new__(cls, handle):
         """
@@ -31,6 +33,7 @@ class Result(RichAttributeErrorBaseType):
         
         self.handle = handle
         self.failures = None
+        self.reverted = False
         
         return self
     
@@ -40,10 +43,20 @@ class Result(RichAttributeErrorBaseType):
         repr_parts = ['<', self.__class__.__name__]
         
         failures = self.failures
-        if (failures is not None):
+        if (failures is None):
+            field_added = False
+        
+        else:
             repr_parts.append(' failures=')
             repr_parts.append(repr(failures))
+            field_added = True
         
+        if self.reverted:
+            if field_added:
+                repr_parts.append(',')
+            
+            repr_parts.append(' reverted')
+            
         repr_parts.append('>')
         return ''.join(repr_parts)
     
@@ -136,7 +149,7 @@ class Result(RichAttributeErrorBaseType):
         -------
         is_failed : `bool`
         """
-        return (self.failures is not None)
+        return (self.failures is None) == self.reverted
     
     
     def is_passed(self):
@@ -147,7 +160,7 @@ class Result(RichAttributeErrorBaseType):
         -------
         is_failed : `bool`
         """
-        return (self.failures is None)
+        return (self.failures is None) != self.reverted
     
     
     def iter_failure_message(self):
@@ -161,6 +174,18 @@ class Result(RichAttributeErrorBaseType):
         failure_message : `str`
         """
         failures = self.failures
-        if (failures is not None):
-            for failure in failures:
-                yield failure.get_failure_message()
+        if self.reverted:
+            if (failures is None):
+                yield get_reverted_failure_message(self.handle)
+        
+        else:
+            if (failures is not None):
+                for failure in failures:
+                    yield failure.get_failure_message()
+    
+    
+    def revert(self):
+        """
+        Reverts the result.
+        """
+        self.reverted = True

@@ -170,6 +170,17 @@ class WrapperBase(RichAttributeErrorBaseType):
         return False
     
     
+    def do_revert(self):
+        """
+        Tests whether the test's result should be reverted.
+        
+        Returns
+        -------
+        do_revert : `bool`
+        """
+        return False
+    
+    
     def check_conflicts(self):
         """
         Checks whether the wrapper has internal conflict.

@@ -47,13 +47,13 @@ def render_parameters_into(call_state, into):
     return into
 
 
-def add_route_parts_into(failure, into):
+def add_route_parts_into(handle, into):
     """
     Adds route parts into the given list.
     
     Parameters
     ----------
-    failure : ``FailureBase``
+    failure : ``Handle``
         The parent failure to get route of.
     into : `list` of `str`
         A list to put the string parts into.
@@ -62,7 +62,7 @@ def add_route_parts_into(failure, into):
     -------
     into : `list` of `str`
     """
-    case = failure.handle.case
+    case = handle.case
     
     into.append(case.import_route)
     into.append('.')

@@ -89,8 +89,14 @@ class TestCase(RichAttributeErrorBaseType):
         
         wrapper = self.wrapper
         if (wrapper is not None):
-            repr_parts.append(' wrapper=')
+            repr_parts.append(', wrapper=')
             repr_parts.append(repr(self.wrapper))
+        
+        if self.do_skip():
+            repr_parts.append(', skipped')
+        
+        if self.do_revert():
+            repr_parts.append(', reverted')
         
         repr_parts.append('>')
         return ''.join(repr_parts)
@@ -109,6 +115,21 @@ class TestCase(RichAttributeErrorBaseType):
             return False
         
         return wrapper.do_skip()
+    
+    
+    def do_revert(self):
+        """
+        Returns whether the test's result should be reverted.
+        
+        Returns
+        -------
+        do_revert : `bool`
+        """
+        wrapper = self.wrapper
+        if wrapper is None:
+            return False
+        
+        return wrapper.do_revert()
     
     
     def check_conflicts(self):

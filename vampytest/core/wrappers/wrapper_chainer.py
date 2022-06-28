@@ -87,6 +87,14 @@ class WrapperChainer(WrapperBase):
         return False
     
     
+    @copy_docs(WrapperBase.do_revert)
+    def do_revert(self):
+        for wrapper in self.wrappers:
+            if wrapper.do_revert():
+                return True
+        
+        return False
+    
     @copy_docs(WrapperBase.check_conflicts)
     def check_conflicts(self):
         wrappers = list(self.wrappers)
