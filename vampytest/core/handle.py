@@ -561,7 +561,7 @@ class Handle(RichAttributeErrorBaseType):
         raised_exception = self.final_result_state.raised_exception
         if (raised_exception is not None):
             if isinstance(raised_exception, AssertionException):
-                test_result = test_result.with_assertion(raised_exception.assertion)
+                test_result = test_result.with_assertion(raised_exception)
             
             else:
                 test_result = test_result.with_exception(None, raised_exception, False)

@@ -27,6 +27,11 @@ class AssertionEquals(AssertionConditionalBase2Value):
     @copy_docs(AssertionConditionalBase2Value.invoke_condition)
     def invoke_condition(self):
         return self.value_1 == self.value_2
+    
+    
+    @copy_docs(AssertionConditionalBase2Value._get_operation_representation)
+    def _get_operation_representation(self):
+        return '=='
 
 
 assert_eq = AssertionEquals

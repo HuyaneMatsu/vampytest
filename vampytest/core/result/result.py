@@ -105,20 +105,20 @@ class Result(RichAttributeErrorBaseType):
         return self
     
     
-    def with_assertion(self, assertion):
+    def with_assertion(self, assertion_exception):
         """
         Sets assertion as test result.
         
         Parameters
         ----------
-        assertion : ``AssertionBase``
+        assertion_exception : ``AssertionException``
             The failed assertion.
         
         Returns
         -------
         self : ``Result``
         """
-        failure = FailureAsserting(self.handle, assertion)
+        failure = FailureAsserting(self.handle, assertion_exception)
         self._add_failure(failure)
         
         return self

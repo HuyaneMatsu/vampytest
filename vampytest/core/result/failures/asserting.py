@@ -14,12 +14,12 @@ class FailureAsserting(FailureBase):
     ----------
     handle : ``Handle``
         The test's handle running the test.
-    assertion : ``AssertionBase``
+    assertion_exception : ``AssertionException``
         The failed assertion.
     """
-    __slots__ = ('assertion',)
+    __slots__ = ('assertion_exception',)
     
-    def __new__(cls, handle, assertion):
+    def __new__(cls, handle, assertion_exception):
         """
         Creates a new assertion test failure.
         
@@ -27,11 +27,11 @@ class FailureAsserting(FailureBase):
         ----------
         handle : ``Handle``
             The test's handle running the test.
-        assertion : ``AssertionBase``
+        assertion_exception : ``AssertionException``
             The failed assertion.
         """
         self = FailureBase.__new__(cls, handle)
-        self.assertion = assertion
+        self.assertion_exception = assertion_exception
         return self
     
     
@@ -40,7 +40,7 @@ class FailureAsserting(FailureBase):
         repr_parts = ['<', self.__class__.__name__]
         
         repr_parts.append(' assertion')
-        repr_parts.append(repr(self.assertion))
+        repr_parts.append(repr(self.assertion_exception))
         
         repr_parts.append('>')
         return ''.join(repr_parts)
@@ -56,6 +56,6 @@ class FailureAsserting(FailureBase):
         add_documentation_into(self.handle, failure_message_parts)
         
         failure_message_parts.append('\n')
-        failure_message_parts.append(repr(self.assertion))
+        self.assertion_exception.render_failure_message_parts_into(failure_message_parts)
         
         return ''.join(failure_message_parts)

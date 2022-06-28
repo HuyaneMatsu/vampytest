@@ -109,7 +109,7 @@ class WrapperBase(RichAttributeErrorBaseType):
             
             repr_parts.append(' oh no')
         
-        return "".join(repr_parts)
+        return ''.join(repr_parts)
         ```
         """
         repr_parts = ['<', self.__class__.__name__]

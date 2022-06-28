@@ -1,5 +1,8 @@
 __all__ = ('AssertionException', )
 
+from scarletio.utils.trace import _get_exception_frames, render_frames_into
+
+
 class AssertionException(BaseException):
     """
     Raised when an exception fails.
@@ -22,7 +25,7 @@ class AssertionException(BaseException):
         BaseException.__init__(self, assertion)
     
     
-    def render_into(self, failure_message_parts):
+    def render_failure_message_parts_into(self, failure_message_parts):
         """
         Renders the exception into the given list.
         
@@ -35,6 +38,8 @@ class AssertionException(BaseException):
         -------
         failure_message_parts : `list` of `str`
         """
-        
-        
+        failure_message_parts.append('\n')
+        render_frames_into(_get_exception_frames(self)[1:2], failure_message_parts)
+        failure_message_parts.append('\n')
+        self.assertion.render_failure_message_parts_into(failure_message_parts)
         return failure_message_parts

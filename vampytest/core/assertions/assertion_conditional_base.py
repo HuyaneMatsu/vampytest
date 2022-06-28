@@ -107,6 +107,72 @@ class AssertionConditionalBase(AssertionBase):
             The condition's result.
         """
         raise NotImplemented
+    
+    
+    def _get_operation_representation(self):
+        """
+        Gets the assertion's operation's representation.
+        
+        Returns
+        -------
+        operation_representation : `str`
+        """
+        return ''
+    
+    
+    def _render_operation_representation_into(self, into):
+        """
+        Adds the operation representation to the given list.
+        
+        Parameters
+        ----------
+        into : `list` of `str`
+            A list to extend with the rendered strings.
+        
+        Returns
+        -------
+        into : `list` of `str`
+        """
+        into.append('Operation: "')
+        into.append(self._get_operation_representation())
+        into.append('"')
+        
+        if self.reverse:
+            into.append(' (reversed)')
+        
+        return into
+    
+    
+    @copy_docs(AssertionBase.render_failure_message_parts_into)
+    def render_failure_message_parts_into(self, failure_message_parts):
+        self._render_operation_representation_into(failure_message_parts)
+        failure_message_parts.append('\n')
+        return failure_message_parts
+
+
+def _add_parameters_representation_into(parameter_name, parameter_value, into):
+    """
+    Renders the given parameter into the given list of strings.
+    
+    Parameters
+    ----------
+    parameter_name : `str`
+        The parameter's name.
+    parameter_value : `Any`
+        The parameter's value.
+    into : `list` of `str`
+        A list to extend with the rendered strings.
+    
+    Returns
+    -------
+    into : `list` of `str`
+    """
+    into.append(parameter_name)
+    into.append(': ')
+    into.append(repr(parameter_value))
+    into.append('\n')
+    
+    return into
 
 
 class AssertionConditionalBase1Value(AssertionConditionalBase):
@@ -156,6 +222,13 @@ class AssertionConditionalBase1Value(AssertionConditionalBase):
             repr_parts.append(repr(self.value_1))
             
             yield repr_parts
+    
+    
+    @copy_docs(AssertionConditionalBase.render_failure_message_parts_into)
+    def render_failure_message_parts_into(self, failure_message_parts):
+        AssertionConditionalBase.render_failure_message_parts_into(self, failure_message_parts)
+        _add_parameters_representation_into('Parameter', self.value_1, failure_message_parts)
+        return failure_message_parts
 
 
 class AssertionConditionalBase2Value(AssertionConditionalBase1Value):
@@ -208,3 +281,20 @@ class AssertionConditionalBase2Value(AssertionConditionalBase1Value):
             repr_parts.append(repr(self.value_2))
             
             yield repr_parts
+    
+    
+    @copy_docs(AssertionConditionalBase._render_operation_representation_into)
+    def _render_operation_representation_into(self, into):
+        AssertionConditionalBase._render_operation_representation_into(self, into)
+        into.append(' as "parameter_1 ')
+        into.append(self._get_operation_representation())
+        into.append(' parameter_2"')
+        return into
+    
+    
+    @copy_docs(AssertionConditionalBase.render_failure_message_parts_into)
+    def render_failure_message_parts_into(self, failure_message_parts):
+        AssertionConditionalBase.render_failure_message_parts_into(self, failure_message_parts)
+        _add_parameters_representation_into('Parameter 1', self.value_1, failure_message_parts)
+        _add_parameters_representation_into('Parameter 2', self.value_2, failure_message_parts)
+        return failure_message_parts

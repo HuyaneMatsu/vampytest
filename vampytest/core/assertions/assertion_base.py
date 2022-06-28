@@ -38,7 +38,7 @@ class AssertionBase(RichAttributeErrorBaseType):
         for repr_parts in self._cursed_repr_builder():
             repr_parts.append(', oh no')
         
-        return "".join(repr_parts)
+        return ''.join(repr_parts)
         ```
         """
         repr_parts = ['<', self.__class__.__name__]
@@ -56,5 +56,20 @@ class AssertionBase(RichAttributeErrorBaseType):
         for repr_parts in self._cursed_repr_builder():
             pass
         
-        return "".join(repr_parts)
+        return ''.join(repr_parts)
     
+    
+    def render_failure_message_parts_into(self, failure_message_parts):
+        """
+        Renders the assertion into the given list.
+        
+        Parameters
+        ----------
+        failure_message_parts : `list` of `str`
+            A list to extend with the rendered strings.
+        
+        Returns
+        -------
+        failure_message_parts : `list` of `str`
+        """
+        return failure_message_parts

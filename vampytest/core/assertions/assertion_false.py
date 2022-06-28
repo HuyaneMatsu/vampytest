@@ -25,6 +25,18 @@ class AssertionValueEvaluationFalse(AssertionConditionalBase1Value):
     @copy_docs(AssertionConditionalBase1Value.invoke_condition)
     def invoke_condition(self):
         return not self.value_1
+    
+    
+    @copy_docs(AssertionConditionalBase1Value._get_operation_representation)
+    def _get_operation_representation(self):
+        return 'not bool(...)'
+    
+    
+    @copy_docs(AssertionConditionalBase1Value._render_operation_representation_into)
+    def _render_operation_representation_into(self, into):
+        AssertionConditionalBase1Value._render_operation_representation_into(self, into)
+        into.append(' as "not bool(parameter)"')
+        return into
 
 
 assert_false = AssertionValueEvaluationFalse
