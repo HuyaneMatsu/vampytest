@@ -1,16 +1,15 @@
 __all__ = ('run_tests_in', )
 
 from os.path import isfile as is_file, split as split_paths
-from sys import path as system_paths, stdout
+from sys import path as system_paths
 
 from .exceptions import TestLoadingError
+from .output_writer import OutputWriter
 from .test_file import __file__ as VAMPYTEST_TEST_FILE_PATH
 from .test_file_collector import collect_test_files
 
 from scarletio import render_exception_into
 
-
-BREAK_LINE = '='*40
 
 def ignore_module_import_frame(file_name, name, line_number, line):
     """
@@ -35,7 +34,7 @@ def ignore_module_import_frame(file_name, name, line_number, line):
     return (file_name != VAMPYTEST_TEST_FILE_PATH) or (name != '_get_module') or (line != '__import__(import_route)')
 
 
-def try_collect_tests(test_file):
+def try_collect_tests(test_file, output_writer):
     """
     Collects tests from the test files.
     
@@ -43,6 +42,8 @@ def try_collect_tests(test_file):
     ----------
     test_file : ``TestFile``
         The test file to collect tests from.
+    output_writer : ``OutputWriter``
+        Output writer to write errors to.
     
     Returns
     -------
@@ -53,18 +54,17 @@ def try_collect_tests(test_file):
         test_file.get_tests()
     except TestLoadingError as err:
         exception_parts = [
-            BREAK_LINE,
-            '\nException occurred meanwhile loading:\n',
+            'Exception occurred meanwhile loading:\n',
             test_file.path,
             '\n',
         ]
         
         render_exception_into(err.source_exception, exception_parts, filter=ignore_module_import_frame)
         
-        exception_parts.append(BREAK_LINE)
-        exception_parts.append('\n')
+        output_writer.write_break_line()
+        output_writer.write(''.join(exception_parts))
+        output_writer.write_break_line()
         
-        stdout.write(''.join(exception_parts))
         collection_successful = False
     
     else:
@@ -102,18 +102,21 @@ def run_tests_in(base_path, path_parts):
         system_paths.append(base_path)
         base_path_in_system_paths = False
     
+    output_writer = OutputWriter()
+    
     try:
         test_files = collect_test_files(base_path, path_parts)
         
-        stdout.write(f'Collected {len(test_files)} test file(s).\n')
+        output_writer.write(f'Collected {len(test_files)} test file(s).')
         
-        test_files = [test_file for test_file in test_files if try_collect_tests(test_file)]
+        test_files = [test_file for test_file in test_files if try_collect_tests(test_file, output_writer)]
         
         total_test_count = 0
         for test_file in test_files:
             total_test_count += len(test_file.get_tests())
         
-        stdout.write(f'Running {total_test_count} tests of {len(test_files)} files\n{BREAK_LINE}\n')
+        output_writer.write(f'Running {total_test_count} tests of {len(test_files)} files')
+        output_writer.write_break_line()
         
         test_result_groups = []
         
@@ -146,17 +149,19 @@ def run_tests_in(base_path, path_parts):
             
             case = test_result_group.case
             
-            stdout.write(f'{keyword} {case.import_route}.{case.name}\n')
+            output_writer.write(f'{keyword} {case.import_route}.{case.name}')
         
-        stdout.write(f'{BREAK_LINE}\n')
+        output_writer.write_break_line()
         
         for test_result_group in failed_tests:
             for failure_message in test_result_group.iter_failure_messages():
-                stdout.write(failure_message)
-                stdout.write(f'\n{BREAK_LINE}\n')
+                output_writer.write(failure_message)
+                output_writer.write_break_line()
         
-        stdout.write(f'{len(failed_tests)} failed | {skipped_test_count} skipped | {passed_test_count} passed\n')
-    
+        output_writer.write(f'{len(failed_tests)} failed | {skipped_test_count} skipped | {passed_test_count} passed')
+        
+        # Close output with an empty line.
+        output_writer.write('\n')
     finally:
         if base_path_in_system_paths:
             try:
