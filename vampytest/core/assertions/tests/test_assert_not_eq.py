@@ -5,7 +5,7 @@ from vampytest import revert
 
 def test_assert_not_eq():
     """
-    Tests whether `==` assertion succeeds.
+    Tests whether `!=` assertion succeeds.
     """
     assert_not_eq(1, 2)
 
@@ -13,6 +13,6 @@ def test_assert_not_eq():
 @revert()
 def test_assert_not_eq_reverted():
     """
-    Tests whether `==` assertion fails.
+    Tests whether `!=` assertion fails.
     """
     assert_not_eq(1, 1)
