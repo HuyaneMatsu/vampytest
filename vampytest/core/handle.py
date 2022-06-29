@@ -613,6 +613,13 @@ class Handle(RichAttributeErrorBaseType):
         -------
         documentation : `None`, `str`
         """
+        test_name = getattr(self.test, '__name__', None)
+        if (test_name is None) or (not isinstance(test_name, str)):
+            return None
+        
+        if self.case.name != test_name:
+            return None
+        
         raw_documentation = getattr(self.test, '__doc__', None)
         if (raw_documentation is None) or (not isinstance(raw_documentation, str)):
             return None

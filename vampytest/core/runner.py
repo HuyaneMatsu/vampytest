@@ -7,7 +7,7 @@ from .. import __package__ as PACKAGE_NAME
 
 from .output_writer import OutputWriter
 
-from .test_file.test_file_collector import collect_test_files
+from .test_file import collect_test_files
 
 
 def setup_test_library_import():
