@@ -53,6 +53,7 @@ setup(
         'vampytest.core',
         'vampytest.core.assertions',
         'vampytest.core.result',
+        'vampytest.core.test_file',
         'vampytest.core.result.failures',
         'vampytest.core.wrappers',
         'vampytest.main',

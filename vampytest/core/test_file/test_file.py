@@ -2,10 +2,12 @@ __all__ = ('TestFile', )
 
 import sys
 
-from .exceptions import TestLoadingError
-from .utils import get_short_path_repr
-from .test_case import TestCase
-from .wrappers import WrapperBase
+from ..exceptions import TestLoadingError
+from ..utils import get_short_path_repr
+from ..test_case import TestCase
+from ..wrappers import WrapperBase
+
+from .test_file_load_failure import TestFileLoadFailure
 
 from scarletio import RichAttributeErrorBaseType
 
@@ -169,6 +171,22 @@ class TestFile(RichAttributeErrorBaseType):
         module = sys.modules[import_route]
         self.module = module
         return module
+    
+    
+    def try_load_tests(self):
+        """
+        Loads the file's tests.
+        
+        If loading fails, returns an object representing its failure.
+        
+        Returns
+        -------
+        load_failure : `None`, ``TestFileLoadFailure``
+        """
+        try:
+            self.get_tests()
+        except TestLoadingError as err:
+            return TestFileLoadFailure(self, err)
     
     
     def get_tests(self):

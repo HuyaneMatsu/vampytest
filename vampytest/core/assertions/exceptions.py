@@ -39,7 +39,7 @@ class AssertionException(BaseException):
         failure_message_parts : `list` of `str`
         """
         failure_message_parts.append('\n')
-        render_frames_into(_get_exception_frames(self)[1:2], failure_message_parts)
+        render_frames_into(_get_exception_frames(self)[1:-2], failure_message_parts)
         failure_message_parts.append('\n')
         self.assertion.render_failure_message_parts_into(failure_message_parts)
         return failure_message_parts

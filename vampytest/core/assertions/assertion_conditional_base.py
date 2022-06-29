@@ -168,7 +168,7 @@ def _add_parameters_representation_into(parameter_name, parameter_value, into):
     into : `list` of `str`
     """
     into.append(parameter_name)
-    into.append(': ')
+    into.append(' = ')
     into.append(repr(parameter_value))
     into.append('\n')
     
@@ -227,7 +227,7 @@ class AssertionConditionalBase1Value(AssertionConditionalBase):
     @copy_docs(AssertionConditionalBase.render_failure_message_parts_into)
     def render_failure_message_parts_into(self, failure_message_parts):
         AssertionConditionalBase.render_failure_message_parts_into(self, failure_message_parts)
-        _add_parameters_representation_into('Parameter', self.value_1, failure_message_parts)
+        _add_parameters_representation_into('parameter', self.value_1, failure_message_parts)
         return failure_message_parts
 
 
@@ -295,6 +295,6 @@ class AssertionConditionalBase2Value(AssertionConditionalBase1Value):
     @copy_docs(AssertionConditionalBase.render_failure_message_parts_into)
     def render_failure_message_parts_into(self, failure_message_parts):
         AssertionConditionalBase.render_failure_message_parts_into(self, failure_message_parts)
-        _add_parameters_representation_into('Parameter 1', self.value_1, failure_message_parts)
-        _add_parameters_representation_into('Parameter 2', self.value_2, failure_message_parts)
+        _add_parameters_representation_into('parameter_1', self.value_1, failure_message_parts)
+        _add_parameters_representation_into('parameter_2', self.value_2, failure_message_parts)
         return failure_message_parts

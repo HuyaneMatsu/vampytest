@@ -62,9 +62,9 @@ class OutputWriter(RichAttributeErrorBaseType):
         return True
     
     
-    def write(self, string):
+    def write_line(self, string):
         """
-        Writes the given string into the file.
+        Writes the given line into the file.
         
         Returns
         -------
@@ -82,6 +82,49 @@ class OutputWriter(RichAttributeErrorBaseType):
         self._last_chunk_break_line = False
         
         return True
+    
+    
+    def write(self, string):
+        """
+        Writes the given line into the file.
+        
+        Returns
+        -------
+        written : `bool`
+        """
+        if not string:
+            return False
+        
+        if self._last_chunk_break_line:
+            self.file.write('\n')
+        
+        self.file.write(string)
+        
+        self._last_write_ended_with_linebreak = False
+        self._last_chunk_break_line = False
+        
+        return True
+    
+    
+    def end_line(self):
+        """
+        Ends the current line.
+        
+        Returns
+        -------
+        written : `bool`
+        """
+        if self._last_write_ended_with_linebreak:
+            written = False
+        
+        else:
+            self.file.write('\n')
+            written = True
+        
+        self._last_write_ended_with_linebreak = True
+        self._last_chunk_break_line = False
+        
+        return written
     
     
     def __del__(self):
