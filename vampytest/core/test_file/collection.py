@@ -1,27 +1,9 @@
-__all__ = ('collect_test_files', )
+__all__ = ('iter_collect_test_files',)
 
 from os import listdir as list_directory
 from os.path import isdir as is_directory, isfile as is_file, join as join_paths
 
 from .test_file import TestFile
-
-
-def collect_test_files(base_path, path_parts):
-    """
-    Collects all the test files from the given directory described by `base_path` and `path_parts` parameters.
-    
-    Parameters
-    ----------
-    base_path : `str`
-        Source path of file or directory.
-    path_parts : `list` of `str`
-        A list of path parts within the base directory to collect from.
-    
-    Returns
-    -------
-    test_files : `list` of ``TestFile``
-    """
-    return list(iter_collect_test_files(base_path, path_parts))
 
 
 def iter_collect_test_files(base_path, path_parts):
@@ -123,7 +105,10 @@ def iter_tests_from_directory(directory_path, path_parts, within_test_directory)
     ------
     test_file : ``TestFile``
     """
-    for file_name in list_directory(directory_path):
+    file_names = list_directory(directory_path)
+    file_names.sort()
+    
+    for file_name in file_names:
         file_path = join_paths(directory_path, file_name)
         path_parts.append(file_name)
         

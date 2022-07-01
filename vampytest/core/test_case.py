@@ -23,7 +23,7 @@ class TestCase(RichAttributeErrorBaseType):
     test : `callable`, ``WrapperBase``
         The test itself, or the wrapped test.
     wrapper : `None`, ``WrapperBase``
-        Wrappers containing the test if any.
+        Wrappers containing the test if any.    
     """
     __slots__ = ('import_route', 'name', 'test', 'wrapper')
     

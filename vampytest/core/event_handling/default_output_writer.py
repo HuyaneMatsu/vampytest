@@ -1,4 +1,4 @@
-__all__ = ('OutputWriter',)
+__all__ = ()
 
 import sys
 
@@ -21,13 +21,13 @@ class OutputWriter(RichAttributeErrorBaseType):
     file : `Any`
         Any writable object.
     """
-    def __new__(cls, file=None):
+    def __new__(cls, file = None):
         """
         Creates a new test output writer.
         
         Parameters
         ----------
-        file : `None`, `Any`, optional
+        file : `None`, `Any` = `None`, Optional
             Writable object. If not given defaults to `sys.stdout`.
         """
         if file is None:

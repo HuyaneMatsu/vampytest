@@ -7,7 +7,7 @@ from .test_file import __file__ as VAMPYTEST_TEST_FILE_PATH
 from scarletio import RichAttributeErrorBaseType, render_exception_into
 
 
-def ignore_module_import_frame(file_name, name, line_number, line):
+def _ignore_module_import_frame(file_name, name, line_number, line):
     """
     Ignores the frame, where the test file was imported.
     
@@ -41,7 +41,6 @@ class TestFileLoadFailure(RichAttributeErrorBaseType):
     path : `str`
         The files path which failed to load.
     """
-    
     __slots__ = ('path', 'exception_message')
     
     def __new__(cls, test_file, exception):
@@ -50,11 +49,11 @@ class TestFileLoadFailure(RichAttributeErrorBaseType):
         ----------
         test_file : ``TestFile``
             The test file which failed to load.
-        exception : `TestLoadingError`
+        exception : `BaseException`
             The occurred exception.
         """
         exception_message_parts = []
-        render_exception_into(exception.source_exception, exception_message_parts, filter=ignore_module_import_frame)
+        render_exception_into(exception, exception_message_parts, filter=_ignore_module_import_frame)
         exception_message = ''.join(exception_message_parts)
         
         self = object.__new__(cls)
@@ -66,19 +65,3 @@ class TestFileLoadFailure(RichAttributeErrorBaseType):
     def __repr__(self):
         """Returns the test loading failure's representation."""
         return f'<{self.__class__.__name__} of {reprlib.repr(self.path)}>'
-    
-    
-    def get_full_message(self):
-        """
-        Gets the full error message of the failure.
-        
-        Returns
-        -------
-        full_message : `str`
-        """
-        return ''.join([
-            'Exception occurred while loading:\n',
-            self.path,
-            '\n\n',
-            self.exception_message,
-        ])

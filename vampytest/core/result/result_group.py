@@ -15,6 +15,13 @@ class ResultGroup(RichAttributeErrorBaseType):
         The results of the ran test(s).
     skipped : `bool`
         Whether the test is skipped.
+    
+    Utility Methods
+    - ``.is_skipped``
+    - ``.is_passed``
+    - ``.is_failed``
+    - ``.iter_failure_messages``
+    
     """
     __slots__ = ('case', 'conflict', 'results', 'skipped')
     
