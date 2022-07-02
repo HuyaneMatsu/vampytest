@@ -1,6 +1,6 @@
 __all__ = ('CallState', 'ResultState', 'Handle',)
 
-import reprlib
+import gc, reprlib
 
 from .assertions import AssertionException
 from .helpers import hash_dict, hash_list, hash_object, maybe_merge_iterables, maybe_merge_mappings
@@ -477,12 +477,17 @@ class Handle(RichAttributeErrorBaseType):
             self.final_call_state = call_state
     
     
-    def _invoke_test(self):
+    def _get_call_parameters(self):
         """
-        Invokes the test of the test handle.
-        """
-        test = self.test
+        Gets call parameters to invoke the test with.
         
+        Returns
+        -------
+        positional_parameters : `list` of `Any`
+            Positional parameters to call the test with.
+        keyword_parameters : `dict` of (`str`, `Any`) items
+            Keyword parameters to call the test with.
+        """
         call_state = self.final_call_state
         
         if call_state is None:
@@ -499,6 +504,17 @@ class Handle(RichAttributeErrorBaseType):
         if (keyword_parameters is None):
             keyword_parameters = {}
         
+        return positional_parameters, keyword_parameters
+    
+    
+    def _invoke_test(self):
+        """
+        Invokes the test of the test handle.
+        """
+        positional_parameters, keyword_parameters = self._get_call_parameters()
+        
+        test = self.test
+        
         try:
             returned_value = test(*positional_parameters, **keyword_parameters)
         except BaseException as err:
@@ -506,6 +522,10 @@ class Handle(RichAttributeErrorBaseType):
             raised_exception = err
         else:
             raised_exception = None
+        
+        
+        gc.collect()
+        gc.collect()
         
         self.original_result_state = ResultState(returned_value, raised_exception)
     

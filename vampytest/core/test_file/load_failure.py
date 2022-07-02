@@ -27,7 +27,14 @@ def _ignore_module_import_frame(file_name, name, line_number, line):
     should_show_frame : `bool`
         Whether the frame should be shown.
     """
-    return (file_name != VAMPYTEST_TEST_FILE_PATH) or (name != '_get_module') or (line != '__import__(import_route)')
+    should_show_frame = True
+    
+    if file_name == VAMPYTEST_TEST_FILE_PATH:
+        if name == '_try_load_module':
+            if line == '__import__(import_route)':
+                should_show_frame = False
+    
+    return should_show_frame
 
 
 class TestFileLoadFailure(RichAttributeErrorBaseType):
