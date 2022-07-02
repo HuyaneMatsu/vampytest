@@ -1,4 +1,5 @@
 from .assertions import *
+from .environment import *
 from .event_handling import *
 from .events import *
 from .result import *
@@ -14,6 +15,7 @@ from .utils import *
 
 __all__ = (
     *assertions.__all__,
+    *environment.__all__,
     *event_handling.__all__,
     *events.__all__,
     *result.__all__,

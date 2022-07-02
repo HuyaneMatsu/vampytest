@@ -507,27 +507,27 @@ class Handle(RichAttributeErrorBaseType):
         return positional_parameters, keyword_parameters
     
     
-    def _invoke_test(self):
+    def _invoke_test(self, environment_manager):
         """
         Invokes the test of the test handle.
+        
+        Parameters
+        ----------
+        environment_manager : ``EnvironmentManager``
+            Testing environment manager.
         """
         positional_parameters, keyword_parameters = self._get_call_parameters()
         
         test = self.test
         
-        try:
-            returned_value = test(*positional_parameters, **keyword_parameters)
-        except BaseException as err:
-            returned_value = None
-            raised_exception = err
-        else:
-            raised_exception = None
+        environment = environment_manager.get_environment_for_test(test)
         
+        result_state = environment.run(test, positional_parameters, keyword_parameters)
         
         gc.collect()
         gc.collect()
         
-        self.original_result_state = ResultState(returned_value, raised_exception)
+        self.original_result_state = result_state
     
     
     def _exit_test_wrapper_contexts(self, test_wrapper_contexts):
@@ -589,9 +589,14 @@ class Handle(RichAttributeErrorBaseType):
         return test_result
     
     
-    def invoke(self):
+    def invoke(self, environment_manager):
         """
         Invokes the test.
+        
+        Parameters
+        ----------
+        environment_manager : ``EnvironmentManager``
+            Testing environment manager.
         
         Returns
         -------
@@ -612,7 +617,7 @@ class Handle(RichAttributeErrorBaseType):
                 return test_result
             
             try:
-                self._invoke_test()
+                self._invoke_test(environment_manager)
             finally:
                 test_result = self._exit_test_wrapper_contexts(test_wrapper_contexts)
                 if (test_result is not None):

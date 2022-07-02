@@ -1,7 +1,7 @@
 __all__ = ('FailureRaising',)
 
-from ...assertions import AssertionException
-from ...handle import __file__ as VAMPYTEST_HANDLE_FILE_PATH
+from ...environment.default import __file__ as VAMPYTEST_ENVIRONMENT_DEFAULT_FILE_PATH
+from ...environment.scarletio_coroutine import __file__ as VAMPYTEST_ENVIRONMENT_SCARLETIO_COROUTINE_FILE_PATH
 
 from .base import FailureBase
 from .helpers import add_documentation_into, add_route_parts_into, render_parameters_into
@@ -29,11 +29,19 @@ def ignore_invoke_test_frame(file_name, name, line_number, line):
     should_show_frame : `bool`
         Whether the frame should be shown.
     """
-    return (
-        (file_name != VAMPYTEST_HANDLE_FILE_PATH) or
-        (name != '_invoke_test') or
-        (line != 'returned_value = test(*positional_parameters, **keyword_parameters)')
-    )
+    should_show_frame = True
+    
+    if file_name == VAMPYTEST_ENVIRONMENT_DEFAULT_FILE_PATH:
+        if name == 'run':
+            if line == 'returned_value = test(*positional_parameters, **keyword_parameters)':
+                should_show_frame = False
+    
+    elif file_name == VAMPYTEST_ENVIRONMENT_SCARLETIO_COROUTINE_FILE_PATH:
+        if name == '_run_async':
+            if line == 'returned_value = await test(*positional_parameters, **keyword_parameters)':
+                should_show_frame = False
+    
+    return should_show_frame
 
 
 class FailureRaising(FailureBase):
@@ -106,7 +114,7 @@ class FailureRaising(FailureBase):
         failure_message_parts.append('\nParameters: ')
         render_parameters_into(self.handle.final_call_state, failure_message_parts)
         
-        failure_message_parts.append('\nExpected: ')
+        failure_message_parts.append('\nExpected return: ')
         expected_exceptions = self.expected_exceptions
         if expected_exceptions is None:
             failure_message_parts.append('N/A')
@@ -131,7 +139,7 @@ class FailureRaising(FailureBase):
             failure_message_parts.append('true' if self.accept_subtypes else 'false')
         
         
-        failure_message_parts.append('\nReceived:')
+        failure_message_parts.append('\nReceived return:')
         exception_received = self.exception_received
         if (exception_received is None):
             failure_message_parts.append('N/A')

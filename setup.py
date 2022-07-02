@@ -52,6 +52,7 @@ setup(
     packages = [
         'vampytest.core',
         'vampytest.core.assertions',
+        'vampytest.core.environment',
         'vampytest.core.event_handling',
         'vampytest.core.events',
         'vampytest.core.result',

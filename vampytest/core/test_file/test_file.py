@@ -324,11 +324,16 @@ class TestFile(RichAttributeErrorBaseType):
             yield from test_cases
     
     
-    def iter_invoke_test_cases(self):
+    def iter_invoke_test_cases(self, environment_manager):
         """
         Iterates over the test cases of the file and invokes them. Yields the test cases' results.
         
         This method is an iterable generator.
+        
+        Parameters
+        ----------
+        environment_manager : ``EnvironmentManager``
+            Testing environment manager.
         
         Yields
         ------
@@ -339,7 +344,7 @@ class TestFile(RichAttributeErrorBaseType):
             return (yield from result_groups)
         
         for test_case in self.iter_test_cases():
-            result_group = test_case.invoke()
+            result_group = test_case.invoke(environment_manager)
             
             if (result_groups is None):
                 result_groups = []

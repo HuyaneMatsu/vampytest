@@ -67,10 +67,10 @@ class FailureReturning(FailureBase):
         failure_message_parts.append('\nParameters: ')
         render_parameters_into(self.handle.final_call_state, failure_message_parts)
         
-        failure_message_parts.append('\nExpected: ')
+        failure_message_parts.append('\nExpected return: ')
         failure_message_parts.append(repr(self.expected_value))
         
-        failure_message_parts.append('\nReceived: ' )
+        failure_message_parts.append('\nReceived return: ' )
         failure_message_parts.append(repr(self.received_value))
         
         

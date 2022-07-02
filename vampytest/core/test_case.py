@@ -145,9 +145,14 @@ class TestCase(RichAttributeErrorBaseType):
             return wrapper.check_conflicts()
     
     
-    def invoke(self):
+    def invoke(self, environment_manager):
         """
         Invokes the test case.
+        
+        Parameters
+        ----------
+        environment_manager : ``EnvironmentManager``
+            Testing environment manager.
         
         Returns
         -------
@@ -162,7 +167,7 @@ class TestCase(RichAttributeErrorBaseType):
             return test_result_group.as_skipped()
         
         for handler in self._iter_handles():
-            test_result = handler.invoke()
+            test_result = handler.invoke(environment_manager)
             test_result_group = test_result_group.with_result(test_result)
         
         return test_result_group

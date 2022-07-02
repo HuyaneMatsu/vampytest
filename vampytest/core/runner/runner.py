@@ -7,6 +7,7 @@ from sys import path as system_paths, modules as system_modules
 
 from ... import __package__ as PACKAGE_NAME
 
+from ..environment import EnvironmentManager
 from ..events import (
     FileLoadDoneEvent, FileRegistrationEvent, FileRegistrationDoneEvent, FileTestingDoneEvent, TestDoneEvent,
     TestingEndEvent, TestingStartEvent
@@ -127,6 +128,8 @@ class TestRunner(RichAttributeErrorBaseType):
         Whether testing is stopped.
     _teardown_callbacks : `None`, `list` of `callable`
         Functions to call when the tests are finished.
+    environment_manager : ``EnvironmentManager``
+        Testing environment manager.
     event_handler_manager : ``EventHandlerManager``
         Event handler container.
     
@@ -136,9 +139,11 @@ class TestRunner(RichAttributeErrorBaseType):
     - ``.stop``
     - ``.add_teardown_callback``
     """
-    __slots__ = ('_base_path', '_path_parts', '_stopped', '_teardown_callbacks', 'event_handler_manager')
+    __slots__ = (
+        '_base_path', '_path_parts', '_stopped', '_teardown_callbacks', 'environment_manager', 'event_handler_manager'
+    )
     
-    def __new__(cls, base_path, path_parts=None, *, event_handler_manager=None):
+    def __new__(cls, base_path, path_parts=None, *, environment_manager=None, event_handler_manager=None):
         """
         Parameters
         ----------
@@ -146,6 +151,8 @@ class TestRunner(RichAttributeErrorBaseType):
             The path to run tests from.
         path_parts : `None`, `list` of `str` = `None`, Optional
             Added path parts to specify from which which directory we want to collect the tests from.
+        environment_manager : `None`, ``EnvironmentManager`` = `None`, Optional (Keyword only)
+            Testing environment manager.
         event_handler_manager : `None`, ``EventHandlerManager`` = `None`, Optional (Keyword only)
             Event handler container.
         """
@@ -153,6 +160,11 @@ class TestRunner(RichAttributeErrorBaseType):
             path_parts = []
         else:
             path_parts = path_parts.copy()
+        
+        if environment_manager is None:
+            environment_manager = EnvironmentManager()
+        
+        environment_manager = environment_manager.populate()
         
         if event_handler_manager is None:
             event_handler_manager = create_default_event_handler_manager()
@@ -162,6 +174,7 @@ class TestRunner(RichAttributeErrorBaseType):
         self._path_parts = path_parts
         self._stopped = False
         self._teardown_callbacks = None
+        self.environment_manager = environment_manager
         self.event_handler_manager = event_handler_manager
         return self
     
@@ -263,7 +276,7 @@ class TestRunner(RichAttributeErrorBaseType):
                 # Run test file if loaded successfully
                 if test_file.is_loaded_with_success():
                     
-                    for result_group in test_file.iter_invoke_test_cases():
+                    for result_group in test_file.iter_invoke_test_cases(self.environment_manager):
                         yield TestDoneEvent(context, result_group)
                     
                     yield FileTestingDoneEvent(context, test_file)
