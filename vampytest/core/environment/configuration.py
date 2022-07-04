@@ -1,6 +1,10 @@
-__all__ = ('set_global_environment', 'set_directory_environment', 'set_file_environment')
+__all__ = (
+    'apply_environments_for_file_at', 'set_global_environment', 'set_directory_environment', 'set_file_environment'
+)
 
-from os.path import dirname as get_directory_name
+from os.path import basename as get_file_name, dirname as get_directory_name
+
+from .default import DefaultEnvironment
 
 from scarletio import get_last_module_frame
 
@@ -23,9 +27,16 @@ def _set_environment_by_scope(environment, scope, detail):
         The environment to store.
     scope : `inŧ`
         The scope of the storage.
-    detail : `None`, `str`
+    detail : `str`
         Additional detail for lookup.
+        
+    Raises
+    ------
+    TypeError
+        - If `environment`'s type is incorrect.
     """
+    _check_environment_type(environment)
+    
     try:
         environment_by_detail = ENVIRONMENTS_BY_SCOPE[scope]
     except KeyError:
@@ -33,15 +44,15 @@ def _set_environment_by_scope(environment, scope, detail):
         ENVIRONMENTS_BY_SCOPE[scope] = environment_by_detail
     
     try:
-        environments_by_type = environment_by_detail[detail]
+        environments_by_identifier = environment_by_detail[detail]
     except KeyError:
-        environments_by_type = {}
-        environment_by_detail[detail] = environments_by_type
+        environments_by_identifier = {}
+        environment_by_detail[detail] = environments_by_identifier
     
-    environments_by_type[environment.type] = environment
+    environments_by_identifier[environment.identifier] = environment
 
 
-def _get_last_module_file_name():
+def _get_last_module_file_path():
     """
     Gets the file name of the module from where the last function was called.
     
@@ -60,20 +71,6 @@ def _get_last_module_file_name():
     return spec.origin
 
 
-def _get_last_module_directory_name():
-    """
-    Gets the directory's name of the module from where the last function was called.
-    
-    Returns
-    -------
-    file_name : `None`, `str`
-    """
-    file_name = _get_last_module_file_name()
-    if file_name is not None:
-        return get_directory_name(file_name)
-
-
-
 def set_global_environment(environment):
     """
     Sets an environment for global scope.
@@ -82,11 +79,16 @@ def set_global_environment(environment):
     ----------
     environment : ``Environment``
         The environment to set.
+        
+    Raises
+    ------
+    TypeError
+        - If `environment`'s type is incorrect.
     """
-    return _set_environment_by_scope(environment, ENVIRONMENT_SCOPE_GLOBAL, None)
+    return _set_environment_by_scope(environment, ENVIRONMENT_SCOPE_GLOBAL, '')
 
 
-def set_directory_environment(environment, *, directory_name=None):
+def set_directory_environment(environment):
     """
     Sets an environment for directory scope.
     
@@ -95,22 +97,30 @@ def set_directory_environment(environment, *, directory_name=None):
     environment : ``Environment``
         The environment to set.
     
-    directory_name : `None`, `str` = `None`, Optional (Keyword only)
-        The directory's name to where the environment should be set,
-        
-        If not given will use the last module's directory from where you called it.
+    Raises
+    ------
+    RuntimeError
+        - If not called from an `__init__.py` file.
+    TypeError
+        - If `environment`'s type is incorrect.
     """
-    if (directory_name is None):
-        directory_name = _get_last_module_directory_name()
-        if (directory_name is None):
-            raise RuntimeError(
-                f'Cannot set directory level environment, top level file could not be detected successfully.'
-            )
+    file_path = _get_last_module_file_path()
+    if file_path is None:
+        raise RuntimeError(
+            f'Cannot set directory level environment, top level file could not be detected successfully.'
+        )
+    
+    if get_file_name(file_path) != '__init__.py':
+        raise RuntimeError(
+            f'Cannot set directory level environment, top level file is not an `__init__.py` file.'
+        )
+    
+    directory_name = get_directory_name(file_path)
     
     return _set_environment_by_scope(environment, ENVIRONMENT_SCOPE_DIRECTORY, directory_name)
 
 
-def set_file_environment(environment, *, file_name=None):
+def set_file_environment(environment):
     """
     Sets an environment for directory scope.
     
@@ -119,16 +129,114 @@ def set_file_environment(environment, *, file_name=None):
     environment : ``Environment``
         The environment to set.
     
-    file_name : `None`, `str` = `None`, Optional (Keyword only)
-        The file's name to where the environment should be set,
-        
-        If not given will use the last module's file from where you called it.
+    Raises
+    ------
+    TypeError
+        - If `environment`'s type is incorrect.
     """
-    if (file_name is None):
-        file_name = _get_last_module_file_name()
-        if (file_name is None):
-            raise RuntimeError(
-                f'Cannot set file level environment, top level file could not be detected successfully.'
-            )
+    file_path = _get_last_module_file_path()
+    if (file_path is None):
+        raise RuntimeError(
+            f'Cannot set file level environment, top level file could not be detected successfully.'
+        )
     
-    return _set_environment_by_scope(environment, ENVIRONMENT_SCOPE_FILE, file_name)
+    return _set_environment_by_scope(environment, ENVIRONMENT_SCOPE_FILE, file_path)
+
+
+def _iter_environments_for_file_at(path):
+    """
+    Iterates  over the registered environments for teh given `path`.
+    
+    This method is an iterable generator.
+    
+    Parameters
+    ----------
+    path : `str`
+        The respective file's path.
+    """
+    # Global
+    try:
+        environment_by_detail = ENVIRONMENTS_BY_SCOPE[ENVIRONMENT_SCOPE_GLOBAL]
+    except KeyError:
+        pass
+    else:
+        try:
+            environments_by_identifier = environment_by_detail['']
+        except KeyError:
+            pass
+        else:
+            yield from environments_by_identifier.values()
+    
+    # Directory
+    try:
+        environment_by_detail = ENVIRONMENTS_BY_SCOPE[ENVIRONMENT_SCOPE_DIRECTORY]
+    except KeyError:
+        pass
+    else:
+        directory_name = get_directory_name(path)
+        
+        try:
+            environments_by_identifier = environment_by_detail[directory_name]
+        except KeyError:
+            pass
+        else:
+            yield from environments_by_identifier.values()
+    
+    # File
+    try:
+        environment_by_detail = ENVIRONMENTS_BY_SCOPE[ENVIRONMENT_SCOPE_FILE]
+    except KeyError:
+        pass
+    else:
+        try:
+            environments_by_identifier = environment_by_detail[path]
+        except KeyError:
+            pass
+        else:
+            yield from environments_by_identifier.values()
+
+
+def apply_environments_for_file_at(environment_manager, path):
+    """
+    Applies environments on the given manager for the given path.
+    
+    Parameters
+    ----------
+    environment_manager : ``EnvironmentManager``
+        The environmental manager to alter.
+    path : `str`
+        The respective file's path.
+    
+    Returns
+    -------
+    environment_manager : ``EnvironmentManager``
+    """
+    return environment_manager.with_environment(*_iter_environments_for_file_at(path))
+
+
+def _check_environment_type(environment):
+    """
+    Checks whether the given `environment` is really an environment.
+    
+    Parameters
+    ----------
+    environment : ``Environment``
+    
+    Raises
+    ------
+    TypeError
+        - If `environment`'s type is incorrect.
+    """
+    if not isinstance(environment, DefaultEnvironment):
+        # Check whether they forgot to instance it.
+        # If we just drop a random type error, they wont find what they messed up.
+        if isinstance(environment, type) and issubclass(environment, DefaultEnvironment):
+            raise TypeError(
+                f'You wanted to register an environment without instancing it, '
+                f'got {environment.__name__}'
+            )
+        
+        raise TypeError(
+            f'`environment` can be `{DefaultEnvironment.__name__}`, '
+            f'got {environment.__class__.__name__}; {environment!r}.'
+        )

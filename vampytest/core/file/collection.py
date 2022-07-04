@@ -27,7 +27,7 @@ def iter_collect_test_files(base_path, path_parts):
     path_parts = path_parts.copy()
     path = join_paths(base_path, *path_parts)
     if is_file(path):
-        yield TestFile(path, path_parts)
+        yield TestFile(path, path_parts, False)
         return
     
     if is_directory(path):
@@ -51,6 +51,9 @@ def is_test_file_name(file_name):
     -------
     is_test_file_name : `bool`
     """
+    if file_name.startswith('_'):
+        return False
+    
     if file_name == 'test.py':
         return True
     
@@ -108,15 +111,37 @@ def iter_tests_from_directory(directory_path, path_parts, within_test_directory)
     file_names = list_directory(directory_path)
     file_names.sort()
     
-    for file_name in file_names:
-        file_path = join_paths(directory_path, file_name)
-        path_parts.append(file_name)
+    # First check directory
+    if within_test_directory:
+        directory = None
+        for file_name in file_names:
+            file_path = join_paths(directory_path, file_name)
+            path_parts.append(file_name)
+            
+            if is_file(file_path):
+                if file_name == '__init__.py':
+                    directory = TestFile(file_path, path_parts, True)
+                
+                if is_test_file_name(file_name):
+                    test_file = TestFile(file_path, path_parts, False)
+                    
+                    if (directory is None):
+                        yield test_file
+                    
+                    else:
+                        directory.feed_sub_file(test_file)
+            
+            del path_parts[-1]
         
-        if is_file(file_path):
-            if within_test_directory and is_test_file_name(file_name):
-                yield TestFile(file_path, path_parts)
-        
-        if is_directory(file_path):
-            yield from iter_tests_from_directory(file_path, path_parts, is_test_directory_name(file_name))
-        
-        del path_parts[-1]
+        if (directory is not None):
+            yield directory
+    
+    else:
+        for file_name in file_names:
+            file_path = join_paths(directory_path, file_name)
+            path_parts.append(file_name)
+            
+            if is_directory(file_path):
+                yield from iter_tests_from_directory(file_path, path_parts, is_test_directory_name(file_name))
+            
+            del path_parts[-1]

@@ -2,7 +2,7 @@ __all__ = ('DefaultEnvironment',)
 
 from ..handle import ResultState
 
-from .type_ import EnvironmentType
+from .constants import ENVIRONMENT_TYPE_DEFAULT
 
 from scarletio import RichAttributeErrorBaseType
 
@@ -13,12 +13,12 @@ class DefaultEnvironment(RichAttributeErrorBaseType):
     
     Class Attributes
     ----------------
-    type : ``EnvironmentType`` = `EnvironmentType.default`
+    identifier : `int` = `ENVIRONMENT_TYPE_DEFAULT`
         Represents for which environment the test is applicable for.
     """
     __slots__ = ()
     
-    type = EnvironmentType.default
+    identifier = ENVIRONMENT_TYPE_DEFAULT
     
     def __new__(cls):
         """

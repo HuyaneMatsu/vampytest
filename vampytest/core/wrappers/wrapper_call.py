@@ -320,7 +320,11 @@ class WrapperCall(WrapperBase):
         result_state = yield call_state
         
         # Ignore `AssertionException`-s.
-        raised_exception = result_state.raised_exception
+        if result_state is None:
+            raised_exception = None
+        else:
+            raised_exception = result_state.raised_exception
+        
         if (raised_exception is None) or (not isinstance(raised_exception, AssertionException)):
             
             if self.is_raising:
@@ -334,7 +338,8 @@ class WrapperCall(WrapperBase):
                     )
                 
                 if try_match_exception(raising_exceptions, raised_exception, raising_accept_subtypes):
-                    result_state = result_state.with_exception(None)
+                    if (result_state is not None):
+                        result_state = result_state.with_exception(None)
                 
                 else:
                     return Result(handle).with_exception(
@@ -347,7 +352,11 @@ class WrapperCall(WrapperBase):
                 if (raised_exception is not None):
                     return Result(handle).with_exception(None, raised_exception, False)
                 
-                returned_value = result_state.returned_value
+                if (result_state is None):
+                    returned_value = None
+                else:
+                    returned_value = result_state.returned_value
+                
                 returning_value = self.returning_value
                 
                 if returned_value != returning_value:
@@ -395,6 +404,7 @@ class WrapperCall(WrapperBase):
             return (self.calling_positional_parameters, self.calling_keyword_parameters)
     
     
+    @classmethod
     def raising_constructor(cls,  *exception_types, raising_accept_subtypes=True):
         """
         Creates a new raising wrapper.

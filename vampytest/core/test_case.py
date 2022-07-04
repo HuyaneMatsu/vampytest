@@ -186,9 +186,16 @@ class TestCase(RichAttributeErrorBaseType):
         wrapper = self.wrapper
         if (wrapper is None):
             wrapper_groups = None
+            environments = None
         
         else:
             wrapper_groups = set()
+            
+            environment_wrappers = [*wrapper.iter_environments()]
+            if environment_wrappers:
+                environments = tuple(environment_wrappers)
+            else:
+                environments = None
             
             wrappers = [wrapper for wrapper in wrapper.iter_wrappers() if not wrapper.is_ignored_when_testing()]
             
@@ -215,8 +222,11 @@ class TestCase(RichAttributeErrorBaseType):
         test = self.test
         
         if (wrapper_groups is None):
-            yield Handle(self, test)
+            yield Handle(self, test, None, environments)
         
         else:
             for wrapper_group in wrapper_groups:
-                yield Handle(self, test, wrapper_group)
+                if (wrapper_group is not None):
+                    wrapper_group = tuple(wrapper_group)
+                
+                yield Handle(self, test, wrapper_group, environments)

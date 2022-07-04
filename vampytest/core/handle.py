@@ -316,6 +316,8 @@ class Handle(RichAttributeErrorBaseType):
     ----------
     case : ``TestCase``
         The parent test case.
+    environments : `None`, `tuple` of ``Environment``
+        Environments to use to use when testing.
     final_call_state : `None`, ``CallState``
         The final call state, with which the test is called.
     final_result_state : `None`, ``ResultState``
@@ -330,11 +332,11 @@ class Handle(RichAttributeErrorBaseType):
         Wrappers wrapping the test.
     """
     __slots__ = (
-        'case', 'final_call_state', 'final_result_state', 'original_call_state', 'original_result_state', 'test',
-        'wrappers'
+        'case', 'environments', 'final_call_state', 'final_result_state', 'original_call_state',
+        'original_result_state', 'test', 'wrappers'
     )
     
-    def __new__(cls, case, test, wrappers=None):
+    def __new__(cls, case, test, wrappers, environments):
         """
         Creates a new test handle.
         
@@ -344,15 +346,17 @@ class Handle(RichAttributeErrorBaseType):
             The parent test case.
         test : `callable`
             The test to call.
+        wrappers : `None`, `tuple` of ``WrapperBase``
+            Wrappers wrapping the test.
+        environments : `None`, `tuple` of ``Environment``
+            Environments to use to use when testing.
         """
-        if (wrappers is not None):
-            wrappers = tuple(wrappers)
-        
         self = object.__new__(cls)
         
         self.case = case
         self.test = test
         self.wrappers = wrappers
+        self.environments = environments
         
         self.original_call_state = None
         self.final_call_state = None
@@ -589,6 +593,20 @@ class Handle(RichAttributeErrorBaseType):
         return test_result
     
     
+    def _iter_applied_environments(self):
+        """
+        Iterates over the applies the environment wrappers to the test.
+        
+        This method is an iterable generator.
+        
+        Yields
+        ------
+        environment : ``Environment``
+        """
+        environments = self.environments
+        if (environments is not None):
+            yield from environments
+    
     def invoke(self, environment_manager):
         """
         Invokes the test.
@@ -603,6 +621,8 @@ class Handle(RichAttributeErrorBaseType):
         test_result : ``Result``
             Result of the test.
         """
+        environment_manager = environment_manager.with_environment(*self._iter_applied_environments())
+        
         test_wrapper_contexts = []
         try:
             self._initialise_test_wrapper_contexts(test_wrapper_contexts)
@@ -618,7 +638,11 @@ class Handle(RichAttributeErrorBaseType):
             
             try:
                 self._invoke_test(environment_manager)
-            finally:
+            except:
+                self._exit_test_wrapper_contexts(test_wrapper_contexts)
+                raise
+            
+            else:
                 test_result = self._exit_test_wrapper_contexts(test_wrapper_contexts)
                 if (test_result is not None):
                     return test_result

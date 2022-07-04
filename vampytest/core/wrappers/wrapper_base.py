@@ -333,3 +333,17 @@ class WrapperBase(RichAttributeErrorBaseType):
         call_state = yield None
         result_state = yield call_state
         yield result_state
+    
+    
+    def iter_environments(self):
+        """
+        Iterates over the environments registered to the wrapper.
+        
+        This method is an iterable generator.
+        
+        Yields
+        ------
+        environment : ``DefaultEnvironment``
+        """
+        return
+        yield

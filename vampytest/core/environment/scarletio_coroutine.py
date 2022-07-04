@@ -4,8 +4,8 @@ from time import sleep as sync_sleep
 
 from ..handle import ResultState
 
+from .constants import ENVIRONMENT_TYPE_COROUTINE
 from .default import DefaultEnvironment
-from .type_ import EnvironmentType
 
 from scarletio import copy_docs, EventThread
 
@@ -29,12 +29,12 @@ class ScarletioCoroutineEnvironment(DefaultEnvironment):
     
     Class Attributes
     ----------------
-    type : ``EnvironmentType`` = `EnvironmentType.coroutine`
+    identifier : `int` = `ENVIRONMENT_TYPE_COROUTINE`
         Represents for which environment the test is applicable for.
     """
     __slots__ = ('event_loop', 'timeout',)
     
-    type = EnvironmentType.coroutine
+    identifier = ENVIRONMENT_TYPE_COROUTINE
     
     def __new__(cls, *, event_loop=None, timeout=DEFAULT_TIMEOUT):
         """

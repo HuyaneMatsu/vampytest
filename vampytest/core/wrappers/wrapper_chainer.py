@@ -122,6 +122,12 @@ class WrapperChainer(WrapperBase):
             yield from wrapper.iter_wrappers()
     
     
+    @copy_docs(WrapperBase.iter_environments)
+    def iter_environments(self):
+        for wrapper in self.wrappers:
+            yield from wrapper.iter_environments()
+    
+    
     def append(self, wrapper):
         """
         Adds a new wrapper to chain up.

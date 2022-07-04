@@ -1,11 +1,13 @@
-__all__ = ('get_function_environment_type',)
+__all__ = ('get_function_environment_identifier',)
 
-from .type_ import EnvironmentType
-
+from .constants import (
+    ENVIRONMENT_TYPE_COROUTINE, ENVIRONMENT_TYPE_COROUTINE_GENERATOR, ENVIRONMENT_TYPE_DEFAULT,
+    ENVIRONMENT_TYPE_GENERATOR
+)
 from scarletio import is_coroutine_function,is_coroutine_generator_function, is_generator_function
 
 
-def get_function_environment_type(func):
+def get_function_environment_identifier(func):
     """
     Gets the environment type depending on the given function's type.
     
@@ -16,15 +18,15 @@ def get_function_environment_type(func):
     
     Returns
     -------
-    type_ : ``EnvironmentType``
+    identifier : `int`
     """
     if is_coroutine_generator_function(func):
-        return EnvironmentType.coroutine_generator
+        return ENVIRONMENT_TYPE_COROUTINE_GENERATOR
     
     if is_coroutine_function(func):
-        return EnvironmentType.coroutine
+        return ENVIRONMENT_TYPE_COROUTINE
     
     if is_generator_function(func):
-        return EnvironmentType.generator
+        return ENVIRONMENT_TYPE_GENERATOR
     
-    return EnvironmentType.default
+    return ENVIRONMENT_TYPE_DEFAULT

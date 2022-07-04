@@ -2,6 +2,7 @@ __all__ = ('TestFile', )
 
 import sys
 
+from ..environment import apply_environments_for_file_at
 from ..utils import get_short_path_repr
 from ..test_case import TestCase
 from ..wrappers import WrapperBase
@@ -79,12 +80,16 @@ class TestFile(RichAttributeErrorBaseType):
     
     Attributes
     ----------
+    _directory : `bool`
+        Whether the test file is a directory.
     _load_failure : `None`, ``TestFileLoadFailure``
         If loading the test file fails, this attribute is set to details about the occurred exception.
     _module : `None`, `ModuleType`
         The module of the test file. Only set when the first call is made to it.
     _result_groups : `None`, `list` of ``ResultGroup``
         Results of already ran tests.
+    _sub_files : `None`, `list` of ``TestFile``
+        Sub files if we are a directory.
     _test_cases : `None`, `list` of ``TestCase``
         The collected test_cases from the file if any. These test_cases are on collected after calling ``.get_test_cases`` for
         the first time.
@@ -100,6 +105,8 @@ class TestFile(RichAttributeErrorBaseType):
         - ``.is_loaded_with_success``
         - ``.is_loaded_with_failure``
         - ``.get_load_failure``
+        - ``.is_directory``
+        - ``.is_loaded``
     
     - Iterators
     
@@ -107,6 +114,7 @@ class TestFile(RichAttributeErrorBaseType):
         - ``.iter_passed_result_groups``
         - ``.iter_skipped_result_groups``
         - ``.iter_failed_result_groups``
+        - ``.iter_sub_files``
     
     - Counters
     
@@ -115,6 +123,7 @@ class TestFile(RichAttributeErrorBaseType):
         - ``.get_passed_test_count``
         - ``.get_skipped_test_count``
         - ``.get_failed_test_count``
+        - ``.get_test_file_count``
     
     - Internal
         
@@ -123,10 +132,14 @@ class TestFile(RichAttributeErrorBaseType):
         - ``.get_test_cases``
         - ``.iter_test_cases``
         - ``.iter_invoke_test_cases``
+        - ``.feed_sub_file``
+        - ``.iter_test_files``
     """
-    __slots__ = ('_load_failure', '_module', '_result_groups', '_test_cases', 'import_route', 'path')
+    __slots__ = (
+        '_directory', '_load_failure', '_module', '_result_groups', '_sub_files', '_test_cases', 'import_route', 'path'
+    )
     
-    def __new__(cls, path, path_parts):
+    def __new__(cls, path, path_parts, directory):
         """
         Creates an new test file.
         
@@ -136,6 +149,8 @@ class TestFile(RichAttributeErrorBaseType):
             Absolute path to the file.
         path_parts: `list` of `str`
             Path parts from base path to the file.
+        directory : `bool`
+            Whether the test file is a directory.
         """
         if path_parts:
             last_path_part = path_parts[-1]
@@ -145,9 +160,11 @@ class TestFile(RichAttributeErrorBaseType):
         import_route = '.'.join(path_parts)
         
         self = object.__new__(cls)
+        self._directory = directory
         self._load_failure = None
         self._module = None
         self._result_groups = None
+        self._sub_files = None
         self._test_cases = None
         self.import_route = import_route
         self.path = path
@@ -226,7 +243,7 @@ class TestFile(RichAttributeErrorBaseType):
     
     def try_load_test_cases(self):
         """
-        Loads the file's test_cases.
+        Loads the file's test_cases. Does method if the test file is a directory.
         
         If loading fails, returns an object representing its failure.
         
@@ -235,6 +252,9 @@ class TestFile(RichAttributeErrorBaseType):
         loaded : `bool`
             Whether the tests loaded.
         """
+        if self._directory:
+            return False
+        
         module = self.get_module()
         if module is None:
             return False
@@ -251,6 +271,17 @@ class TestFile(RichAttributeErrorBaseType):
         
         self._test_cases = test_cases
         return True
+    
+    
+    def is_loaded(self):
+        """
+        Returns whether the test file was loaded.
+        
+        Returns
+        -------
+        is_loaded : `bool`
+        """
+        return self._module is not None
     
     
     def is_loaded_with_success(self):
@@ -299,14 +330,7 @@ class TestFile(RichAttributeErrorBaseType):
         TestLoadingError
             Loading test file failed.
         """
-        test_cases = self._test_cases
-        if (test_cases is None):
-            test_cases = []
-        
-        else:
-            test_cases = test_cases.copy()
-        
-        return test_cases
+        return [*self.iter_test_cases()]
     
     
     def iter_test_cases(self):
@@ -322,11 +346,15 @@ class TestFile(RichAttributeErrorBaseType):
         test_cases = self._test_cases
         if (test_cases is not None):
             yield from test_cases
+        
+        for sub_file in self.iter_sub_files():
+            yield from sub_file.iter_test_cases()
     
     
     def iter_invoke_test_cases(self, environment_manager):
         """
-        Iterates over the test cases of the file and invokes them. Yields the test cases' results.
+        Iterates over the test cases of the file and invokes them. Yields the test cases' results. If the file is a
+        directory will do nothing.
         
         This method is an iterable generator.
         
@@ -339,10 +367,14 @@ class TestFile(RichAttributeErrorBaseType):
         ------
         result_group : ``ResultGroup``
         """
+        if self._directory:
+            return
+        
         result_groups = self._result_groups
         if (result_groups is not None):
             return (yield from result_groups)
         
+        environment_manager = apply_environments_for_file_at(environment_manager, self.path)
         for test_case in self.iter_test_cases():
             result_group = test_case.invoke(environment_manager)
             
@@ -369,6 +401,9 @@ class TestFile(RichAttributeErrorBaseType):
         if (result_groups is not None):
             yield from result_groups
         
+        for sub_file in self.iter_sub_files():
+            yield from sub_file.iter_result_groups()
+    
     
     def get_test_case_count(self):
         """
@@ -383,6 +418,9 @@ class TestFile(RichAttributeErrorBaseType):
             test_count = 0
         else:
             test_count = len(test_cases)
+        
+        for sub_file in self.iter_sub_files():
+            test_count += sub_file.get_test_case_count()
         
         return test_count
     
@@ -400,6 +438,9 @@ class TestFile(RichAttributeErrorBaseType):
             ran_test_count = 0
         else:
             ran_test_count = len(result_groups)
+        
+        for sub_file in self.iter_sub_files():
+            ran_test_count += sub_file.get_ran_test_count()
         
         return ran_test_count
     
@@ -480,3 +521,87 @@ class TestFile(RichAttributeErrorBaseType):
         passed_test_count : `int`
         """
         return sum(result_group.is_failed() for result_group in self.iter_result_groups())
+    
+    
+    def feed_sub_file(self, sub_file):
+        """
+        Adds a sub-file if the file is a directory.
+        
+        Parameters
+        ----------
+        sub_file : ``TestFile``
+            The sub file to add.
+        
+        Returns
+        -------
+        added : `bool`
+            Whether teh file was added.
+        """
+        if not self._directory:
+            return False
+        
+        sub_files = self._sub_files
+        if (sub_files is None):
+            sub_files = []
+            self._sub_files = sub_files
+        
+        sub_files.append(sub_file)
+        return True
+    
+    
+    def is_directory(self):
+        """
+        Returns whether the file is a directory.
+        
+        Returns
+        -------
+        is_directory : `bool`
+        """
+        return self._directory
+    
+    
+    def iter_sub_files(self):
+        """
+        Iterates over the sub-files registered under this test file.
+        
+        This method is an iterable generator.
+        
+        Yields
+        ------
+        test_file : ``TestFile``
+        """
+        sub_files = self._sub_files
+        if (sub_files is not None):
+            yield from sub_files
+    
+    
+    def get_test_file_count(self):
+        """
+        Returns how much test files the test file contains including itself.
+        
+        Returns
+        -------
+        test_file_count : `int`
+        """
+        test_file_count = 1
+        
+        for sub_file in self.iter_sub_files():
+            test_file_count += sub_file.get_test_file_count()
+        
+        return test_file_count
+    
+    
+    def iter_test_files(self):
+        """
+        Iterates over the test files. This includes self and the optionally registered sub-files.
+        
+        This method is an iterable generator.
+        
+        Yields
+        ------
+        test_file : ``TestFile``
+        """
+        yield self
+        
+        for sub_file in self.iter_sub_files():
+            yield from sub_file.iter_test_files()

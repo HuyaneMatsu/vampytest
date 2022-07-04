@@ -13,7 +13,7 @@ from ..events import (
     TestingEndEvent, TestingStartEvent
 )
 from ..event_handling import create_default_event_handler_manager
-from ..test_file import iter_collect_test_files
+from ..file import iter_collect_test_files
 
 from .context import RunnerContext
 
@@ -268,18 +268,27 @@ class TestRunner(RichAttributeErrorBaseType):
             yield FileRegistrationDoneEvent(context)
             
             # Load test files
-            for test_file in context.iter_registered_files():
-                test_file.try_load_test_cases()
-                
-                yield FileLoadDoneEvent(context, test_file)
-                
-                # Run test file if loaded successfully
-                if test_file.is_loaded_with_success():
-                    
-                    for result_group in test_file.iter_invoke_test_cases(self.environment_manager):
-                        yield TestDoneEvent(context, result_group)
-                    
-                    yield FileTestingDoneEvent(context, test_file)
+            for registered_file in context.iter_registered_files():
+                for test_file in registered_file.iter_test_files():
+                    if test_file.is_directory():
+                        test_file.get_module()
+                        
+                        yield FileLoadDoneEvent(context, test_file)
+                        
+                        if test_file.is_loaded_with_failure():
+                            break
+                    else:
+                        test_file.try_load_test_cases()
+                        
+                        yield FileLoadDoneEvent(context, test_file)
+                        
+                        # Run test file if loaded successfully
+                        if test_file.is_loaded_with_success():
+                            
+                            for result_group in test_file.iter_invoke_test_cases(self.environment_manager):
+                                yield TestDoneEvent(context, result_group)
+                            
+                            yield FileTestingDoneEvent(context, test_file)
             
             yield TestingEndEvent(context)
         

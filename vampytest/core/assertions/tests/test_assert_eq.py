@@ -7,7 +7,7 @@ def test_assert_eq():
     """
     Tests whether `eq` assertion succeeds.
     """
-    assert_eq(1, 2)
+    assert_eq(1, 1)
 
 
 @revert()

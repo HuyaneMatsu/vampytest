@@ -71,11 +71,10 @@ class RunnerContext(RichAttributeErrorBaseType):
         """
         Returns how much much registered files were collected.
         """
-        registered_files = self._registered_files
-        if (registered_files is None):
-            registered_file_count = 0
-        else:
-            registered_file_count = len(registered_files)
+        registered_file_count = 0
+        
+        for registered_file in self.iter_registered_files():
+            registered_file_count += registered_file.get_test_file_count()
         
         return registered_file_count
     
@@ -92,7 +91,8 @@ class RunnerContext(RichAttributeErrorBaseType):
         """
         registered_files = self._registered_files
         if (registered_files is not None):
-            yield from registered_files
+            for registered_file in registered_files:
+                yield from registered_file.iter_test_files()
     
     
     def get_registered_files(self):
@@ -103,13 +103,7 @@ class RunnerContext(RichAttributeErrorBaseType):
         -------
         registered_files : `list` of ``TestFile``
         """
-        registered_files = self._registered_files
-        if registered_files is None:
-            registered_files = []
-        else:
-            registered_files = registered_files.copy()
-        
-        return registered_files
+        return [*self.iter_registered_files()]
     
     
     def register_file(self, registered_file):
@@ -292,6 +286,17 @@ class RunnerContext(RichAttributeErrorBaseType):
         load_succeeded_file_count : `bool`
         """
         return sum(test_file.is_loaded_with_success() for test_file in self.iter_registered_files())
+    
+    
+    def get_not_loaded_file_count(self):
+        """
+        Returns how much file was not loaded.
+        
+        Returns
+        -------
+        not_loaded_file_count : `bool`
+        """
+        return sum((not test_file.is_loaded()) for test_file in self.iter_registered_files())
     
     
     def iter_load_failed_files(self):
