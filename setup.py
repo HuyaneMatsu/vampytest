@@ -50,6 +50,7 @@ setup(
     long_description_content_type = 'text/markdown',
     name = 'vampytest',
     packages = [
+        'vampytest',
         'vampytest.core',
         'vampytest.core.assertions',
         'vampytest.core.environment',
@@ -57,8 +58,8 @@ setup(
         'vampytest.core.events',
         'vampytest.core.file',
         'vampytest.core.result',
-        'vampytest.core.runner',
         'vampytest.core.result.failures',
+        'vampytest.core.runner',
         'vampytest.core.wrappers',
         'vampytest.main',
     ],
