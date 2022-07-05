@@ -79,6 +79,21 @@ class RunnerContext(RichAttributeErrorBaseType):
         return registered_file_count
     
     
+    def iter_registered_files_shallow(self):
+        """
+        Shallow iterates over the registered files.
+        
+        This method is an iterable generator.
+        
+        Yields
+        ------
+        registered_file : ``TestFile``
+        """
+        registered_files = self._registered_files
+        if (registered_files is not None):
+            yield from registered_files
+    
+    
     def iter_registered_files(self):
         """
         Iterates over the registered files.

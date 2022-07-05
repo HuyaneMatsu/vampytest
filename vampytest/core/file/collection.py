@@ -82,7 +82,7 @@ def is_test_directory_name(directory_name):
     if directory_name == 'tests':
         return True
     
-    if directory_name.startswith('test_'):
+    if directory_name.startswith(('test_', 'tests_')):
         return True
     
     if directory_name.endswith('_tests'):
@@ -122,7 +122,7 @@ def iter_tests_from_directory(directory_path, path_parts, within_test_directory)
                 if file_name == '__init__.py':
                     directory = TestFile(file_path, path_parts, True)
                 
-                if is_test_file_name(file_name):
+                elif is_test_file_name(file_name):
                     test_file = TestFile(file_path, path_parts, False)
                     
                     if (directory is None):

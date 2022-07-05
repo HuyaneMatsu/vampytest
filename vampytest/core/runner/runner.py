@@ -268,7 +268,7 @@ class TestRunner(RichAttributeErrorBaseType):
             yield FileRegistrationDoneEvent(context)
             
             # Load test files
-            for registered_file in context.iter_registered_files():
+            for registered_file in context.iter_registered_files_shallow():
                 for test_file in registered_file.iter_test_files():
                     if test_file.is_directory():
                         test_file.get_module()

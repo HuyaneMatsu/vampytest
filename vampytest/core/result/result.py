@@ -44,19 +44,15 @@ class Result(RichAttributeErrorBaseType):
         
         failures = self.failures
         if (failures is None):
-            field_added = False
+            repr_parts.append(' passed')
         
         else:
             repr_parts.append(' failures=')
             repr_parts.append(repr(failures))
-            field_added = True
         
         if self.reverted:
-            if field_added:
-                repr_parts.append(',')
-            
-            repr_parts.append(' reverted')
-            
+            repr_parts.append(', reverted')
+        
         repr_parts.append('>')
         return ''.join(repr_parts)
     
