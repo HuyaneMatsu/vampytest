@@ -11,4 +11,9 @@
 </p>
 
 <h3></h3>
+
+<p align="center">
+
 *The library currently is in alpha stage. It can run tests but many features might be missing.*
+
+</p>
