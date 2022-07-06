@@ -22,10 +22,12 @@ class AssertionSubtype(AssertionConditionalBase2Value):
         First value to assert subtype with.
     value_2 : `Any`
         The second value to assert subtype with.
+    nullable : `bool`
+        Whether `value` is accepted even if given as `None`.
     """
-    __slots__ = ()
+    __slots__ = ('nullable',)
     
-    def __new__(cls, value, type_, *, reverse=False):
+    def __new__(cls, value, type_, *, reverse=False, nullable=False):
         """
         Creates a new instance assertion.
         
@@ -37,6 +39,8 @@ class AssertionSubtype(AssertionConditionalBase2Value):
             Type to check.
         reverse : `bool` = `False`, Optional (Keyword only)
             Whether the condition should be reversed.
+        nullable : `bool` = `False`, Optional (Keyword only)
+            Whether `value` is accepted even if given as `None`.
         
         Raises
         ------
@@ -48,11 +52,24 @@ class AssertionSubtype(AssertionConditionalBase2Value):
                 f'`type_˛` parameter can be `type` instance, got {type_.__class__.__name__}; {type_!r}.'
             )
         
-        return AssertionConditionalBase2Value.__new__(cls, value, type_, reverse=reverse)
-    
+        self = AssertionConditionalBase.__new__(cls, reverse=reverse)
+        
+        self.value_1 = value
+        self.value_2 = type_
+        
+        self.state = CONDITION_STATES.CREATED
+        
+        self.nullable = nullable
+        
+        return self.invoke()
+        
     
     @copy_docs(AssertionConditionalBase2Value.invoke_condition)
     def invoke_condition(self):
+        if self.nullable:
+            if self.value_1 is None:
+                return True
+        
         return isinstance(self.value_1, type) and issubclass(self.value_1, self.value_2)
         
     
@@ -64,7 +81,10 @@ class AssertionSubtype(AssertionConditionalBase2Value):
     @copy_docs(AssertionConditionalBase2Value._render_operation_representation_into)
     def _render_operation_representation_into(self, into):
         AssertionConditionalBase._render_operation_representation_into(self, into)
-        into.append(' as "isinstance(parameter_1, type) and issubclass(parameter_1, parameter_2)"')
+        into.append(' as "')
+        if self.nullable:
+            into.append('parameter_1 is None or ')
+        into.append('isinstance(parameter_1, type) and issubclass(parameter_1, parameter_2)"')
         return into
 
 

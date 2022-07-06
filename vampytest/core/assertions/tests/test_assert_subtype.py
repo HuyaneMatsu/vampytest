@@ -32,3 +32,17 @@ def test_assert_subtype_incorrect_checked():
     Tests whether `subtype` assertion fails when the checked value's type is incorrect.
     """
     assert_subtype(1, int)
+
+
+def test_assert_subtype_nullable_0():
+    """
+    Tests whether `subtype` assertion succeeds when nullable.
+    """
+    assert_subtype(bool, int, nullable=True)
+
+
+def test_assert_subtype_nullable_1():
+    """
+    Tests whether `subtype` assertion succeeds when nullable + giving null.
+    """
+    assert_subtype(None, int, nullable=True)

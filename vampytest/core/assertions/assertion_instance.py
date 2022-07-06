@@ -22,10 +22,14 @@ class AssertionInstance(AssertionConditionalBase2Value):
         First value to assert instance with.
     value_2 : `Any`
         The second value to assert instance with.
+    accept_subtypes : `bool`
+        Whether instances of subtypes should be accepted.
+    nullable : `bool`
+        Whether `value` is accepted even if given as `None`.
     """
-    __slots__ = ('accept_subtypes',)
+    __slots__ = ('accept_subtypes', 'nullable')
     
-    def __new__(cls, value, type_, *, reverse=False, accept_subtypes=True):
+    def __new__(cls, value, type_, *, accept_subtypes=True, reverse=False, nullable=False):
         """
         Creates a new instance assertion.
         
@@ -35,10 +39,12 @@ class AssertionInstance(AssertionConditionalBase2Value):
             Object to check.
         type_ : `type_`
             Type to check.
+        accept_subtypes : `bool` = `True`, optional (Keyword only)
+            Whether instances of subtypes should be accepted.
         reverse : `bool` = `False`, Optional (Keyword only)
             Whether the condition should be reversed.
-        accept_subtypes : `bool` = `True`, optional (Keyword only)
-            Whether subclasses are accepted as well.
+        nullable : `bool` = `False`, Optional (Keyword only)
+            Whether `value` is accepted even if given as `None`.
         
         Raises
         ------
@@ -56,13 +62,19 @@ class AssertionInstance(AssertionConditionalBase2Value):
         self.value_2 = type_
         
         self.state = CONDITION_STATES.CREATED
+        
         self.accept_subtypes = accept_subtypes
+        self.nullable = nullable
         
         return self.invoke()
     
     
     @copy_docs(AssertionConditionalBase2Value.invoke_condition)
     def invoke_condition(self):
+        if self.nullable:
+            if self.value_1 is None:
+                return True
+        
         if self.accept_subtypes:
             return isinstance(self.value_1, self.value_2)
         
@@ -78,10 +90,19 @@ class AssertionInstance(AssertionConditionalBase2Value):
     def _render_operation_representation_into(self, into):
         AssertionConditionalBase._render_operation_representation_into(self, into)
         
+        into.append(' as "')
+        
+        if self.nullable:
+            into.append('parameter_1 is None or')
+        
         if self.accept_subtypes:
-            into.append(' as "isinstance(parameter_1, parameter_2)"')
+            instance_check_part = 'isinstance(parameter_1, parameter_2)'
         else:
-            into.append(' as "type(parameter_1) is parameter_2"')
+            instance_check_part = 'type(parameter_1) is parameter_2'
+        into.append(instance_check_part)
+        
+        into.append('"')
+        
         return into
     
     
@@ -93,6 +114,11 @@ class AssertionInstance(AssertionConditionalBase2Value):
             if not accept_subtypes:
                 repr_parts.append(', accept_subtypes=')
                 repr_parts.append(repr(accept_subtypes))
+            
+            nullable = self.nullable
+            if nullable:
+                repr_parts.append(', nullable=')
+                repr_parts.append(repr(nullable))
             
             yield repr_parts
 

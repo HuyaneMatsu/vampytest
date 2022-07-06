@@ -49,7 +49,7 @@ def _ignore_assertion_frames(file_name, name, line_number, line):
 
     elif file_name == VAMPYTEST_ASSERTION_SUBTYPE_FILE_PATH:
         if name == '__new__':
-            if line == 'return AssertionConditionalBase2Value.__new__(cls, value, type_, reverse=reverse)':
+            if line == 'return self.invoke()':
                 should_show_frame = False
     
     elif file_name == VAMPYTEST_ENVIRONMENT_DEFAULT_FILE_PATH:
