@@ -429,7 +429,9 @@ class WrapperCall(WrapperBase):
         """
         exception_types = un_nest_expected_exceptions(exception_types)
         if not exception_types:
-            raise ValueError('At least 1 exception is required.')
+            raise ValueError(
+                'At least 1 exception is required.'
+            )
         
         return cls(
             raising = (exception_types, raising_accept_subtypes),
@@ -460,7 +462,9 @@ class WrapperCall(WrapperBase):
         """
         exception_types = un_nest_expected_exceptions(exception_types)
         if not exception_types:
-            raise ValueError('At least 1 exception is required.')
+            raise ValueError(
+                'At least 1 exception is required.'
+            )
         
         return type(self)(
             self.wrapped,

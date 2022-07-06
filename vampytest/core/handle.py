@@ -2,13 +2,13 @@ __all__ = ('CallState', 'ResultState', 'Handle',)
 
 import gc, reprlib
 
-from .assertions import AssertionException
 from .helpers import hash_dict, hash_list, hash_object, maybe_merge_iterables, maybe_merge_mappings
 
 from scarletio import RichAttributeErrorBaseType, include
 
 
 Result = include('Result')
+AssertionException = include('AssertionException')
 
 
 class CallState(RichAttributeErrorBaseType):

@@ -39,7 +39,7 @@ class AssertionRaising(AssertionBase):
         ----------
         *expected_exceptions : tuple` of (`BaseException`, ...)
             Exception types to expect.
-        accept_subtypes : `bool` = `True`
+        accept_subtypes : `bool` = `True`, optional (Keyword only)
             Whether subclasses are accepted as well.
         
         Raises
@@ -51,7 +51,9 @@ class AssertionRaising(AssertionBase):
         """
         expected_exceptions = un_nest_expected_exceptions(expected_exceptions)
         if not expected_exceptions:
-            raise ValueError('At least 1 exception is required.')
+            raise ValueError(
+                'At least 1 exception is required.'
+            )
         
         self = AssertionBase.__new__(cls)
         self.expected_exceptions = expected_exceptions

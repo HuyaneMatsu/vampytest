@@ -24,11 +24,13 @@ from .assertion_contains import *
 from .assertion_equals import *
 from .assertion_false import *
 from .assertion_identical import *
+from .assertion_instance import *
 from .assertion_not_contains import *
 from .assertion_not_equals import *
 from .assertion_not_identical import *
 from .assertion_raising import *
 from .assertion_states import *
+from .assertion_subtype import *
 from .assertion_true import *
 from .exceptions import *
 
@@ -45,10 +47,12 @@ __all__ = (
     *assertion_equals.__all__,
     *assertion_false.__all__,
     *assertion_identical.__all__,
+    *assertion_instance.__all__,
     *assertion_not_contains.__all__,
     *assertion_not_equals.__all__,
     *assertion_not_identical.__all__,
     *assertion_states.__all__,
+    *assertion_subtype.__all__,
     *assertion_true.__all__,
     *exceptions.__all__,
 )

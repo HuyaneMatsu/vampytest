@@ -1,10 +1,12 @@
 __all__ = ('AssertionConditionalBase', 'AssertionConditionalBase1Value', 'AssertionConditionalBase2Value')
 
+from scarletio import copy_docs, include
+
 from . import assertion_states as CONDITION_STATES
 from .assertion_base import AssertionBase
-from .exceptions import AssertionException
 
-from scarletio import copy_docs
+
+AssertionException = include('AssertionException')
 
 
 class AssertionConditionalBase(AssertionBase):

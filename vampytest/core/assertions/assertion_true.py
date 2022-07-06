@@ -30,7 +30,8 @@ class AssertionValueEvaluationTrue(AssertionConditionalBase1Value):
     @copy_docs(AssertionConditionalBase1Value._get_operation_representation)
     def _get_operation_representation(self):
         return 'bool(...)'
-
+    
+    
     @copy_docs(AssertionConditionalBase1Value._render_operation_representation_into)
     def _render_operation_representation_into(self, into):
         AssertionConditionalBase1Value._render_operation_representation_into(self, into)

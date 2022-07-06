@@ -1,6 +1,6 @@
 from .. import assert_raises
 
-from vampytest import revert
+from vampytest import revert, raising
 
 
 def test_assert_raises():
@@ -52,3 +52,12 @@ def test_assert_raises_without_subtype_reverted():
     """
     with assert_raises(LookupError, accept_subtypes=False):
         raise KeyError
+
+
+@raising(ValueError)
+def test_assert_raises_without_parameter():
+    """
+    Tests whether `raises` context-assertion raises when no parameter is given.
+    """
+    with assert_raises():
+        pass
