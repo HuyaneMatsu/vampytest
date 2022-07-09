@@ -8,6 +8,7 @@ from ..environment.scarletio_coroutine import __file__ as VAMPYTEST_ENVIRONMENT_
 
 from .assertion_conditional_base import __file__ as VAMPYTEST_ASSERTION_CONDITION_BASE_FILE_PATH
 from .assertion_instance import __file__ as VAMPYTEST_ASSERTION_INSTANCE_FILE_PATH
+from .assertion_raising import __file__ as VAMPYTEST_ASSERTION_RAISING_FILE_PATH
 from .assertion_subtype import __file__ as VAMPYTEST_ASSERTION_SUBTYPE_FILE_PATH
 
 
@@ -50,6 +51,11 @@ def _ignore_assertion_frames(file_name, name, line_number, line):
     elif file_name == VAMPYTEST_ASSERTION_SUBTYPE_FILE_PATH:
         if name == '__new__':
             if line == 'return self.invoke()':
+                should_show_frame = False
+    
+    elif file_name == VAMPYTEST_ASSERTION_RAISING_FILE_PATH:
+        if name == '__exit__':
+            if line == 'raise AssertionException(self)':
                 should_show_frame = False
     
     elif file_name == VAMPYTEST_ENVIRONMENT_DEFAULT_FILE_PATH:
