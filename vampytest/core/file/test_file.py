@@ -80,8 +80,6 @@ class TestFile(RichAttributeErrorBaseType):
     
     Attributes
     ----------
-    _directory : `bool`
-        Whether the test file is a directory.
     _load_failure : `None`, ``TestFileLoadFailure``
         If loading the test file fails, this attribute is set to details about the occurred exception.
     _module : `None`, `ModuleType`
@@ -93,10 +91,10 @@ class TestFile(RichAttributeErrorBaseType):
     _test_cases : `None`, `list` of ``TestCase``
         The collected test_cases from the file if any. These test_cases are on collected after calling ``.get_test_cases`` for
         the first time.
+    entry : ``FileSystemEntry``
+        The test file's respective file's or directory's entry in the file system.
     import_route : `str`
         Import route from the base path to import the file from.
-    path : `str`
-        Absolute path to the file.
     
     Utility Methods
     ---------------
@@ -136,38 +134,41 @@ class TestFile(RichAttributeErrorBaseType):
         - ``.iter_test_files``
     """
     __slots__ = (
-        '_directory', '_load_failure', '_module', '_result_groups', '_sub_files', '_test_cases', 'import_route', 'path'
+        '__weakref__', '_load_failure', '_module', '_result_groups', '_sub_files', '_test_cases', 'entry', 'import_route'
     )
     
-    def __new__(cls, path, path_parts, directory):
+    def __new__(cls, entry):
         """
         Creates an new test file.
         
         Parameters
         ----------
-        path : `str`
-            Absolute path to the file.
-        path_parts: `list` of `str`
-            Path parts from base path to the file.
-        directory : `bool`
-            Whether the test file is a directory.
+        entry : ``FileSystemEntry``
+            The test file's respective file's or directory's entry in the file system.
         """
-        if path_parts:
-            last_path_part = path_parts[-1]
-            if last_path_part.endswith('.py'):
-                path_parts[-1] = last_path_part[:-len('.py')]
+        entry.mark_as_used()
+        name = entry.get_name()
+        
+        path_parts = [*(sub_entry.get_name() for sub_entry in entry.iter_parents())]
+        if not name == '__init__.py':
+            path_parts.append(name)
+            
+            if path_parts:
+                last_path_part = path_parts[-1]
+                if last_path_part.endswith('.py'):
+                    path_parts[-1] = last_path_part[:-len('.py')]
+        
         
         import_route = '.'.join(path_parts)
         
         self = object.__new__(cls)
-        self._directory = directory
         self._load_failure = None
         self._module = None
         self._result_groups = None
         self._sub_files = None
         self._test_cases = None
+        self.entry = entry
         self.import_route = import_route
-        self.path = path
         return self
     
     
@@ -193,6 +194,18 @@ class TestFile(RichAttributeErrorBaseType):
         
         repr_parts.append('>')
         return ''.join(repr_parts)
+    
+    
+    @property
+    def path(self):
+        """
+        Returns the full path of the represented file.
+        
+        Returns
+        -------
+        path : `str`
+        """
+        return self.entry.get_path()
     
     
     def get_module(self):
@@ -252,7 +265,7 @@ class TestFile(RichAttributeErrorBaseType):
         loaded : `bool`
             Whether the tests loaded.
         """
-        if self._directory:
+        if self.is_directory():
             return False
         
         module = self.get_module()
@@ -261,11 +274,9 @@ class TestFile(RichAttributeErrorBaseType):
         
         test_cases = []
         
-        import_route = self.import_route
-        
         for name, value in module.__dict__.items():
             if is_test(name, value):
-                test_cases.append(TestCase(import_route, name, value))
+                test_cases.append(TestCase(self, name, value))
         
         test_cases.sort(key=_test_case_sort_key)
         
@@ -367,7 +378,7 @@ class TestFile(RichAttributeErrorBaseType):
         ------
         result_group : ``ResultGroup``
         """
-        if self._directory:
+        if self.is_directory():
             return
         
         result_groups = self._result_groups
@@ -535,9 +546,9 @@ class TestFile(RichAttributeErrorBaseType):
         Returns
         -------
         added : `bool`
-            Whether teh file was added.
+            Whether the file was added.
         """
-        if not self._directory:
+        if not self.is_directory():
             return False
         
         sub_files = self._sub_files
@@ -557,7 +568,7 @@ class TestFile(RichAttributeErrorBaseType):
         -------
         is_directory : `bool`
         """
-        return self._directory
+        return self.entry.get_name() == '__init__.py'
     
     
     def iter_sub_files(self):

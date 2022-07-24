@@ -1,6 +1,6 @@
 __all__ = ('create_default_event_handler_manager',)
 
-from ..events import FileLoadDoneEvent, FileRegistrationDoneEvent, TestDoneEvent, TestingEndEvent
+from ..events import FileLoadDoneEvent, FileRegistrationDoneEvent, FileTestingDoneEvent, TestDoneEvent, TestingEndEvent
 
 from .base import EventHandlerManager
 from .default_output_writer import OutputWriter
@@ -22,6 +22,7 @@ def create_default_event_handler_manager():
     event_handler_manager.events(output_formatter.file_registration_done)
     event_handler_manager.events(output_formatter.file_load_done)
     event_handler_manager.events(output_formatter.test_done)
+    event_handler_manager.events(output_formatter.file_testing_done)
     event_handler_manager.events(output_formatter.testing_end)
     
     return event_handler_manager
@@ -33,10 +34,12 @@ class DefaultEventFormatter(RichAttributeErrorBaseType):
     
     Attributes
     ----------
+    rendered_entries : `set` of ``FileSystemEntry``
+        The rendered entries by the
     output_writer : ``OutputWriter``
         The output writer to write the output with.
     """
-    __slots__ = ('output_writer',)
+    __slots__ = ('rendered_entries', 'output_writer',)
     
     def __new__(cls, output_writer=None):
         """
@@ -51,6 +54,7 @@ class DefaultEventFormatter(RichAttributeErrorBaseType):
             output_writer = OutputWriter()
         
         self = object.__new__(cls)
+        self.rendered_entries = set()
         self.output_writer = output_writer
         return self
     
@@ -88,6 +92,37 @@ class DefaultEventFormatter(RichAttributeErrorBaseType):
             self.output_writer.write_line(f'! {file.import_route}')
     
     
+    def _maybe_render_test_file_into(self, into, entry):
+        """
+        Helpers method for rendering file structure tree.
+        
+        Parameters
+        ----------
+        into : `list` of `str`
+            List to render the structure parts into.
+        entry : ``FileSystemEntry``
+            The entry to render.
+        
+        Returns
+        -------
+        into : `list` of `str`
+        """
+        rendered_entries = self.rendered_entries
+        
+        if (entry not in rendered_entries):
+            for sub_entry in entry.iter_parents():
+                if sub_entry in rendered_entries:
+                    continue
+                    
+                into = sub_entry.render_into(into)
+                rendered_entries.add(sub_entry)
+            
+            into = entry.render_into(into)
+            rendered_entries.add(entry)
+        
+        return into
+    
+    
     def test_done(self, event: TestDoneEvent):
         """
         Called when a test is done.
@@ -97,6 +132,13 @@ class DefaultEventFormatter(RichAttributeErrorBaseType):
         event : ``TestDoneEvent``
             The dispatched event.
         """
+        test_file = event.result_group.case.get_test_file()
+        if (test_file is None):
+            # Should not happen
+            return
+        
+        message_parts = self._maybe_render_test_file_into([], test_file.entry)
+        
         result_group = event.result_group
         if result_group.is_skipped():
             keyword = 'S'
@@ -110,9 +152,26 @@ class DefaultEventFormatter(RichAttributeErrorBaseType):
         else:
             keyword = '?'
         
-        case = result_group.case
+        message_parts = test_file.entry.render_custom_sub_directory_into(
+            message_parts, f'{keyword} {result_group.case.name}', result_group.case.is_last()
+        )
         
-        self.output_writer.write_line(f'{keyword} {case.import_route}.{case.name}')
+        self.output_writer.write_line(''.join(message_parts))
+    
+
+
+    def file_testing_done(self, event: FileTestingDoneEvent):
+        """
+        Called when all tests of a file is done
+        
+        Parameters
+        ----------
+        event : ``FileTestingDoneEvent``
+            The dispatched event.
+        """
+        message_parts = self._maybe_render_test_file_into([], event.file.entry)
+        if message_parts:
+            self.output_writer.write_line(''.join(message_parts))
     
     
     def testing_end(self, event: TestingEndEvent):

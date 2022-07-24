@@ -7,7 +7,7 @@ from .helpers import hash_object
 from .result import ResultGroup
 from .wrappers import WrapperBase
 
-from scarletio import RichAttributeErrorBaseType
+from scarletio import RichAttributeErrorBaseType, WeakReferer
 
 
 class TestCase(RichAttributeErrorBaseType):
@@ -16,8 +16,8 @@ class TestCase(RichAttributeErrorBaseType):
     
     Attributes
     ----------
-    import_route : `str`
-        Import route to the test's file.
+    _test_file_reference : `None`, ``WeakReferer`` to ``TestFile``
+        The parent test file of the case.
     name : `str`
         The test's name.
     test : `callable`, ``WrapperBase``
@@ -25,16 +25,16 @@ class TestCase(RichAttributeErrorBaseType):
     wrapper : `None`, ``WrapperBase``
         Wrappers containing the test if any.    
     """
-    __slots__ = ('import_route', 'name', 'test', 'wrapper')
+    __slots__ = ('_test_file_reference', 'name', 'test', 'wrapper')
     
-    def __new__(cls, import_route, name, test):
+    def __new__(cls, test_file, name, test):
         """
         Creates a new test case.
         
         Parameters
         ----------
-        import_route : `str`
-            Import route to the test's file.
+        test_file : ``TestFile``
+            The parent test file.
         name : `str`
             The test's name.
         test : `callable`, ``WrapperBase``
@@ -48,7 +48,7 @@ class TestCase(RichAttributeErrorBaseType):
             test = test
         
         self = object.__new__(cls)
-        self.import_route = import_route
+        self._test_file_reference = WeakReferer(test_file)
         self.name = name
         self.test = test
         self.wrapper = wrapper
@@ -230,3 +230,57 @@ class TestCase(RichAttributeErrorBaseType):
                     wrapper_group = tuple(wrapper_group)
                 
                 yield Handle(self, test, wrapper_group, environments)
+    
+    
+    def get_test_file(self):
+        """
+        Returns the test file of the case.
+        
+        Returns
+        -------
+        test_file : `None`, ``TestFile``
+        """
+        test_file_reference = self._test_file_reference
+        if (test_file_reference is not None):
+            return test_file_reference()
+    
+    
+    @property
+    def import_route(self):
+        """
+        Returns the import route from the base path to import the file from.
+        
+        Returns
+        -------
+        import_route : `str`
+        """
+        test_file = self.get_test_file()
+        if (test_file is None):
+            import_route = ''
+        else:
+            import_route = test_file.import_route
+        
+        return import_route
+    
+    
+    def is_last(self):
+        """
+        Returns whether self is the last test case of the file.
+        
+        Returns
+        -------
+        is_last : `bool`
+        """
+        test_file = self.get_test_file()
+        if (test_file is None):
+            return True
+        
+        test_cases = test_file._test_cases
+        if test_cases is None:
+            return True
+        
+        if self is test_cases[-1]:
+            return True
+        
+        return False
+

@@ -1,41 +1,82 @@
-__all__ = ('iter_collect_test_files',)
-
-from os import listdir as list_directory
-from os.path import isdir as is_directory, isfile as is_file, join as join_paths
+__all__ = ('iter_collect_test_files_in',)
 
 from .test_file import TestFile
 
 
-def iter_collect_test_files(base_path, path_parts):
+def iter_collect_test_files_in(entry):
     """
-    Iterates over the given directory or file path.
+    Iterates over the given file system entry and yields back the collected test files.
     
     This function is an iterable generator.
     
     Parameters
     ----------
-    base_path : `str`
-        Source path of file or directory.
-    path_parts : `list` of `str`
-        A list of path parts within the base directory to collect from.
+    entry : ``FileSystemEntry``
+        The entry to iterate over.
     
     Yields
     ------
     test_file : ``TestFile``
     """
-    # pretty weird case
-    path_parts = path_parts.copy()
-    path = join_paths(base_path, *path_parts)
-    if is_file(path):
-        yield TestFile(path, path_parts, False)
+    if entry.is_directory():
+        yield from iter_collect_test_files_in_directory(entry, is_test_directory_name(entry.get_name()))
+        entry.purge()
         return
     
-    if is_directory(path):
-        yield from iter_tests_from_directory(path, path_parts, False)
+    if is_test_file_name(entry.get_name()):
+        yield TestFile(entry)
         return
     
     # no more cases
     return
+
+
+def iter_collect_test_files_in_directory(entry, within_test_directory):
+    """
+    Iterates over a directory discovering test files.
+    
+    This function is an iterable generator.
+    
+    Parameters
+    ----------
+    entry : ``FileSystemEntry``
+        The entry to iterate over.
+    within_test_directory : `bool`
+        Defines whether
+    
+    Yields
+    ------
+    test_file : ``TestFile``
+    """
+    # First check directory
+    if within_test_directory:
+        directory = None
+        
+        for sub_entry in entry.iter_entries():
+            if sub_entry.is_file():
+                name = sub_entry.get_name()
+                if name == '__init__.py':
+                    directory = TestFile(sub_entry)
+                    continue
+                
+                if is_test_file_name(name):
+                    test_file = TestFile(sub_entry)
+                    
+                    if (directory is None):
+                        yield test_file
+                        continue
+                    
+                    directory.feed_sub_file(test_file)
+                    continue
+        
+        if (directory is not None):
+            yield directory
+    
+    else:
+        for sub_entry in entry.iter_entries():
+            if sub_entry.is_directory():
+                yield from iter_collect_test_files_in_directory(sub_entry, is_test_directory_name(sub_entry.get_name()))
+                sub_entry.purge()
 
 
 def is_test_file_name(file_name):
@@ -89,59 +130,3 @@ def is_test_directory_name(directory_name):
         return True
     
     return False
-
-
-def iter_tests_from_directory(directory_path, path_parts, within_test_directory):
-    """
-    Iterates over a directory discovering test files.
-    
-    This function is an iterable generator.
-    
-    Parameters
-    ----------
-    directory_path : `str`
-        Path to the directory.
-    within_test_directory : `bool`
-        Defines whether
-    
-    Yields
-    ------
-    test_file : ``TestFile``
-    """
-    file_names = list_directory(directory_path)
-    file_names.sort()
-    
-    # First check directory
-    if within_test_directory:
-        directory = None
-        for file_name in file_names:
-            file_path = join_paths(directory_path, file_name)
-            path_parts.append(file_name)
-            
-            if is_file(file_path):
-                if file_name == '__init__.py':
-                    directory = TestFile(file_path, path_parts, True)
-                
-                elif is_test_file_name(file_name):
-                    test_file = TestFile(file_path, path_parts, False)
-                    
-                    if (directory is None):
-                        yield test_file
-                    
-                    else:
-                        directory.feed_sub_file(test_file)
-            
-            del path_parts[-1]
-        
-        if (directory is not None):
-            yield directory
-    
-    else:
-        for file_name in file_names:
-            file_path = join_paths(directory_path, file_name)
-            path_parts.append(file_name)
-            
-            if is_directory(file_path):
-                yield from iter_tests_from_directory(file_path, path_parts, is_test_directory_name(file_name))
-            
-            del path_parts[-1]

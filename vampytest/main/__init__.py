@@ -64,10 +64,20 @@ def get_base_and_target_path(parameters, index):
                     path_parameter_2 = maybe_path
                     index += 1
     
+    if (path_parameter_1 is not None) and (path_parameter_1 == ''):
+        path_parameter_1 = None
+    
+    if (path_parameter_2 is not None) and (path_parameter_2 == ''):
+        path_parameter_2 = None
     
     if path_parameter_1 is None:
         base_path = get_current_working_directory()
-        test_collection_route = []
+        
+        if (path_parameter_2 is None):
+            test_collection_route = []
+        
+        else:
+            test_collection_route = split_path(path_parameter_2)
     
     else:
         path_parameter_1_is_absolute = is_absolute_path(path_parameter_1)
@@ -79,16 +89,14 @@ def get_base_and_target_path(parameters, index):
             if path_parameter_1_is_absolute:
                 base_path = path_parameter_1
                 
-                test_collection_route = []
             else:
-                base_path = get_current_working_directory()
-                
-                path_to_check_out = join_paths(base_path, path_parameter_1)
-                if not exists(path_to_check_out):
-                    raise RuntimeError(f'Path not exists: {path_to_check_out!r}.')
-                
-                test_collection_route = split_path(path_parameter_1)
-        
+                base_path = join_paths(get_current_working_directory(), path_parameter_1)
+            
+            if not exists(base_path):
+                raise RuntimeError(f'Path not exists: {base_path!r}.')
+            
+            test_collection_route = []
+            
         else:
             path_parameter_2_is_absolute = is_absolute_path(path_parameter_2)
             if not exists(path_parameter_2):

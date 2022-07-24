@@ -145,7 +145,7 @@ def set_file_environment(environment):
 
 def _iter_environments_for_file_at(path):
     """
-    Iterates  over the registered environments for teh given `path`.
+    Iterates  over the registered environments for the given `path`.
     
     This method is an iterable generator.
     

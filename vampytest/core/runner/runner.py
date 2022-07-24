@@ -13,7 +13,7 @@ from ..events import (
     TestingEndEvent, TestingStartEvent
 )
 from ..event_handling import create_default_event_handler_manager
-from ..file import iter_collect_test_files
+from ..file import FileSystemEntry, iter_collect_test_files_in
 
 from .context import RunnerContext
 
@@ -256,12 +256,12 @@ class TestRunner(RichAttributeErrorBaseType):
             # Setup
             self._setup()
             
-            context = RunnerContext(self)
+            context = RunnerContext(self, FileSystemEntry(*split_paths(self._base_path), self._path_parts))
             
             yield TestingStartEvent(context)
             
             # Collect test files
-            for test_file in iter_collect_test_files(self._base_path, self._path_parts):
+            for test_file in iter_collect_test_files_in(context.file_system_entry):
                 context.register_file(test_file)
                 yield FileRegistrationEvent(context, test_file)
             
@@ -277,6 +277,9 @@ class TestRunner(RichAttributeErrorBaseType):
                         
                         if test_file.is_loaded_with_failure():
                             break
+                        
+                        yield FileTestingDoneEvent(context, test_file)
+                    
                     else:
                         test_file.try_load_test_cases()
                         
