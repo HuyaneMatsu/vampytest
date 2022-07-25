@@ -188,7 +188,8 @@ class RunnerContext(RichAttributeErrorBaseType):
         result_group : ``ResultGroup``
         """
         for test_file in self.iter_registered_files():
-            yield from test_file.iter_passed_result_groups()
+            if not test_file.is_directory():
+                yield from test_file.iter_passed_result_groups()
     
     
     def iter_skipped_result_groups(self):
@@ -202,7 +203,8 @@ class RunnerContext(RichAttributeErrorBaseType):
         result_group : ``ResultGroup``
         """
         for test_file in self.iter_registered_files():
-            yield from test_file.iter_skipped_result_groups()
+            if not test_file.is_directory():
+                yield from test_file.iter_skipped_result_groups()
     
     
     def iter_failed_result_groups(self):
@@ -216,7 +218,8 @@ class RunnerContext(RichAttributeErrorBaseType):
         result_group : ``ResultGroup``
         """
         for test_file in self.iter_registered_files():
-            yield from test_file.iter_failed_result_groups()
+            if not test_file.is_directory():
+                yield from test_file.iter_failed_result_groups()
     
     
     def get_passed_test_count(self):
@@ -227,7 +230,11 @@ class RunnerContext(RichAttributeErrorBaseType):
         -------
         passed_test_count : `int`
         """
-        return sum(test_file.get_passed_test_count() for test_file in self.iter_registered_files())
+        return sum(
+            test_file.get_passed_test_count()
+            for test_file in self.iter_registered_files()
+            if not test_file.is_directory()
+        )
     
     
     def get_skipped_test_count(self):
@@ -238,7 +245,11 @@ class RunnerContext(RichAttributeErrorBaseType):
         -------
         passed_test_count : `int`
         """
-        return sum(test_file.get_skipped_test_count() for test_file in self.iter_registered_files())
+        return sum(
+            test_file.get_skipped_test_count()
+            for test_file in self.iter_registered_files()
+            if not test_file.is_directory()
+        )
     
     
     def get_failed_test_count(self):
@@ -249,7 +260,11 @@ class RunnerContext(RichAttributeErrorBaseType):
         -------
         passed_test_count : `int`
         """
-        return sum(test_file.get_failed_test_count() for test_file in self.iter_registered_files())
+        return sum(
+            test_file.get_failed_test_count()
+            for test_file in self.iter_registered_files()
+            if not test_file.is_directory()
+        )
     
     
     def get_passed_result_groups(self):

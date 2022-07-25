@@ -113,9 +113,12 @@ def get_base_and_target_path(parameters, index):
                     test_collection_route = split_path(path_parameter_2[len(path_parameter_1):])
                 
                 else:
+                    print(path_parameter_1, path_parameter_2)
                     path_to_check_out = join_paths(path_parameter_1, path_parameter_2)
                     if not exists(path_to_check_out):
-                        raise RuntimeError(f'Path not exists: {path_to_check_out!r}.')
+                        raise RuntimeError(
+                            f'Path not exists: {path_to_check_out!r}.'
+                        )
                     
                     base_path = path_parameter_1
                     test_collection_route = split_path(path_parameter_2)

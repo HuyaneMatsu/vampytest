@@ -306,7 +306,7 @@ class FileSystemEntry(RichAttributeErrorBaseType):
         return True
     
     
-    def render_into(self, into):
+    def render_into(self, into, *, name=None):
         """
         Renders the path access into the given list of strings.
         
@@ -314,6 +314,8 @@ class FileSystemEntry(RichAttributeErrorBaseType):
         ----------
         into : `list` of `str`
             List to render self into.
+        name : `None`, `str` = `None`, Optional (Keyword only)
+            Custom name to use.
         
         Returns
         -------
@@ -331,7 +333,10 @@ class FileSystemEntry(RichAttributeErrorBaseType):
             else:
                 into.append('├─ ')
         
-        into.append(self._name)
+        if name is None:
+            name = self._name
+        
+        into.append(name)
         into.append('\n')
         
         return into

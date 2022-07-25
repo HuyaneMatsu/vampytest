@@ -4,6 +4,7 @@ from ..events import FileLoadDoneEvent, FileRegistrationDoneEvent, FileTestingDo
 
 from .base import EventHandlerManager
 from .default_output_writer import OutputWriter
+from .text_styling import style_text, TextForeground
 
 from scarletio import RichAttributeErrorBaseType
 
@@ -89,10 +90,19 @@ class DefaultEventFormatter(RichAttributeErrorBaseType):
         """
         file = event.file
         if file.is_loaded_with_failure():
-            self.output_writer.write_line(f'! {file.import_route}')
+            message_parts = self._maybe_render_test_file_into(
+                [],
+                file.entry,
+                name = style_text(
+                    file.entry.get_name(),
+                    foreground = TextForeground.red,
+                ),
+            )
+            
+            self.output_writer.write_line(''.join(message_parts))
     
     
-    def _maybe_render_test_file_into(self, into, entry):
+    def _maybe_render_test_file_into(self, into, entry, *, name=None):
         """
         Helpers method for rendering file structure tree.
         
@@ -102,6 +112,8 @@ class DefaultEventFormatter(RichAttributeErrorBaseType):
             List to render the structure parts into.
         entry : ``FileSystemEntry``
             The entry to render.
+        name : `None`, `str` = `None`, Optional (Keyword only)
+            Custom name to use as the entry's name.
         
         Returns
         -------
@@ -117,7 +129,7 @@ class DefaultEventFormatter(RichAttributeErrorBaseType):
                 into = sub_entry.render_into(into)
                 rendered_entries.add(sub_entry)
             
-            into = entry.render_into(into)
+            into = entry.render_into(into, name=name)
             rendered_entries.add(entry)
         
         return into
@@ -142,18 +154,27 @@ class DefaultEventFormatter(RichAttributeErrorBaseType):
         result_group = event.result_group
         if result_group.is_skipped():
             keyword = 'S'
+            foreground = TextForeground.light_blue
         
         elif result_group.is_passed():
             keyword = 'P'
+            foreground = TextForeground.green
         
         elif result_group.is_failed():
             keyword = 'F'
+            foreground = TextForeground.red
         
         else:
             keyword = '?'
+            foreground = TextForeground.white
         
         message_parts = test_file.entry.render_custom_sub_directory_into(
-            message_parts, f'{keyword} {result_group.case.name}', result_group.case.is_last()
+            message_parts,
+            style_text(
+                f'{keyword} {result_group.case.name}',
+                foreground = foreground,
+            ),
+            result_group.case.is_last(),
         )
         
         self.output_writer.write_line(''.join(message_parts))
@@ -201,17 +222,36 @@ class DefaultEventFormatter(RichAttributeErrorBaseType):
             output_writer.write_line(message)
             output_writer.write_break_line()
         
-        failed_result_groups = context.get_failed_result_groups()
-        for result_group in failed_result_groups:
+        
+        for result_group in context.iter_failed_result_groups():
             for failure_message in result_group.iter_failure_messages():
                 output_writer.write_line(failure_message)
                 output_writer.write_break_line()
         
-        output_writer.write(
-            f'{len(failed_result_groups)} failed | '
-            f'{context.get_skipped_test_count()} skipped | '
-            f'{context.get_passed_test_count()} passed'
-        )
+        failed_count = context.get_failed_test_count()
+        failed_message_part = f'{failed_count} failed'
+        if failed_count:
+            failed_message_part = style_text(failed_message_part, foreground = TextForeground.red)
+        
+        
+        skipped_count = context.get_skipped_test_count()
+        skipped_message_part = f'{skipped_count} skipped'
+        if skipped_count:
+            skipped_message_part = style_text(skipped_message_part, foreground = TextForeground.cyan)
+        
+        
+        passed_count = context.get_passed_test_count()
+        passed_message_part = f'{passed_count} passed'
+        if passed_count:
+            passed_message_part = style_text(passed_message_part, foreground = TextForeground.green)
+        
+        
+        output_writer.write(f'{failed_message_part} | {skipped_message_part} | {passed_message_part}')
         if load_failures:
-            output_writer.write(f' | {len(load_failures)} files failed to load')
+            output_writer.write(
+                style_text(
+                    f' | {len(load_failures)} files failed to load',
+                    foreground = TextForeground.red,
+                )
+            )
         output_writer.end_line()

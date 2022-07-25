@@ -111,15 +111,15 @@ class FailureRaising(FailureBase):
         
         add_documentation_into(self.handle, failure_message_parts)
         
-        failure_message_parts.append('\nParameters: ')
-        render_parameters_into(self.handle.final_call_state, failure_message_parts)
+        call_state = self.handle.final_call_state
+        if (call_state.positional_parameters is not None) and (call_state.keyword_parameters is not None):
+            failure_message_parts.append('\nParameters: ')
+            render_parameters_into(call_state, failure_message_parts)
         
-        failure_message_parts.append('\nExpected return: ')
         expected_exceptions = self.expected_exceptions
-        if expected_exceptions is None:
-            failure_message_parts.append('N/A')
-        
-        else:
+        if expected_exceptions is not None:
+            failure_message_parts.append('\nExpected return: ')
+            
             exception_added = False
             
             for expected_exception in expected_exceptions:
@@ -139,12 +139,8 @@ class FailureRaising(FailureBase):
             failure_message_parts.append('true' if self.accept_subtypes else 'false')
         
         
-        failure_message_parts.append('\nReceived return:')
         exception_received = self.exception_received
-        if (exception_received is None):
-            failure_message_parts.append('N/A')
-        
-        else:
+        if (exception_received is not None):
             failure_message_parts.append('\n')
             failure_message_parts.append('-' * 80)
             failure_message_parts.append('\n')
