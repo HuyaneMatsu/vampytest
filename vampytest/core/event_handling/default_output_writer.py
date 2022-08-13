@@ -1,11 +1,11 @@
 __all__ = ()
 
 import sys
+from os import get_terminal_size
 
 from scarletio import RichAttributeErrorBaseType
 
-
-BREAK_LINE = '=' * 80
+DEFAULT_BREAK_LINE_LENGTH = 60
 
 
 class OutputWriter(RichAttributeErrorBaseType):
@@ -40,9 +40,14 @@ class OutputWriter(RichAttributeErrorBaseType):
         return self
     
     
-    def write_break_line(self):
+    def write_break_line(self, character="="):
         """
         Writes a break line.
+        
+        Parameters
+        ----------
+        character : `str` = `'='`, Optional
+            The character to use.
         
         Returns
         -------
@@ -54,7 +59,14 @@ class OutputWriter(RichAttributeErrorBaseType):
         if not self._last_write_ended_with_linebreak:
             self.file.write('\n')
         
-        self.file.write(BREAK_LINE)
+        try:
+            terminal_size = get_terminal_size()
+        except OSError:
+            break_line_length = DEFAULT_BREAK_LINE_LENGTH
+        else:
+            break_line_length = terminal_size.columns
+        
+        self.file.write(character * break_line_length)
         
         self._last_write_ended_with_linebreak = False
         self._last_chunk_break_line = True

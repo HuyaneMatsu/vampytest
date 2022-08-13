@@ -4,9 +4,16 @@ from ..events import FileLoadDoneEvent, FileRegistrationDoneEvent, FileTestingDo
 
 from .base import EventHandlerManager
 from .default_output_writer import OutputWriter
-from .text_styling import style_text, TextForeground
+from .text_styling import style_text
 
-from scarletio import RichAttributeErrorBaseType
+from scarletio import RichAttributeErrorBaseType, create_ansi_format_code
+
+
+COLOR_FAIL = create_ansi_format_code(foreground_color = (255, 0, 0))
+COLOR_PASS = create_ansi_format_code(foreground_color = (0, 255, 0))
+COLOR_SKIP = create_ansi_format_code(foreground_color = (0, 255, 255))
+COLOR_UNKNOWN = create_ansi_format_code(foreground_color = (255, 0, 255))
+COLOR_RESET = create_ansi_format_code()
 
 
 def create_default_event_handler_manager():
@@ -95,7 +102,7 @@ class DefaultEventFormatter(RichAttributeErrorBaseType):
                 file.entry,
                 name = style_text(
                     file.entry.get_name(),
-                    foreground = TextForeground.red,
+                    COLOR_FAIL,
                 ),
             )
             
@@ -154,26 +161,23 @@ class DefaultEventFormatter(RichAttributeErrorBaseType):
         result_group = event.result_group
         if result_group.is_skipped():
             keyword = 'S'
-            foreground = TextForeground.light_blue
+            foreground = COLOR_SKIP
         
         elif result_group.is_passed():
             keyword = 'P'
-            foreground = TextForeground.green
+            foreground = COLOR_PASS
         
         elif result_group.is_failed():
             keyword = 'F'
-            foreground = TextForeground.red
+            foreground = COLOR_FAIL
         
         else:
             keyword = '?'
-            foreground = TextForeground.white
+            foreground = COLOR_UNKNOWN
         
         message_parts = test_file.entry.render_custom_sub_directory_into(
             message_parts,
-            style_text(
-                f'{keyword} {result_group.case.name}',
-                foreground = foreground,
-            ),
+            style_text(f'{keyword} {result_group.case.name}', foreground),
             result_group.case.is_last(),
         )
         
@@ -231,27 +235,23 @@ class DefaultEventFormatter(RichAttributeErrorBaseType):
         failed_count = context.get_failed_test_count()
         failed_message_part = f'{failed_count} failed'
         if failed_count:
-            failed_message_part = style_text(failed_message_part, foreground = TextForeground.red)
+            failed_message_part = style_text(failed_message_part, COLOR_FAIL)
         
         
         skipped_count = context.get_skipped_test_count()
         skipped_message_part = f'{skipped_count} skipped'
         if skipped_count:
-            skipped_message_part = style_text(skipped_message_part, foreground = TextForeground.cyan)
+            skipped_message_part = style_text(skipped_message_part, COLOR_SKIP)
         
         
         passed_count = context.get_passed_test_count()
         passed_message_part = f'{passed_count} passed'
         if passed_count:
-            passed_message_part = style_text(passed_message_part, foreground = TextForeground.green)
+            passed_message_part = style_text(passed_message_part, COLOR_PASS)
         
         
         output_writer.write(f'{failed_message_part} | {skipped_message_part} | {passed_message_part}')
         if load_failures:
             output_writer.write(
-                style_text(
-                    f' | {len(load_failures)} files failed to load',
-                    foreground = TextForeground.red,
-                )
-            )
+                style_text(f' | {len(load_failures)} files failed to load', COLOR_FAIL))
         output_writer.end_line()

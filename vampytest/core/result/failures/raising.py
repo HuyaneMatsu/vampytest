@@ -6,7 +6,7 @@ from ...environment.scarletio_coroutine import __file__ as VAMPYTEST_ENVIRONMENT
 from .base import FailureBase
 from .helpers import add_documentation_into, add_route_parts_into, render_parameters_into
 
-from scarletio import copy_docs, render_exception_into
+from scarletio import DEFAULT_ANSI_HIGHLIGHTER, copy_docs, render_exception_into
 
 
 def ignore_invoke_test_frame(file_name, name, line_number, line):
@@ -145,6 +145,9 @@ class FailureRaising(FailureBase):
             failure_message_parts.append('-' * 80)
             failure_message_parts.append('\n')
             
-            render_exception_into(exception_received, failure_message_parts, filter=ignore_invoke_test_frame)
+            render_exception_into(
+                exception_received, failure_message_parts, filter=ignore_invoke_test_frame,
+                highlighter=DEFAULT_ANSI_HIGHLIGHTER
+            )
         
         return ''.join(failure_message_parts)
