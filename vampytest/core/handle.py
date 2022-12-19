@@ -1,10 +1,10 @@
 __all__ = ('CallState', 'ResultState', 'Handle',)
 
-import gc, reprlib
-
-from .helpers import hash_dict, hash_list, hash_object, maybe_merge_iterables, maybe_merge_mappings
+import reprlib
 
 from scarletio import RichAttributeErrorBaseType, include
+
+from .helpers import hash_dict, hash_list, hash_object, maybe_merge_iterables, maybe_merge_mappings
 
 
 Result = include('Result')
@@ -527,9 +527,6 @@ class Handle(RichAttributeErrorBaseType):
         environment = environment_manager.get_environment_for_test(test)
         
         result_state = environment.run(test, positional_parameters, keyword_parameters)
-        
-        gc.collect()
-        gc.collect()
         
         self.original_result_state = result_state
     

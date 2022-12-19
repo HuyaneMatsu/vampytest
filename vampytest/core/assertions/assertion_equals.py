@@ -1,8 +1,8 @@
 __all__ = ('AssertionEquals', 'assert_eq', 'assert_equals')
 
-from .assertion_conditional_base import AssertionConditionalBase2Value
-
 from scarletio import copy_docs
+
+from .assertion_conditional_base import AssertionConditionalBase2Value
 
 
 class AssertionEquals(AssertionConditionalBase2Value):

@@ -5,6 +5,7 @@ from os import get_terminal_size
 
 from scarletio import RichAttributeErrorBaseType
 
+
 DEFAULT_BREAK_LINE_LENGTH = 60
 
 

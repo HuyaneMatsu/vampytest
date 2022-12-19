@@ -1,8 +1,8 @@
 __all__ = ('WrapperSkipConditional', )
 
-from .wrapper_skip import WrapperSkip
-
 from scarletio import copy_docs
+
+from .wrapper_skip import WrapperSkip
 
 
 class WrapperSkipConditional(WrapperSkip):

@@ -1,15 +1,15 @@
 __all__ = ('WrapperEnvironment',)
 
+from scarletio import copy_docs
+
 from ..environment.configuration import _check_environment_type
 
 from .wrapper_base import WrapperBase
 
-from scarletio import copy_docs
-
 
 class WrapperEnvironment(WrapperBase):
     """
-    Skips the test.
+    Uses a specific environment for the wrapped test.
 
     Attributes
     ----------
@@ -43,7 +43,7 @@ class WrapperEnvironment(WrapperBase):
     
     @copy_docs(WrapperBase.__repr__)
     def __repr__(self):
-        return f'<{self.__class__.__name__} environment={self.environment!r}'
+        return f'<{self.__class__.__name__} environment = {self.environment!r}'
     
     
     @copy_docs(WrapperBase.__eq__)

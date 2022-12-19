@@ -1,8 +1,9 @@
 __all__ = ('AssertionNotContains', 'assert_not_contains', 'assert_not_in')
 
+from scarletio import copy_docs
+
 from .assertion_conditional_base import AssertionConditionalBase2Value
 
-from scarletio import copy_docs
 
 class AssertionNotContains(AssertionConditionalBase2Value):
     """

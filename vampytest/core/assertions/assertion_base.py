@@ -1,9 +1,9 @@
 __all__ = ('AssertionBase',)
 
+from scarletio import RichAttributeErrorBaseType
+
 from . import assertion_states as CONDITION_STATES
 from .assertion_states import get_assertion_state_name
-
-from scarletio import RichAttributeErrorBaseType
 
 
 class AssertionBase(RichAttributeErrorBaseType):

@@ -3,7 +3,7 @@ __all__ = ('execute_from_terminal',)
 from os import getcwd as get_current_working_directory, sep as PATH_SEPARATOR
 from os.path import exists, isabs as is_absolute_path, join as join_paths
 
-from ..core import run_tests_in
+from ..core import run_tests_in, shutdown_environments
 
 
 def split_path(path):
@@ -163,4 +163,7 @@ def execute_from_terminal(parameters):
         Path not exists.
     """
     base_path, target_path, index = get_base_and_target_path(parameters, 0)
-    run_tests_in(base_path, target_path)
+    try:
+        run_tests_in(base_path, target_path)
+    finally:
+        shutdown_environments()

@@ -1,9 +1,9 @@
 __all__ = ('AssertionInstance', 'assert_instance')
 
+from scarletio import copy_docs
+
 from . import assertion_states as CONDITION_STATES
 from .assertion_conditional_base import AssertionConditionalBase, AssertionConditionalBase2Value
-
-from scarletio import copy_docs
 
 
 class AssertionInstance(AssertionConditionalBase2Value):
@@ -29,7 +29,7 @@ class AssertionInstance(AssertionConditionalBase2Value):
     """
     __slots__ = ('accept_subtypes', 'nullable')
     
-    def __new__(cls, value, type_, *, accept_subtypes=True, reverse=False, nullable=False):
+    def __new__(cls, value, type_, *, accept_subtypes = True, reverse=False, nullable=False):
         """
         Creates a new instance assertion.
         
@@ -53,7 +53,7 @@ class AssertionInstance(AssertionConditionalBase2Value):
         """ 
         if not isinstance(type_, type):
             raise TypeError(
-                f'`type_˛` parameter can be `type` instance, got {type_.__class__.__name__}; {type_!r}.'
+                f'`type_` parameter can be `type` instance, got {type_.__class__.__name__}; {type_!r}.'
             )
         
         self = AssertionConditionalBase.__new__(cls, reverse=reverse)
@@ -112,7 +112,7 @@ class AssertionInstance(AssertionConditionalBase2Value):
             
             accept_subtypes = self.accept_subtypes
             if not accept_subtypes:
-                repr_parts.append(', accept_subtypes=')
+                repr_parts.append(', accept_subtypes = ')
                 repr_parts.append(repr(accept_subtypes))
             
             nullable = self.nullable

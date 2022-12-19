@@ -1,8 +1,8 @@
 __all__ = ('EventHandlerManager',)
 
-from ..events import EventBase
-
 from scarletio import CallableAnalyzer, RichAttributeErrorBaseType
+
+from ..events import EventBase
 
 
 class EventHandlerManager(RichAttributeErrorBaseType):

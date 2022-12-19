@@ -1,8 +1,8 @@
 __all__ = ('WrapperRevert',)
 
-from .wrapper_base import WrapperBase
-
 from scarletio import copy_docs
+
+from .wrapper_base import WrapperBase
 
 
 class WrapperRevert(WrapperBase):

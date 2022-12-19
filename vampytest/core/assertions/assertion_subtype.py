@@ -1,9 +1,9 @@
 __all__ = ('AssertionSubtype', 'assert_subtype')
 
+from scarletio import copy_docs
+
 from . import assertion_states as CONDITION_STATES
 from .assertion_conditional_base import AssertionConditionalBase, AssertionConditionalBase2Value
-
-from scarletio import copy_docs
 
 
 class AssertionSubtype(AssertionConditionalBase2Value):
@@ -49,7 +49,7 @@ class AssertionSubtype(AssertionConditionalBase2Value):
         """
         if not isinstance(type_, type):
             raise TypeError(
-                f'`type_˛` parameter can be `type` instance, got {type_.__class__.__name__}; {type_!r}.'
+                f'`type_` parameter can be `type` instance, got {type_.__class__.__name__}; {type_!r}.'
             )
         
         self = AssertionConditionalBase.__new__(cls, reverse=reverse)

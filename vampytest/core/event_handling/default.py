@@ -1,12 +1,12 @@
 __all__ = ('create_default_event_handler_manager',)
 
+from scarletio import RichAttributeErrorBaseType, create_ansi_format_code
+
 from ..events import FileLoadDoneEvent, FileRegistrationDoneEvent, FileTestingDoneEvent, TestDoneEvent, TestingEndEvent
 
 from .base import EventHandlerManager
 from .default_output_writer import OutputWriter
 from .text_styling import style_text
-
-from scarletio import RichAttributeErrorBaseType, create_ansi_format_code
 
 
 COLOR_FAIL = create_ansi_format_code(foreground_color = (255, 0, 0))

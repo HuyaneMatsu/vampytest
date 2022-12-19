@@ -7,6 +7,7 @@ from scarletio import create_ansi_format_code, set_docs
 
 STYLE_RESET = create_ansi_format_code()
 
+
 def style_text(text, format_code):
     """
     Styles the given text.

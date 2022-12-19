@@ -1,12 +1,12 @@
 __all__ = ('FailureRaising',)
 
+from scarletio import DEFAULT_ANSI_HIGHLIGHTER, copy_docs, render_exception_into
+
 from ...environment.default import __file__ as VAMPYTEST_ENVIRONMENT_DEFAULT_FILE_PATH
 from ...environment.scarletio_coroutine import __file__ as VAMPYTEST_ENVIRONMENT_SCARLETIO_COROUTINE_FILE_PATH
 
 from .base import FailureBase
 from .helpers import add_documentation_into, add_route_parts_into, render_parameters_into
-
-from scarletio import DEFAULT_ANSI_HIGHLIGHTER, copy_docs, render_exception_into
 
 
 def ignore_invoke_test_frame(file_name, name, line_number, line):
@@ -87,15 +87,15 @@ class FailureRaising(FailureBase):
     def __repr__(self):
         repr_parts = ['<', self.__class__.__name__]
         
-        repr_parts.append(', expected_exceptions=')
+        repr_parts.append(', expected_exceptions = ')
         repr_parts.append(repr(self.expected_exceptions))
         
-        repr_parts.append(', received_exception=')
+        repr_parts.append(', received_exception = ')
         repr_parts.append(repr(self.exception_received))
         
         accept_subtypes = self.accept_subtypes
         if accept_subtypes:
-            repr_parts.append(', accept_subtypes=')
+            repr_parts.append(', accept_subtypes = ')
             repr_parts.append(repr(accept_subtypes))
         
         repr_parts.append('>')

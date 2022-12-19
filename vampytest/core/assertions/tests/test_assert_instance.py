@@ -38,7 +38,7 @@ def test_assert_instance_subtype_reverted():
     """
     Tests whether `instance` assertion fails when subtypes are not allowed.
     """
-    assert_instance(True, int, accept_subtypes=False)
+    assert_instance(True, int, accept_subtypes = False)
 
 
 def test_assert_instance_nullable_0():

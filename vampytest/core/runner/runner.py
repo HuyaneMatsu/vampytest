@@ -5,6 +5,8 @@ from functools import partial as partial_func
 from os.path import isfile as is_file, split as split_paths
 from sys import path as system_paths, modules as system_modules
 
+from scarletio import RichAttributeErrorBaseType, render_exception_into
+
 from ... import __package__ as PACKAGE_NAME
 
 from ..environment import EnvironmentManager
@@ -16,8 +18,6 @@ from ..event_handling import create_default_event_handler_manager
 from ..file import FileSystemEntry, iter_collect_test_files_in
 
 from .context import RunnerContext
-
-from scarletio import RichAttributeErrorBaseType, render_exception_into
 
 
 def setup_test_library_import():

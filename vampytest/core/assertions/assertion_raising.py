@@ -31,7 +31,7 @@ class AssertionRaising(AssertionBase):
     """
     __slots__ = ('accept_subtypes', 'exception', 'expected_exceptions')
     
-    def __new__(cls, *expected_exceptions, accept_subtypes=True):
+    def __new__(cls, *expected_exceptions, accept_subtypes = True):
         """
         Creates a new raise asserting context manager.
         

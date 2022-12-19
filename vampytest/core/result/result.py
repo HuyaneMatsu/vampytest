@@ -1,8 +1,9 @@
 __all__ = ('Result',)
 
+from scarletio import RichAttributeErrorBaseType, export
+
 from .failures import FailureAsserting, FailureRaising, FailureReturning, get_reverted_failure_message
 
-from scarletio import RichAttributeErrorBaseType, export
 
 @export
 class Result(RichAttributeErrorBaseType):

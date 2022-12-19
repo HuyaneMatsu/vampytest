@@ -1,8 +1,8 @@
 __all__ = ('AssertionIdentical', 'assert_id', 'assert_is', 'assert_identical')
 
-from .assertion_conditional_base import AssertionConditionalBase2Value
-
 from scarletio import copy_docs
+
+from .assertion_conditional_base import AssertionConditionalBase2Value
 
 
 class AssertionIdentical(AssertionConditionalBase2Value):

@@ -1,10 +1,10 @@
 __all__ = ('DefaultEnvironment',)
 
+from scarletio import RichAttributeErrorBaseType
+
 from ..handle import ResultState
 
 from .constants import ENVIRONMENT_TYPE_DEFAULT
-
-from scarletio import RichAttributeErrorBaseType
 
 
 class DefaultEnvironment(RichAttributeErrorBaseType):
@@ -59,3 +59,12 @@ class DefaultEnvironment(RichAttributeErrorBaseType):
             raised_exception = None
         
         return ResultState(returned_value, raised_exception)
+    
+    
+    def shutdown(self):
+        """
+        Stops the environment.
+        
+        Called on environments when testing ended and the process should shut down.
+        """
+        pass

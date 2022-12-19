@@ -1,8 +1,8 @@
 __all__ = ('AssertionValueEvaluationFalse', 'assert_false', 'assert_not')
 
-from .assertion_conditional_base import AssertionConditionalBase1Value
-
 from scarletio import copy_docs
+
+from .assertion_conditional_base import AssertionConditionalBase1Value
 
 
 class AssertionValueEvaluationFalse(AssertionConditionalBase1Value):

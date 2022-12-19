@@ -1,8 +1,8 @@
 __all__ = ('EventBase',)
 
-from .constants import IDENTIFIER_NONE
-
 from scarletio import RichAttributeErrorBaseType, copy_docs
+
+from .constants import IDENTIFIER_NONE
 
 
 class EventBase(RichAttributeErrorBaseType):

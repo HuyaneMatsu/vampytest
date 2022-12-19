@@ -1,8 +1,8 @@
 __all__ = ('AssertionContains', 'assert_contains', 'assert_in',)
 
-from .assertion_conditional_base import AssertionConditionalBase2Value
-
 from scarletio import copy_docs
+
+from .assertion_conditional_base import AssertionConditionalBase2Value
 
 
 class AssertionContains(AssertionConditionalBase2Value):

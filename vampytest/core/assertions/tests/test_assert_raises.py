@@ -41,7 +41,7 @@ def test_assert_raises_without_subtype():
     """
     Tests whether `raises` context-assertion succeeds on the type without allowing subtypes.
     """
-    with assert_raises(LookupError, accept_subtypes=False):
+    with assert_raises(LookupError, accept_subtypes = False):
         raise LookupError
 
 
@@ -50,7 +50,7 @@ def test_assert_raises_without_subtype_reverted():
     """
     Tests whether `raises` context-assertion fails on subtype without allowing subtypes.
     """
-    with assert_raises(LookupError, accept_subtypes=False):
+    with assert_raises(LookupError, accept_subtypes = False):
         raise KeyError
 
 

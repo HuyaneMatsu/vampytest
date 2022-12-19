@@ -57,7 +57,7 @@ class WrapperBase(RichAttributeErrorBaseType):
             
             if (wrapped is not None) and (to_wrap.wrapped is not None):
                 raise RuntimeError(
-                    f'Both self and other wrappers are already wrapped; self={self!r}; other={to_wrap!r}.'
+                    f'Both self and other wrappers are already wrapped; self = {self!r}; other = {to_wrap!r}.'
                 )
             
             if isinstance(to_wrap, WrapperChainer):
@@ -78,7 +78,7 @@ class WrapperBase(RichAttributeErrorBaseType):
         
         
         if (wrapped is not None):
-            raise RuntimeError(f'Wrapped already wrapped; self={self!r}, to_wrap={to_wrap!r}.')
+            raise RuntimeError(f'Wrapped already wrapped; self = {self!r}, to_wrap = {to_wrap!r}.')
         
         self.wrapped = to_wrap
         return self
@@ -116,7 +116,7 @@ class WrapperBase(RichAttributeErrorBaseType):
         
         wrapped = self.wrapped
         if (wrapped is None):
-            repr_parts.append(' wrapped=')
+            repr_parts.append(' wrapped = ')
             repr_parts.append(repr(wrapped))
             
             field_added = True
@@ -229,7 +229,7 @@ class WrapperBase(RichAttributeErrorBaseType):
         """
         wrapped = self.wrapped
         if wrapped is None:
-            raise RuntimeError(f'The wrapper had no test or already unbind; self={self!r}.')
+            raise RuntimeError(f'The wrapper had no test or already unbind; self = {self!r}.')
         
         self.wrapped = None
         return wrapped

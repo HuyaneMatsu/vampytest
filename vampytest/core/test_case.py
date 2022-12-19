@@ -2,12 +2,12 @@ __all__ = ('TestCase', )
 
 import reprlib
 
+from scarletio import RichAttributeErrorBaseType, WeakReferer
+
 from .handle import Handle
 from .helpers import hash_object
 from .result import ResultGroup
 from .wrappers import WrapperBase
-
-from scarletio import RichAttributeErrorBaseType, WeakReferer
 
 
 class TestCase(RichAttributeErrorBaseType):

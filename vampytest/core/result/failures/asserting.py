@@ -1,9 +1,9 @@
 __all__ = ('FailureAsserting',)
 
+from scarletio import copy_docs
+
 from .base import FailureBase
 from .helpers import add_documentation_into, add_route_parts_into
-
-from scarletio import copy_docs
 
 
 class FailureAsserting(FailureBase):

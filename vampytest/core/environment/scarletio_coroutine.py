@@ -2,12 +2,12 @@ __all__ = ('ScarletioCoroutineEnvironment',)
 
 from time import sleep as sync_sleep
 
+from scarletio import copy_docs, EventThread
+
 from ..handle import ResultState
 
 from .constants import ENVIRONMENT_TYPE_COROUTINE
 from .default import DefaultEnvironment
-
-from scarletio import copy_docs, EventThread
 
 
 DEFAULT_TIMEOUT = 60.0
@@ -36,7 +36,7 @@ class ScarletioCoroutineEnvironment(DefaultEnvironment):
     
     identifier = ENVIRONMENT_TYPE_COROUTINE
     
-    def __new__(cls, *, event_loop=None, timeout=DEFAULT_TIMEOUT):
+    def __new__(cls, *, event_loop = None, timeout = DEFAULT_TIMEOUT):
         """
         Parameters
         ----------
@@ -61,7 +61,7 @@ class ScarletioCoroutineEnvironment(DefaultEnvironment):
         
         try:
             if create_event_loop:
-                event_loop = EventThread(daemon=True, name='scarletio.run', start_later=False)
+                event_loop = EventThread(daemon=True, name = 'scarletio.run', start_later=False)
             
             return event_loop.run(
                 self._run_async(test, positional_parameters, keyword_parameters),
@@ -113,7 +113,7 @@ class ScarletioCoroutineEnvironment(DefaultEnvironment):
         
         event_loop = self.event_loop
         if (event_loop is not None):
-            repr_parts.append(' event_loop=')
+            repr_parts.append(' event_loop = ')
             repr_parts.append(repr(event_loop))
             
             field_added = True
@@ -126,8 +126,16 @@ class ScarletioCoroutineEnvironment(DefaultEnvironment):
             if field_added:
                 repr_parts.append(',')
             
-            repr_parts.append(' timeout=')
+            repr_parts.append(' timeout = ')
             repr_parts.append(repr(timeout))
         
         repr_parts.append('>')
         return ''.join(repr_parts)
+
+    
+    @copy_docs(DefaultEnvironment.shutdown)
+    def shutdown(self):
+        event_loop = self.event_loop
+        if (event_loop is not None):
+            event_loop.stop()
+            sync_sleep(0.0)

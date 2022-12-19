@@ -2,9 +2,9 @@ __all__ = ()
 
 import reprlib
 
-from .test_file import __file__ as VAMPYTEST_TEST_FILE_PATH
-
 from scarletio import RichAttributeErrorBaseType, render_exception_into
+
+from .test_file import __file__ as VAMPYTEST_TEST_FILE_PATH
 
 
 def _ignore_module_import_frame(file_name, name, line_number, line):

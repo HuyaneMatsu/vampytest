@@ -1,10 +1,10 @@
 __all__ = ('WrapperChainer',)
 
+from scarletio import copy_docs, export
+
 from ..helpers import hash_set
 
 from .wrapper_base import WrapperBase
-
-from scarletio import copy_docs, export
 
 
 @export

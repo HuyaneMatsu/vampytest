@@ -4,9 +4,9 @@ __all__ = (
 
 from os.path import basename as get_file_name, dirname as get_directory_name
 
-from .default import DefaultEnvironment
-
 from scarletio import get_last_module_frame
+
+from .default import DefaultEnvironment
 
 
 ENVIRONMENT_SCOPE_GLOBAL = 1

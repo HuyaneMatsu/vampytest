@@ -108,7 +108,7 @@ class AssertionConditionalBase(AssertionBase):
         result : `Any`
             The condition's result.
         """
-        raise NotImplemented
+        raise NotImplementedError
     
     
     def _get_operation_representation(self):

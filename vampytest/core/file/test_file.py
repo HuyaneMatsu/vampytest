@@ -2,14 +2,14 @@ __all__ = ('TestFile', )
 
 import sys
 
+from scarletio import RichAttributeErrorBaseType
+
 from ..environment import apply_environments_for_file_at
 from ..utils import get_short_path_repr
 from ..test_case import TestCase
 from ..wrappers import WrapperBase
 
 from .load_failure import TestFileLoadFailure
-
-from scarletio import RichAttributeErrorBaseType
 
 
 def is_test_name(name):
@@ -278,7 +278,7 @@ class TestFile(RichAttributeErrorBaseType):
             if is_test(name, value):
                 test_cases.append(TestCase(self, name, value))
         
-        test_cases.sort(key=_test_case_sort_key)
+        test_cases.sort(key = _test_case_sort_key)
         
         self._test_cases = test_cases
         return True

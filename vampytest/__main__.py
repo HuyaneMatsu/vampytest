@@ -2,6 +2,7 @@ import sys
 
 from .main import execute_from_terminal
 
+
 def main():
     """
     Executes vampytest from terminal.

@@ -1,10 +1,11 @@
 __all__ = ('EnvironmentManager', )
 
+from scarletio import RichAttributeErrorBaseType
+
 from .helpers import get_function_environment_identifier
 from .default import DefaultEnvironment
 from .scarletio_coroutine import ScarletioCoroutineEnvironment
 
-from scarletio import RichAttributeErrorBaseType
 
 DEFAULT_ENVIRONMENT_TYPES = (
     DefaultEnvironment,

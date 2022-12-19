@@ -1,8 +1,8 @@
 __all__ = ('AssertionNotEquals', 'assert_ne', 'assert_not_eq', 'assert_not_equals')
 
-from .assertion_conditional_base import AssertionConditionalBase2Value
-
 from scarletio import copy_docs
+
+from .assertion_conditional_base import AssertionConditionalBase2Value
 
 
 class AssertionNotEquals(AssertionConditionalBase2Value):

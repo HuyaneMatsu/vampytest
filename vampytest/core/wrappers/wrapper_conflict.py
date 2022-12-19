@@ -18,7 +18,7 @@ class WrapperConflict(RichAttributeErrorBaseType):
     """
     __slots__ = ('reason', 'wrapper_1', 'wrapper_2')
     
-    def __new__(cls, wrapper_1, wrapper_2=None, *, reason=None):
+    def __new__(cls, wrapper_1, wrapper_2 = None, *, reason = None):
         """
         Creates a new wrapper conflict.
         
@@ -52,7 +52,7 @@ class WrapperConflict(RichAttributeErrorBaseType):
         
         reason = self.reason
         if (reason is not None):
-            repr_parts.append(', reason=')
+            repr_parts.append(', reason = ')
             repr_parts.append(repr(self.reason))
         
         repr_parts.append('>')
