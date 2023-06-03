@@ -6,7 +6,9 @@ from scarletio import copy_docs
 
 
 from ..assertions import AssertionException
-from ..helpers import hash_dict, hash_set, hash_tuple, try_hash_method, try_match_exception, un_nest_expected_exceptions
+from ..helpers.exception_matching import try_match_exception
+from ..helpers.hashing import hash_dict, hash_set, hash_tuple, try_hash_method
+from ..helpers.un_nesting import un_nest_exceptions
 from ..result import Result
 
 from .wrapper_conflict import WrapperConflict
@@ -43,7 +45,7 @@ class WrapperCall(WrapperBase):
         'raising_exceptions', 'raising_accept_subtypes', 'returning_value'
     )
     
-    def __new__(cls, wrapped=None, *, raising=None, returning=None, call_with=None):
+    def __new__(cls, wrapped = None, *, raising = None, returning = None, call_with = None):
         """
         Creates a new combined test wrapper.
         
@@ -428,7 +430,7 @@ class WrapperCall(WrapperBase):
         -------
         new : ``WrapperCall``
         """
-        exception_types = un_nest_expected_exceptions(exception_types)
+        exception_types = un_nest_exceptions(exception_types)
         if not exception_types:
             raise ValueError(
                 'At least 1 exception is required.'
@@ -461,7 +463,7 @@ class WrapperCall(WrapperBase):
         -------
         new : ``WrapperCall``
         """
-        exception_types = un_nest_expected_exceptions(exception_types)
+        exception_types = un_nest_exceptions(exception_types)
         if not exception_types:
             raise ValueError(
                 'At least 1 exception is required.'

@@ -1,9 +1,13 @@
-__all__ = ('AssertionSubtype', 'assert_subtype')
+__all__ = ('AssertionSubtype',)
 
 from scarletio import copy_docs
 
-from . import assertion_states as CONDITION_STATES
-from .assertion_conditional_base import AssertionConditionalBase, AssertionConditionalBase2Value
+from ..helpers.un_nesting import un_nest_types
+
+from .assertion_conditional_base import (
+    AssertionConditionalBase, AssertionConditionalBase2Value, _render_parameters_representation_into,
+    _render_types_parameter_representation_into
+)
 
 
 class AssertionSubtype(AssertionConditionalBase2Value):
@@ -18,25 +22,27 @@ class AssertionSubtype(AssertionConditionalBase2Value):
         Exception raised by the condition if any.
     reverse : `bool`
         Whether the condition should be reversed.
-    value_1 : `Any`
+    value_0 : `object`
         First value to assert subtype with.
-    value_2 : `Any`
+    value_1 : `object`
         The second value to assert subtype with.
     nullable : `bool`
         Whether `value` is accepted even if given as `None`.
     """
     __slots__ = ('nullable',)
     
-    def __new__(cls, value, type_, *, reverse=False, nullable=False):
+    def __new__(cls, value, accepted_type, *accepted_types, reverse = False, nullable = False):
         """
         Creates a new instance assertion.
         
         Parameters
         ----------
-        value : `Any`
+        value : `object`
             Object to check.
-        type_ : `type_`
+        accepted_type : `type`
             Type to check.
+        *accepted_types : `tuple<type>`
+            Additional types to check.
         reverse : `bool` = `False`, Optional (Keyword only)
             Whether the condition should be reversed.
         nullable : `bool` = `False`, Optional (Keyword only)
@@ -45,33 +51,31 @@ class AssertionSubtype(AssertionConditionalBase2Value):
         Raises
         ------
         TypeError
-            - If `type_` is not `type` instance.
+            - If `accepted_type` is not `type` instance.
+        ValueError
+            - No types given.
         """
-        if not isinstance(type_, type):
-            raise TypeError(
-                f'`type_` parameter can be `type` instance, got {type_.__class__.__name__}; {type_!r}.'
+        accepted_types = un_nest_types((accepted_type, *accepted_types))
+        if not accepted_types:
+            raise ValueError(
+                'At least 1 type is required.'
             )
         
-        self = AssertionConditionalBase.__new__(cls, reverse=reverse)
-        
-        self.value_1 = value
-        self.value_2 = type_
-        
-        self.state = CONDITION_STATES.CREATED
-        
+        self = AssertionConditionalBase2Value.__new__(cls, value, accepted_types, reverse = reverse)
         self.nullable = nullable
-        
-        return self.invoke()
-        
+        return self
+    
     
     @copy_docs(AssertionConditionalBase2Value.invoke_condition)
-    def invoke_condition(self):
-        if self.nullable:
-            if self.value_1 is None:
-                return True
+    def invoke_condition(self): 
+        value = self.value_0
+        accepted_types = self.value_1
         
-        return isinstance(self.value_1, type) and issubclass(self.value_1, self.value_2)
+        if self.nullable and value is None:
+            return True
         
+        return isinstance(value, type) and any(issubclass(value, accepted_type) for accepted_type in accepted_types)
+    
     
     @copy_docs(AssertionConditionalBase2Value._get_operation_representation)
     def _get_operation_representation(self):
@@ -83,9 +87,26 @@ class AssertionSubtype(AssertionConditionalBase2Value):
         AssertionConditionalBase._render_operation_representation_into(self, into)
         into.append(' as "')
         if self.nullable:
-            into.append('parameter_1 is None or ')
-        into.append('isinstance(parameter_1, type) and issubclass(parameter_1, parameter_2)"')
+            into.append('value is None or ')
+        into.append('isinstance(value, type) and issubclass(value, expected_types)"')
         return into
 
-
-assert_subtype = AssertionSubtype
+    
+    @copy_docs(AssertionConditionalBase2Value._build_repr_parts_into)
+    def _build_repr_parts_into(self, into):
+        into = AssertionConditionalBase2Value._build_repr_parts_into(self, into)
+        
+        nullable = self.nullable
+        if nullable:
+            into.append(', nullable = ')
+            into.append(repr(nullable))
+        
+        return into
+    
+    
+    @copy_docs(AssertionConditionalBase2Value.render_failure_message_parts_into)
+    def render_failure_message_parts_into(self, failure_message_parts):
+        AssertionConditionalBase.render_failure_message_parts_into(self, failure_message_parts)
+        _render_parameters_representation_into('value', self.value_0, failure_message_parts)
+        _render_types_parameter_representation_into('expected_types', self.value_1, failure_message_parts)
+        return failure_message_parts

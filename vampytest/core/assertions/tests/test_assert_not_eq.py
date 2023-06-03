@@ -1,6 +1,6 @@
-from .. import assert_not_eq
-
 from vampytest import revert
+
+from ..aliases import assert_not_eq
 
 
 def test_assert_not_eq():

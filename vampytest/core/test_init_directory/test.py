@@ -1,6 +1,4 @@
-from .. import skip
-
-from . import pi
+from vampytest import skip
 
 
 def test_sub_file():
@@ -21,18 +19,13 @@ def sub_function(val, val2):
         23 + 12.6
     )
 
+
+@skip()
 def test_fails():
     """
     I am failing.
     """
     sub_function(BaseException, None)
-
-
-def test_recursion():
-    """
-    I am a recursion.
-    """
-    test_recursion()
 
 
 def a(index):
@@ -44,6 +37,7 @@ def a(index):
 def b(): b()
 
 
+@skip()
 def test_recursion_0():
     """
     I am a recursion 2.
@@ -55,6 +49,7 @@ def c(): d()
 
 def d(): c()
 
+@skip()
 def test_recursion_1():
     """
     I am recursion 2.

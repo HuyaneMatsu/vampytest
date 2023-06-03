@@ -1,6 +1,6 @@
-from .. import assert_not_id
-
 from vampytest import revert
+
+from ..aliases import assert_not_id
 
 
 def test_assert_not_id():

@@ -1,18 +1,20 @@
 __all__ = ('get_assertion_state_name', )
 
-NONE = 0
-CREATED = 1
-FAILED = 2
-PASSED = 3
+
+ASSERTION_STATE_NONE = 0
+ASSERTION_STATE_CREATED = 1
+ASSERTION_STATE_FAILED = 2
+ASSERTION_STATE_PASSED = 3
 
 DEFAULT_ASSERTION_STATE_NAME = 'unknown'
 
 ASSERTION_STATE_TO_NAME = {
-    NONE: 'none',
-    CREATED: 'created',
-    FAILED: 'failed',
-    PASSED: 'passed',
+    ASSERTION_STATE_NONE: 'none',
+    ASSERTION_STATE_CREATED: 'created',
+    ASSERTION_STATE_FAILED: 'failed',
+    ASSERTION_STATE_PASSED: 'passed',
 }
+
 
 def get_assertion_state_name(state):
     """

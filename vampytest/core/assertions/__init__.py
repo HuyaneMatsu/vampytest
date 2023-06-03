@@ -18,6 +18,7 @@ def test_contains():
     vampytest.assert_in(range(7), 5)
 ```
 """
+from .aliases import *
 from .assertion_base import *
 from .assertion_conditional_base import *
 from .assertion_contains import *
@@ -34,12 +35,9 @@ from .assertion_subtype import *
 from .assertion_true import *
 from .exceptions import *
 
-CONDITION_STATES = assertion_states
-
 
 __all__ = (
-    'CONDITION_STATES',
-    
+    *aliases.__all__,
     *assertion_raising.__all__,
     *assertion_base.__all__,
     *assertion_conditional_base.__all__,

@@ -1,6 +1,6 @@
-from .. import assert_id
-
 from vampytest import revert
+
+from ..aliases import assert_id
 
 
 def test_assert_id():

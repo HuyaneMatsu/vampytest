@@ -1,6 +1,6 @@
-from .. import assert_eq
-
 from vampytest import revert
+
+from ..aliases import assert_eq
 
 
 def test_assert_eq():

@@ -1,9 +1,13 @@
-__all__ = ('AssertionInstance', 'assert_instance')
+__all__ = ('AssertionInstance',)
 
 from scarletio import copy_docs
 
-from . import assertion_states as CONDITION_STATES
-from .assertion_conditional_base import AssertionConditionalBase, AssertionConditionalBase2Value
+from ..helpers.un_nesting import un_nest_types
+
+from .assertion_conditional_base import (
+    AssertionConditionalBase, AssertionConditionalBase2Value, _render_parameters_representation_into,
+    _render_types_parameter_representation_into
+)
 
 
 class AssertionInstance(AssertionConditionalBase2Value):
@@ -18,9 +22,9 @@ class AssertionInstance(AssertionConditionalBase2Value):
         Exception raised by the condition if any.
     reverse : `bool`
         Whether the condition should be reversed.
-    value_1 : `Any`
+    value_0 : `object`
         First value to assert instance with.
-    value_2 : `Any`
+    value_1 : `set` of `type<type>`
         The second value to assert instance with.
     accept_subtypes : `bool`
         Whether instances of subtypes should be accepted.
@@ -29,16 +33,18 @@ class AssertionInstance(AssertionConditionalBase2Value):
     """
     __slots__ = ('accept_subtypes', 'nullable')
     
-    def __new__(cls, value, type_, *, accept_subtypes = True, reverse=False, nullable=False):
+    def __new__(cls, value, accepted_type, *accepted_types, accept_subtypes = True, reverse = False, nullable = False):
         """
         Creates a new instance assertion.
         
         Parameters
         ----------
-        value : `Any`
+        value : `object`
             Object to check.
-        type_ : `type_`
-            Type to check.
+        accepted_type : `type<type>`
+            The type to check.
+        *accepted_types : `tuple<type<type>, ...>`
+            Additional accepted types.
         accept_subtypes : `bool` = `True`, optional (Keyword only)
             Whether instances of subtypes should be accepted.
         reverse : `bool` = `False`, Optional (Keyword only)
@@ -49,37 +55,38 @@ class AssertionInstance(AssertionConditionalBase2Value):
         Raises
         ------
         TypeError
-            - If `type_` is not `type` instance.
-        """ 
-        if not isinstance(type_, type):
-            raise TypeError(
-                f'`type_` parameter can be `type` instance, got {type_.__class__.__name__}; {type_!r}.'
+            - If a type`` is not `type` instance.
+        ValueError
+            - No types given.
+        """
+        accepted_types = un_nest_types((accepted_type, *accepted_types))
+        if not accepted_types:
+            raise ValueError(
+                'At least 1 type is required.'
             )
         
-        self = AssertionConditionalBase.__new__(cls, reverse=reverse)
-        
-        self.value_1 = value
-        self.value_2 = type_
-        
-        self.state = CONDITION_STATES.CREATED
-        
+        self = AssertionConditionalBase2Value.__new__(cls, value, accepted_types, reverse = reverse)
         self.accept_subtypes = accept_subtypes
         self.nullable = nullable
-        
-        return self.invoke()
+        return self
     
     
     @copy_docs(AssertionConditionalBase2Value.invoke_condition)
     def invoke_condition(self):
+        value = self.value_0
+        accepted_types = self.value_1
+        
         if self.nullable:
-            if self.value_1 is None:
+            if value is None:
                 return True
         
+        value_type = type(value)
+        
         if self.accept_subtypes:
-            return isinstance(self.value_1, self.value_2)
+            return any(issubclass(value_type, accepted_type) for accepted_type in accepted_types)
         
-        return type(self.value_1) is self.value_2
-        
+        return any((value_type is accepted_type) for accepted_type in accepted_types)
+    
     
     @copy_docs(AssertionConditionalBase2Value._get_operation_representation)
     def _get_operation_representation(self):
@@ -93,34 +100,38 @@ class AssertionInstance(AssertionConditionalBase2Value):
         into.append(' as "')
         
         if self.nullable:
-            into.append('parameter_1 is None or')
+            into.append('value is None or ')
         
         if self.accept_subtypes:
-            instance_check_part = 'isinstance(parameter_1, parameter_2)'
+            instance_check_part = 'isinstance(value, expected_types)'
         else:
-            instance_check_part = 'type(parameter_1) is parameter_2'
+            instance_check_part = 'type(value) is expected_types'
         into.append(instance_check_part)
-        
         into.append('"')
         
         return into
     
     
-    @copy_docs(AssertionConditionalBase2Value._cursed_repr_builder)
-    def _cursed_repr_builder(self):
-        for repr_parts in AssertionConditionalBase2Value._cursed_repr_builder(self):
-            
-            accept_subtypes = self.accept_subtypes
-            if not accept_subtypes:
-                repr_parts.append(', accept_subtypes = ')
-                repr_parts.append(repr(accept_subtypes))
-            
-            nullable = self.nullable
-            if nullable:
-                repr_parts.append(', nullable=')
-                repr_parts.append(repr(nullable))
-            
-            yield repr_parts
-
-
-assert_instance = AssertionInstance
+    @copy_docs(AssertionConditionalBase2Value._build_repr_parts_into)
+    def _build_repr_parts_into(self, into):
+        into = AssertionConditionalBase2Value._build_repr_parts_into(self, into)
+        
+        accept_subtypes = self.accept_subtypes
+        if not accept_subtypes:
+            into.append(', accept_subtypes = ')
+            into.append(repr(accept_subtypes))
+        
+        nullable = self.nullable
+        if nullable:
+            into.append(', nullable = ')
+            into.append(repr(nullable))
+        
+        return into
+    
+    
+    @copy_docs(AssertionConditionalBase2Value.render_failure_message_parts_into)
+    def render_failure_message_parts_into(self, failure_message_parts):
+        AssertionConditionalBase.render_failure_message_parts_into(self, failure_message_parts)
+        _render_parameters_representation_into('value', self.value_0, failure_message_parts)
+        _render_types_parameter_representation_into('expected_types', self.value_1, failure_message_parts)
+        return failure_message_parts

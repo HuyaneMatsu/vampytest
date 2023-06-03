@@ -38,7 +38,7 @@ def render_parameters_into(call_state, into):
                 field_added = True
             
             into.append(parameter_name)
-            into.append('=')
+            into.append(' = ')
             into.append(repr(parameter_value))
     
     if not field_added:

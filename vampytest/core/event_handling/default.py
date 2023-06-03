@@ -49,7 +49,7 @@ class DefaultEventFormatter(RichAttributeErrorBaseType):
     """
     __slots__ = ('rendered_entries', 'output_writer',)
     
-    def __new__(cls, output_writer=None):
+    def __new__(cls, output_writer = None):
         """
         Creates a new default event formatter.
         
@@ -109,7 +109,7 @@ class DefaultEventFormatter(RichAttributeErrorBaseType):
             self.output_writer.write_line(''.join(message_parts))
     
     
-    def _maybe_render_test_file_into(self, into, entry, *, name=None):
+    def _maybe_render_test_file_into(self, into, entry, *, name = None):
         """
         Helpers method for rendering file structure tree.
         
@@ -136,7 +136,7 @@ class DefaultEventFormatter(RichAttributeErrorBaseType):
                 into = sub_entry.render_into(into)
                 rendered_entries.add(sub_entry)
             
-            into = entry.render_into(into, name=name)
+            into = entry.render_into(into, name = name)
             rendered_entries.add(entry)
         
         return into

@@ -1,4 +1,4 @@
-__all__ = ('get_short_path_repr',)
+__all__ = ()
 
 from os.path import sep as PATH_SEPARATOR
 

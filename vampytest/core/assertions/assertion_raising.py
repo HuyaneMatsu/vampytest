@@ -1,10 +1,12 @@
-__all__ = ('AssertionRaising', 'assert_raises')
+__all__ = ('AssertionRaising',)
 
-from ..helpers import try_match_exception, un_nest_expected_exceptions
+from ..helpers.exception_matching import try_match_exception
+from ..helpers.un_nesting import un_nest_exceptions
 
-from . import assertion_states as CONDITION_STATES
 from .assertion_base import AssertionBase
+from .assertion_states import ASSERTION_STATE_CREATED, ASSERTION_STATE_FAILED, ASSERTION_STATE_PASSED
 from .exceptions import AssertionException
+
 
 
 class AssertionRaising(AssertionBase):
@@ -19,7 +21,7 @@ class AssertionRaising(AssertionBase):
         Exception raised within the context block if any.
     accept_subtypes : `bool`
         Whether subclasses are accepted as well.
-    expected_exceptions : `set` of ``BaseException``
+    expected_exceptions : `set` of (`BaseException`, `type<BaseException>`)
         The expected exception types.
     
     Examples
@@ -31,14 +33,16 @@ class AssertionRaising(AssertionBase):
     """
     __slots__ = ('accept_subtypes', 'exception', 'expected_exceptions')
     
-    def __new__(cls, *expected_exceptions, accept_subtypes = True):
+    def __new__(cls, expected_exception, *expected_exceptions, accept_subtypes = True):
         """
         Creates a new raise asserting context manager.
         
         Parameters
         ----------
-        *expected_exceptions : tuple` of (`BaseException`, ...)
-            Exception types to expect.
+        expected_exception : `BaseException˙
+            The expected exception to be raised.
+        *expected_exceptions : ˙tuple<BaseException>˙
+            Additional expected exceptions.
         accept_subtypes : `bool` = `True`, optional (Keyword only)
             Whether subclasses are accepted as well.
         
@@ -49,7 +53,7 @@ class AssertionRaising(AssertionBase):
         ValueError
             If no exception was passed.
         """
-        expected_exceptions = un_nest_expected_exceptions(expected_exceptions)
+        expected_exceptions = un_nest_exceptions((expected_exception, *expected_exceptions))
         if not expected_exceptions:
             raise ValueError(
                 'At least 1 exception is required.'
@@ -64,32 +68,29 @@ class AssertionRaising(AssertionBase):
     
     def __enter__(self):
         """Enters as context manager."""
-        self.state = CONDITION_STATES.CREATED
+        self.state = ASSERTION_STATE_CREATED
         return None
     
     
-    def __exit__(self, exc_type, exc_val, exc_tb):
+    def __exit__(self, exception_type, exception_value, exception_traceback):
         """Exits the context manager."""
-        if exc_type is None:
-            self.state = CONDITION_STATES.FAILED
+        if exception_type is None:
+            self.state = ASSERTION_STATE_FAILED
             try:
                 raise AssertionException(self)
             finally:
                 # Clear reference to self
                 self = None
         
-        self.exception = exc_val
+        self.exception = exception_value
         
-        if try_match_exception(self.expected_exceptions, exc_val, self.accept_subtypes):
-            state = CONDITION_STATES.PASSED
+        if try_match_exception(self.expected_exceptions, exception_value, self.accept_subtypes):
+            state = ASSERTION_STATE_PASSED
             silence = True
         
         else:
-            state = CONDITION_STATES.FAILED
+            state = ASSERTION_STATE_FAILED
             silence = False
         
         self.state = state
         return silence
-
-
-assert_raises = AssertionRaising

@@ -1,6 +1,6 @@
-from .. import assert_subtype
-
 from vampytest import revert, raising
+
+from ..aliases import assert_subtype
 
 
 def test_assert_subtype():
@@ -34,15 +34,37 @@ def test_assert_subtype_incorrect_checked():
     assert_subtype(1, int)
 
 
-def test_assert_subtype_nullable_0():
+def test_assert_subtype_nullable__0():
     """
     Tests whether `subtype` assertion succeeds when nullable.
     """
-    assert_subtype(bool, int, nullable=True)
+    assert_subtype(bool, int, nullable = True)
 
 
-def test_assert_subtype_nullable_1():
+def test_assert_subtype_nullable__1():
     """
     Tests whether `subtype` assertion succeeds when nullable + giving null.
     """
-    assert_subtype(None, int, nullable=True)
+    assert_subtype(None, int, nullable = True)
+
+
+def test_assert_subtype_multiple_types__0():
+    """
+    Tests whether `subtype` assertion succeeds when multiple types are given.
+    """
+    assert_subtype(int, str, int)
+
+
+def test_assert_subtype_multiple_types__1():
+    """
+    Tests whether `subtype` assertion succeeds when multiple types are given as a tuple.
+    """
+    assert_subtype(int, (str, int))
+
+
+@raising(ValueError)
+def test_assert_subtype_with_empty_parameter():
+    """
+    Tests whether `subtype` assertion raises when empty type parameter is given.
+    """
+    assert_subtype(int, ())

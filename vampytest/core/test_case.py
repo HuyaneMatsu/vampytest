@@ -5,7 +5,7 @@ import reprlib
 from scarletio import RichAttributeErrorBaseType, WeakReferer
 
 from .handle import Handle
-from .helpers import hash_object
+from .helpers.hashing import hash_object
 from .result import ResultGroup
 from .wrappers import WrapperBase
 
@@ -81,15 +81,15 @@ class TestCase(RichAttributeErrorBaseType):
         """Returns the test case's representation."""
         repr_parts = ['<', self.__class__.__name__]
         
-        repr_parts.append(' name=')
+        repr_parts.append(' name = ')
         repr_parts.append(repr(self.name))
         
-        repr_parts.append(', test=')
+        repr_parts.append(', test = ')
         repr_parts.append(reprlib.repr(self.test))
         
         wrapper = self.wrapper
         if (wrapper is not None):
-            repr_parts.append(', wrapper=')
+            repr_parts.append(', wrapper = ')
             repr_parts.append(repr(self.wrapper))
         
         if self.do_skip():

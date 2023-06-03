@@ -35,8 +35,8 @@ def _ignore_assertion_frames(file_name, name, line_number, line):
     should_show_frame = True
     
     if file_name == VAMPYTEST_ASSERTION_CONDITION_BASE_FILE_PATH:
-        if name == '__new__':
-            if line == 'return self.invoke()':
+        if name == '__call__':
+            if line == 'return type_.__new__(type_, *positional_parameters, **keyword_parameter).invoke()':
                 should_show_frame = False
         
         elif name == 'invoke':
@@ -70,7 +70,6 @@ def _ignore_assertion_frames(file_name, name, line_number, line):
     
     
     return should_show_frame
-
 
 
 @export
@@ -111,7 +110,7 @@ class AssertionException(BaseException):
         """
         frames = _get_exception_frames(self)
         failure_message_parts.append('\n')
-        render_frames_into(frames, failure_message_parts, filter=_ignore_assertion_frames)
+        render_frames_into(frames, failure_message_parts, filter = _ignore_assertion_frames)
         failure_message_parts.append('\n')
         self.assertion.render_failure_message_parts_into(failure_message_parts)
         return failure_message_parts

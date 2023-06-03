@@ -2,7 +2,7 @@ __all__ = ('WrapperChainer',)
 
 from scarletio import copy_docs, export
 
-from ..helpers import hash_set
+from ..helpers.hashing import hash_set
 
 from .wrapper_base import WrapperBase
 
@@ -12,20 +12,20 @@ class WrapperChainer(WrapperBase):
     """
     Attributes
     ----------
-    wrapped : `None`, `Any`
+    wrapped : `None`, `object`
         The wrapped test.
     wrappers : `set` of ``WrapperBase``
         The applied wrappers.
     """
     __slots__ = ('wrappers',)
     
-    def __new__(cls, wrapped=None):
+    def __new__(cls, wrapped = None):
         """
         Creates a new combined wrapper containing more wrappers.
         
         Parameters
         ----------
-        wrapped : `None`, `Any` = `None`, Optional
+        wrapped : `None`, `object` = `None`, Optional
             The wrapped test if any.
         """
         self = object.__new__(cls)
@@ -42,7 +42,7 @@ class WrapperChainer(WrapperBase):
         
         
         if (self.wrapped is not None):
-            raise RuntimeError(f'Wrapped already wrapped; self={self!r}, to_wrap={to_wrap!r}.')
+            raise RuntimeError(f'Wrapped already wrapped; self = {self!r}, to_wrap = {to_wrap!r}.')
         
         self.wrapped = to_wrap
         return self
@@ -54,7 +54,7 @@ class WrapperChainer(WrapperBase):
             if field_added:
                 repr_parts.append(',')
             
-            repr_parts.append(' wrappers=')
+            repr_parts.append(' wrappers = ')
             repr_parts.append(repr(self.wrappers))
         
         return ''.join(repr_parts)

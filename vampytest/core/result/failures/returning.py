@@ -44,10 +44,10 @@ class FailureReturning(FailureBase):
     def __repr__(self):
         repr_parts = ['<', self.__class__.__name__]
         
-        repr_parts.append(', expected_value=')
+        repr_parts.append(', expected_value = ')
         repr_parts.append(repr(self.expected_value))
         
-        repr_parts.append(', received_value=')
+        repr_parts.append(', received_value = ')
         repr_parts.append(repr(self.received_value))
         
         repr_parts.append('>')

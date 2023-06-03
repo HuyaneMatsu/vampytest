@@ -1,4 +1,4 @@
-__all__ = ('AssertionValueEvaluationFalse', 'assert_false', 'assert_not')
+__all__ = ('AssertionValueEvaluationFalse',)
 
 from scarletio import copy_docs
 
@@ -17,14 +17,14 @@ class AssertionValueEvaluationFalse(AssertionConditionalBase1Value):
         Exception raised by the condition if any.
     reverse : `bool`
         Whether the condition should be reversed.
-    value_1 : `Any`
+    value_0 : `object`
         First value to assert.
     """
     __slots__ = ()
     
     @copy_docs(AssertionConditionalBase1Value.invoke_condition)
     def invoke_condition(self):
-        return not self.value_1
+        return not self.value_0
     
     
     @copy_docs(AssertionConditionalBase1Value._get_operation_representation)
@@ -37,7 +37,3 @@ class AssertionValueEvaluationFalse(AssertionConditionalBase1Value):
         AssertionConditionalBase1Value._render_operation_representation_into(self, into)
         into.append(' as "not bool(parameter)"')
         return into
-
-
-assert_false = AssertionValueEvaluationFalse
-assert_not = AssertionValueEvaluationFalse

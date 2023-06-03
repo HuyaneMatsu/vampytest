@@ -5,7 +5,7 @@ import sys
 from scarletio import RichAttributeErrorBaseType
 
 from ..environment import apply_environments_for_file_at
-from ..utils import get_short_path_repr
+from ..helpers.path_repr import get_short_path_repr
 from ..test_case import TestCase
 from ..wrappers import WrapperBase
 

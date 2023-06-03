@@ -1,6 +1,6 @@
-from .. import assert_not_in
-
 from vampytest import revert
+
+from ..aliases import assert_not_in
 
 
 def test_assert_not_in():

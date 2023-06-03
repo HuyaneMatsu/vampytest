@@ -1,6 +1,6 @@
-from .. import assert_true
-
 from vampytest import revert
+
+from ..aliases import assert_true
 
 
 def test_assert_true():

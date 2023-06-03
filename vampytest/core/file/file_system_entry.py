@@ -306,7 +306,7 @@ class FileSystemEntry(RichAttributeErrorBaseType):
         return True
     
     
-    def render_into(self, into, *, name=None):
+    def render_into(self, into, *, name = None):
         """
         Renders the path access into the given list of strings.
         

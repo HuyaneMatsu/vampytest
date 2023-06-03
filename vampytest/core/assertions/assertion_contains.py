@@ -1,4 +1,4 @@
-__all__ = ('AssertionContains', 'assert_contains', 'assert_in',)
+__all__ = ('AssertionContains',)
 
 from scarletio import copy_docs
 
@@ -17,22 +17,18 @@ class AssertionContains(AssertionConditionalBase2Value):
         Exception raised by the condition if any.
     reverse : `bool`
         Whether the condition should be reversed.
-    value_1 : `Any`
+    value_0 : `object`
         First value to assert contains with.
-    value_2 : `Any`
+    value_1 : `object`
         The second value to assert contains with.
     """
     __slots__ = ()
     
     @copy_docs(AssertionConditionalBase2Value.invoke_condition)
     def invoke_condition(self):
-        return self.value_1 in self.value_2
+        return self.value_0 in self.value_1
     
     
     @copy_docs(AssertionConditionalBase2Value._get_operation_representation)
     def _get_operation_representation(self):
         return 'in'
-
-
-assert_contains = AssertionContains
-assert_in = AssertionContains

@@ -143,7 +143,7 @@ class TestRunner(RichAttributeErrorBaseType):
         '_base_path', '_path_parts', '_stopped', '_teardown_callbacks', 'environment_manager', 'event_handler_manager'
     )
     
-    def __new__(cls, base_path, path_parts=None, *, environment_manager=None, event_handler_manager=None):
+    def __new__(cls, base_path, path_parts = None, *, environment_manager = None, event_handler_manager = None):
         """
         Parameters
         ----------

@@ -4,7 +4,8 @@ import reprlib
 
 from scarletio import RichAttributeErrorBaseType, include
 
-from .helpers import hash_dict, hash_list, hash_object, maybe_merge_iterables, maybe_merge_mappings
+from .helpers.hashing import hash_dict, hash_list, hash_object
+from .helpers.merging import maybe_merge_iterables, maybe_merge_mappings
 
 
 Result = include('Result')
@@ -102,7 +103,7 @@ class CallState(RichAttributeErrorBaseType):
         
         Returns
         -------
-        new : ``CallState``
+        new : `instance<type<self>`
         """
         keyword_parameters = self.keyword_parameters
         if (keyword_parameters is not None):
@@ -251,7 +252,7 @@ class ResultState(RichAttributeErrorBaseType):
         
         Returns
         -------
-        new : ``ResultState``
+        new : `instance<type<self>>`
         """
         new = object.__new__(type(self))
         new.raised_exception = self.raised_exception

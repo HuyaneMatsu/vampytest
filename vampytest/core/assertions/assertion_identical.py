@@ -1,4 +1,4 @@
-__all__ = ('AssertionIdentical', 'assert_id', 'assert_is', 'assert_identical')
+__all__ = ('AssertionIdentical',)
 
 from scarletio import copy_docs
 
@@ -17,23 +17,18 @@ class AssertionIdentical(AssertionConditionalBase2Value):
         Exception raised by the condition if any.
     reverse : `bool`
         Whether the condition should be reversed.
-    value_1 : `Any`
+    value_0 : `object`
         First value to assert identity with.
-    value_2 : `Any`
+    value_1 : `object`
         The second value to assert identity with.
     """
-    __slots__ = ('value_1', 'value_2',)
+    __slots__ = ()
     
     @copy_docs(AssertionConditionalBase2Value.invoke_condition)
     def invoke_condition(self):
-        return self.value_1 is self.value_2
+        return self.value_0 is self.value_1
     
     
     @copy_docs(AssertionConditionalBase2Value._get_operation_representation)
     def _get_operation_representation(self):
         return 'is'
-
-
-assert_id = AssertionIdentical
-assert_is = AssertionIdentical
-assert_identical = AssertionIdentical

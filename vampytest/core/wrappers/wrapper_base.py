@@ -1,8 +1,8 @@
 __all__ = ('WrapperBase', )
 
-from ..helpers import hash_object
-
 from scarletio import RichAttributeErrorBaseType, include
+
+from ..helpers.hashing import hash_object
 
 
 WrapperChainer = include('WrapperChainer')
