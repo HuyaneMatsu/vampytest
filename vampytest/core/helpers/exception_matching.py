@@ -1,7 +1,7 @@
 __all__ = ()
 
 
-def try_match_exception(expected_exceptions, received_exception, accept_subtypes):
+def try_match_exception(expected_exceptions, received_exception, accept_subtypes, where):
     """
     Checks whether the received exception matches the preset ones.
     
@@ -13,6 +13,8 @@ def try_match_exception(expected_exceptions, received_exception, accept_subtypes
         The received exception.
     accept_subtypes : `bool`
         Whether sub classes are allowed.
+    where : `None`, `callable`
+        Additional check to check the raised exception.
     
     Returns
     -------
@@ -37,6 +39,9 @@ def try_match_exception(expected_exceptions, received_exception, accept_subtypes
                 continue
         
         if (exception_value is not None) and (exception_value.args != received_exception.args):
+            continue
+        
+        if (where is not None) and (not where(received_exception)):
             continue
         
         exception_matched = True

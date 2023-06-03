@@ -45,7 +45,7 @@ class AssertionInstance(AssertionConditionalBase2Value):
             The type to check.
         *accepted_types : `tuple<type<type>, ...>`
             Additional accepted types.
-        accept_subtypes : `bool` = `True`, optional (Keyword only)
+        accept_subtypes : `bool` = `True`, Optional (Keyword only)
             Whether instances of subtypes should be accepted.
         reverse : `bool` = `False`, Optional (Keyword only)
             Whether the condition should be reversed.

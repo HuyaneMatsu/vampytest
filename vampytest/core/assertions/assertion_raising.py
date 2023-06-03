@@ -8,7 +8,6 @@ from .assertion_states import ASSERTION_STATE_CREATED, ASSERTION_STATE_FAILED, A
 from .exceptions import AssertionException
 
 
-
 class AssertionRaising(AssertionBase):
     """
     Context manager, which checks for exception raise.
@@ -23,17 +22,25 @@ class AssertionRaising(AssertionBase):
         Whether subclasses are accepted as well.
     expected_exceptions : `set` of (`BaseException`, `type<BaseException>`)
         The expected exception types.
+    where : `None`, `callable`
+        Additional check to check the raised exception.
     
     Examples
     --------
     ```py
     with AssertionRaising(TypeError):
         'nice' + 69
+    
+    with AssertionRaising(ValueError(1)):
+        raise ValueError(1)
+    
+    with AssertionRaising(ValueError, where = lambda err: err.args == (1,)):
+        raise ValueError(1)
     ```
     """
-    __slots__ = ('accept_subtypes', 'exception', 'expected_exceptions')
+    __slots__ = ('accept_subtypes', 'exception', 'expected_exceptions', 'where')
     
-    def __new__(cls, expected_exception, *expected_exceptions, accept_subtypes = True):
+    def __new__(cls, expected_exception, *expected_exceptions, accept_subtypes = True, where = None):
         """
         Creates a new raise asserting context manager.
         
@@ -43,8 +50,10 @@ class AssertionRaising(AssertionBase):
             The expected exception to be raised.
         *expected_exceptions : ˙tuple<BaseException>˙
             Additional expected exceptions.
-        accept_subtypes : `bool` = `True`, optional (Keyword only)
+        accept_subtypes : `bool` = `True`, Optional (Keyword only)
             Whether subclasses are accepted as well.
+        where : `None`, `callable` = `None`, Optional (Keyword only)
+            Additional check to check the raised exception.
         
         Raises
         ------
@@ -60,8 +69,9 @@ class AssertionRaising(AssertionBase):
             )
         
         self = AssertionBase.__new__(cls)
-        self.expected_exceptions = expected_exceptions
         self.accept_subtypes = accept_subtypes
+        self.expected_exceptions = expected_exceptions
+        self.where = where
         
         return self
     
@@ -84,7 +94,7 @@ class AssertionRaising(AssertionBase):
         
         self.exception = exception_value
         
-        if try_match_exception(self.expected_exceptions, exception_value, self.accept_subtypes):
+        if try_match_exception(self.expected_exceptions, exception_value, self.accept_subtypes, self.where):
             state = ASSERTION_STATE_PASSED
             silence = True
         
