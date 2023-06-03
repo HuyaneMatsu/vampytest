@@ -1,4 +1,4 @@
-from vampytest import revert
+from vampytest import reverse
 
 from ..aliases import assert_true
 
@@ -10,8 +10,8 @@ def test_assert_true():
     assert_true(1)
 
 
-@revert()
-def test_assert_true_reverted():
+@reverse()
+def test_assert_true_reversed():
     """
     Tests whether `true` assertion fails.
     """

@@ -1,11 +1,11 @@
-__all__ = ('get_reverted_failure_message',)
+__all__ = ('get_reversed_failure_message',)
 
 from .helpers import add_documentation_into, add_route_parts_into, render_parameters_into
 
 
-def get_reverted_failure_message(handle):
+def get_reversed_failure_message(handle):
     """
-    Creates a reverted failure message for the given test handle.
+    Creates a reversed failure message for the given test handle.
     
     Parameters
     ----------
@@ -18,7 +18,7 @@ def get_reverted_failure_message(handle):
     """
     failure_message_parts = []  
     
-    failure_message_parts.append('Reverted test passed at: ')
+    failure_message_parts.append('Reversed test passed at: ')
     add_route_parts_into(handle, failure_message_parts)
     
     add_documentation_into(handle, failure_message_parts)

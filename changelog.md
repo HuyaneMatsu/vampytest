@@ -13,3 +13,8 @@
 - Add `where` parameter to `WrapperCall.raising_constructor`.
 - Add `where` parameter to `WrapperCall.raising`.
 - Add `where` parameter to `AssertionRaising.__new__`.
+
+#### Renames, Deprecation & Removals
+
+- Deprecate `revert`.
+- Rename `revert` values to `reverse`.

@@ -1,4 +1,4 @@
-from vampytest import revert, raising
+from vampytest import reverse, raising
 
 from ..aliases import assert_instance
 
@@ -10,8 +10,8 @@ def test_assert_instance():
     assert_instance(1, int)
 
 
-@revert()
-def test_assert_instance_reverted():
+@reverse()
+def test_assert_instance_reversed():
     """
     Tests whether `instance` assertion fails.
     """
@@ -33,8 +33,8 @@ def test_assert_instance_subtype():
     assert_instance(True, int)
 
 
-@revert()
-def test_assert_instance_subtype_reverted():
+@reverse()
+def test_assert_instance_subtype_reversed():
     """
     Tests whether `instance` assertion fails when subtypes are not allowed.
     """

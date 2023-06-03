@@ -1,4 +1,4 @@
-from vampytest import revert
+from vampytest import reverse
 
 from ..aliases import assert_in
 
@@ -10,8 +10,8 @@ def test_assert_in():
     assert_in(1, [1])
 
 
-@revert()
-def test_assert_in_reverted():
+@reverse()
+def test_assert_in_reversed():
     """
     Tests whether `in` assertion fails.
     """

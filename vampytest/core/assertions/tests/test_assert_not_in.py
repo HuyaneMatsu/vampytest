@@ -1,4 +1,4 @@
-from vampytest import revert
+from vampytest import reverse
 
 from ..aliases import assert_not_in
 
@@ -10,8 +10,8 @@ def test_assert_not_in():
     assert_not_in(1, [])
 
 
-@revert()
-def test_assert_not_in_reverted():
+@reverse()
+def test_assert_not_in_reversed():
     """
     Tests whether `not-in` assertion fails.
     """

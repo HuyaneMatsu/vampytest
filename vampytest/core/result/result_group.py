@@ -107,11 +107,11 @@ class ResultGroup(RichAttributeErrorBaseType):
             repr_parts.append(' skipped')
         
         
-        if self.case.do_revert():
+        if self.case.do_reverse():
             if field_added:
                 repr_parts.append(',')
             
-            repr_parts.append(' reverted')
+            repr_parts.append(' reversed')
         
         
         repr_parts.append('>')
@@ -131,8 +131,8 @@ class ResultGroup(RichAttributeErrorBaseType):
         -------
         self : ``ResultGroup``
         """
-        if self.case.do_revert():
-            test_result.revert()
+        if self.case.do_reverse():
+            test_result.reverse()
         
         results = self.results
         if (results is None):

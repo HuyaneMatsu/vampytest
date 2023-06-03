@@ -1,4 +1,4 @@
-from vampytest import revert
+from vampytest import reverse
 
 from ..aliases import assert_not_eq
 
@@ -10,8 +10,8 @@ def test_assert_not_eq():
     assert_not_eq(1, 2)
 
 
-@revert()
-def test_assert_not_eq_reverted():
+@reverse()
+def test_assert_not_eq_reversed():
     """
     Tests whether `!=` assertion fails.
     """

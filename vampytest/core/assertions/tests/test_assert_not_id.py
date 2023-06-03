@@ -1,4 +1,4 @@
-from vampytest import revert
+from vampytest import reverse
 
 from ..aliases import assert_not_id
 
@@ -13,8 +13,8 @@ def test_assert_not_id():
     assert_not_id(a, b)
 
 
-@revert()
-def test_assert_not_id_reverted():
+@reverse()
+def test_assert_not_id_reversed():
     """
     Tests whether `is-not` assertion fails.
     """

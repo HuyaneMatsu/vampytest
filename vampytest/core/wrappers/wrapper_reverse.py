@@ -1,13 +1,13 @@
-__all__ = ('WrapperRevert',)
+__all__ = ('WrapperReverse',)
 
 from scarletio import copy_docs
 
 from .wrapper_base import WrapperBase
 
 
-class WrapperRevert(WrapperBase):
+class WrapperReverse(WrapperBase):
     """
-    Reverts the test's result.
+    Reverses the test's result.
 
     Attributes
     ----------
@@ -36,6 +36,6 @@ class WrapperRevert(WrapperBase):
         return (1 << 4)
     
     
-    @copy_docs(WrapperBase.do_revert)
-    def do_revert(self):
+    @copy_docs(WrapperBase.do_reverse)
+    def do_reverse(self):
         return True

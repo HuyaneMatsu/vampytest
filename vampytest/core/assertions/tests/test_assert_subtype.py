@@ -1,4 +1,4 @@
-from vampytest import revert, raising
+from vampytest import reverse, raising
 
 from ..aliases import assert_subtype
 
@@ -10,8 +10,8 @@ def test_assert_subtype():
     assert_subtype(bool, int)
 
 
-@revert()
-def test_assert_subtype_reverted():
+@reverse()
+def test_assert_subtype_reversed():
     """
     Tests whether `subtype` assertion fails.
     """
@@ -26,7 +26,7 @@ def test_assert_subtype_incorrect_type():
     assert_subtype(bool, 1)
 
 
-@revert()
+@reverse()
 def test_assert_subtype_incorrect_checked():
     """
     Tests whether `subtype` assertion fails when the checked value's type is incorrect.

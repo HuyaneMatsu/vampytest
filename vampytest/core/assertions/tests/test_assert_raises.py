@@ -1,4 +1,4 @@
-from vampytest import revert, raising
+from vampytest import reverse, raising
 
 from ..aliases import assert_raises
 
@@ -11,8 +11,8 @@ def test_assert_raises():
         raise KeyError
 
 
-@revert()
-def test_assert_raises_reverted():
+@reverse()
+def test_assert_raises_reversed():
     """
     Tests whether `raises` context-assertion fails.
     """
@@ -28,8 +28,8 @@ def test_assert_raises_with_subtype():
         raise KeyError
 
 
-@revert()
-def test_assert_raises_with_subtype_reverted():
+@reverse()
+def test_assert_raises_with_subtype_reversed():
     """
     Tests whether `raises` context-assertion fails on 3rd type.
     """
@@ -45,8 +45,8 @@ def test_assert_raises_without_subtype():
         raise LookupError
 
 
-@revert()
-def test_assert_raises_without_subtype_reverted():
+@reverse()
+def test_assert_raises_without_subtype_reversed():
     """
     Tests whether `raises` context-assertion fails on subtype without allowing subtypes.
     """

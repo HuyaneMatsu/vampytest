@@ -1,4 +1,4 @@
-from vampytest import revert
+from vampytest import reverse
 
 from ..aliases import assert_id
 
@@ -12,8 +12,8 @@ def test_assert_id():
     assert_id(a, a)
 
 
-@revert()
-def test_assert_id_reverted():
+@reverse()
+def test_assert_id_reversed():
     """
     Tests whether `is` assertion fails.
     """

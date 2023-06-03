@@ -170,13 +170,13 @@ class WrapperBase(RichAttributeErrorBaseType):
         return False
     
     
-    def do_revert(self):
+    def do_reverse(self):
         """
-        Tests whether the test's result should be reverted.
+        Tests whether the test's result should be reversed.
         
         Returns
         -------
-        do_revert : `bool`
+        do_reverse : `bool`
         """
         return False
     

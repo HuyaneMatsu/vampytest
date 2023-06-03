@@ -36,7 +36,7 @@ def get_function_environment_identifier(func):
 
 def shutdown_environments():
     """
-    Shuts down all the registered environments. This operation cannot be reverted.
+    Shuts down all the registered environments. This operation cannot be reversed.
     """
     for environment_by_detail in ENVIRONMENTS_BY_SCOPE.values():
         for environments_by_identifier in environment_by_detail.values():
