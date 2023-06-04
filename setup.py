@@ -22,16 +22,15 @@ setup(
         'Development Status :: 2 - Pre-Alpha',
         
         'Intended Audience :: Developers',
-
+        
         'Operating System :: OS Independent',
-
-        'Programming Language :: Python :: 3',
+        
         'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
         'Programming Language :: Python :: 3.8',
         'Programming Language :: Python :: 3.9',
         'Programming Language :: Python :: 3.10',
-        #'Programming Language :: Python :: 3.11',
+        'Programming Language :: Python :: 3.11',
         
         'Programming Language :: Python :: Implementation :: CPython',
         'Programming Language :: Python :: Implementation :: PyPy',
@@ -55,6 +54,7 @@ setup(
         'vampytest.core.assertions',
         'vampytest.core.environment',
         'vampytest.core.event_handling',
+        'vampytest.core.event_handling.rendering_helpers',
         'vampytest.core.events',
         'vampytest.core.file',
         'vampytest.core.helpers',

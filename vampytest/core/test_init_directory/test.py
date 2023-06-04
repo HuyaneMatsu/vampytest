@@ -1,4 +1,4 @@
-from vampytest import skip
+from vampytest import call_with, skip
 
 
 def test_sub_file():
@@ -38,11 +38,12 @@ def b(): b()
 
 
 @skip()
-def test_recursion_0():
+@call_with(10)
+def test_recursion_0(value):
     """
     I am a recursion 2.
     """
-    a(10)
+    a(value)
 
 
 def c(): d()

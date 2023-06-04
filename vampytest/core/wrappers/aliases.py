@@ -22,7 +22,7 @@ with_gc = WrapperGarbageCollect
 
 def revert(*pp, **kp):
     """
-    Deprecated and will be removed in 2024 February. Please use ``.reverse`` instead.
+    Deprecated and will be removed in 2024 February. Please use ``reverse`` instead.
     """
     warnings.warn(
         (

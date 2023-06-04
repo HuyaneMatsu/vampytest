@@ -1,12 +1,14 @@
 __all__ = ('FailureRaising',)
 
+from os import get_terminal_size
+
 from scarletio import DEFAULT_ANSI_HIGHLIGHTER, copy_docs, render_exception_into
 
 from ...environment.default import __file__ as VAMPYTEST_ENVIRONMENT_DEFAULT_FILE_PATH
 from ...environment.scarletio_coroutine import __file__ as VAMPYTEST_ENVIRONMENT_SCARLETIO_COROUTINE_FILE_PATH
 
 from .base import FailureBase
-from .helpers import add_documentation_into, add_route_parts_into, render_parameters_into
+from .helpers import render_documentation_into, render_route_parts_into, render_parameters_into
 
 
 def ignore_invoke_test_frame(file_name, name, line_number, line):
@@ -104,17 +106,19 @@ class FailureRaising(FailureBase):
     
     @copy_docs(FailureBase.get_failure_message)
     def get_failure_message(self):
+        handle = self.handle
+        
         failure_message_parts = []
-        
         failure_message_parts.append('Unexpected exception at: ')
-        add_route_parts_into(self.handle, failure_message_parts)
+        failure_message_parts = render_route_parts_into(failure_message_parts, handle)
+        failure_message_parts = render_documentation_into(failure_message_parts, handle)
         
-        add_documentation_into(self.handle, failure_message_parts)
-        
-        call_state = self.handle.final_call_state
-        if (call_state.positional_parameters is not None) and (call_state.keyword_parameters is not None):
+        call_state = handle.final_call_state
+        if (call_state is not None) and call_state:
             failure_message_parts.append('\nParameters: ')
-            render_parameters_into(call_state, failure_message_parts)
+            failure_message_parts = render_parameters_into(
+                failure_message_parts, call_state.positional_parameters, call_state.keyword_parameters
+            )
         
         expected_exceptions = self.expected_exceptions
         if expected_exceptions is not None:
@@ -135,19 +139,28 @@ class FailureRaising(FailureBase):
                 
                 failure_message_parts.append(expected_exception_representation)
             
-            failure_message_parts.append('\nAccept sub-classes: ')
+            failure_message_parts.append('\nAccept sub-types: ')
             failure_message_parts.append('true' if self.accept_subtypes else 'false')
         
         
         exception_received = self.exception_received
         if (exception_received is not None):
+            try:
+                terminal_size = get_terminal_size()
+            except OSError:
+                break_line_length = 60
+            else:
+                break_line_length = terminal_size.columns
+        
             failure_message_parts.append('\n')
-            failure_message_parts.append('-' * 80)
+            failure_message_parts.append('-' * break_line_length)
             failure_message_parts.append('\n')
             
             render_exception_into(
-                exception_received, failure_message_parts, filter=ignore_invoke_test_frame,
-                highlighter=DEFAULT_ANSI_HIGHLIGHTER
+                exception_received,
+                failure_message_parts,
+                filter = ignore_invoke_test_frame,
+                highlighter = DEFAULT_ANSI_HIGHLIGHTER
             )
         
         return ''.join(failure_message_parts)

@@ -6,6 +6,7 @@ from ..events import FileLoadDoneEvent, FileRegistrationDoneEvent, FileTestingDo
 
 from .base import EventHandlerManager
 from .default_output_writer import OutputWriter
+from .rendering_helpers.result_modifier_parameters import build_result_modifier_parameters
 from .text_styling import style_text
 
 
@@ -69,7 +70,7 @@ class DefaultEventFormatter(RichAttributeErrorBaseType):
     
     def __repr__(self):
         """Returns the output formatter representation."""
-        return f'<{self.__class__.__name__} output_writer={self.output_writer!r}>'
+        return f'<{self.__class__.__name__} output_writer = {self.output_writer!r}>'
     
     
     def file_registration_done(self, event: FileRegistrationDoneEvent):
@@ -151,23 +152,27 @@ class DefaultEventFormatter(RichAttributeErrorBaseType):
         event : ``TestDoneEvent``
             The dispatched event.
         """
-        test_file = event.result_group.case.get_test_file()
+        test_file = event.result.case.get_test_file()
         if (test_file is None):
             # Should not happen
             return
         
         message_parts = self._maybe_render_test_file_into([], test_file.entry)
         
-        result_group = event.result_group
-        if result_group.is_skipped():
+        result = event.result
+        if result.is_skipped():
             keyword = 'S'
             foreground = COLOR_SKIP
         
-        elif result_group.is_passed():
+        elif result.is_conflicted():
+            keyword = 'C'
+            foreground = COLOR_FAIL
+            
+        elif result.is_passed():
             keyword = 'P'
             foreground = COLOR_PASS
         
-        elif result_group.is_failed():
+        elif result.is_failed():
             keyword = 'F'
             foreground = COLOR_FAIL
         
@@ -175,16 +180,16 @@ class DefaultEventFormatter(RichAttributeErrorBaseType):
             keyword = '?'
             foreground = COLOR_UNKNOWN
         
+        result_modifiers = build_result_modifier_parameters(result.get_modifier_parameters())
         message_parts = test_file.entry.render_custom_sub_directory_into(
             message_parts,
-            style_text(f'{keyword} {result_group.case.name}', foreground),
-            result_group.case.is_last(),
+            style_text(f'{keyword} {result.case.name}{result_modifiers}', foreground),
+            result.is_last() and result.case.is_last(),
         )
         
         self.output_writer.write_line(''.join(message_parts))
     
-
-
+    
     def file_testing_done(self, event: FileTestingDoneEvent):
         """
         Called when all tests of a file is done
@@ -227,8 +232,8 @@ class DefaultEventFormatter(RichAttributeErrorBaseType):
             output_writer.write_break_line()
         
         
-        for result_group in context.iter_failed_result_groups():
-            for failure_message in result_group.iter_failure_messages():
+        for result in context.iter_failed_results():
+            for failure_message in result.iter_failure_messages():
                 output_writer.write_line(failure_message)
                 output_writer.write_break_line()
         

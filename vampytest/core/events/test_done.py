@@ -1,10 +1,10 @@
 __all__ = ('TestDoneEvent',)
 
-from .base import ResultGroupEventBase
+from .base import ResultEventBase
 from .constants import IDENTIFIER_TEST_DONE
 
 
-class TestDoneEvent(ResultGroupEventBase):
+class TestDoneEvent(ResultEventBase):
     """
     Dispatched when a test case was executed.
     
@@ -12,8 +12,8 @@ class TestDoneEvent(ResultGroupEventBase):
     ----------
     context : ``RunnerContext``
         The respective test runner context.
-    result_group : ``ResultGroup``
-        The respective result group.
+    result : ``Result``
+        The respective result.
     """
     __slots__ = ()
     

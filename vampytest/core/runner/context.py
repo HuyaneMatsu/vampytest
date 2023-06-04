@@ -30,10 +30,10 @@ class RunnerContext(RichAttributeErrorBaseType):
     - Iterators
     
         - ``.iter_registered_files``
-        - ``.iter_result_groups``
-        - ``.iter_passed_result_groups``
-        - ``.iter_skipped_result_groups``
-        - ``.iter_failed_result_groups``
+        - ``.iter_results``
+        - ``.iter_passed_results``
+        - ``.iter_skipped_results``
+        - ``.iter_failed_results``
         - ``.iter_load_failed_files``
         - ``.iter_load_succeeded_files``
         - ``.iter_file_load_failures``
@@ -43,8 +43,8 @@ class RunnerContext(RichAttributeErrorBaseType):
         - ``.get_registered_files``
         - ``.get_failed_to_load``
         - ``.get_file_load_failures``
-        - ``.get_skipped_result_groups``
-        - ``.get_failed_result_groups``
+        - ``.get_skipped_results``
+        - ``.get_failed_results``
         - ``.get_load_failed_file_count``
     
     - Internal
@@ -163,63 +163,63 @@ class RunnerContext(RichAttributeErrorBaseType):
         return sum(test_file.get_ran_test_count() for test_file in self.iter_registered_files())
     
     
-    def iter_result_groups(self):
+    def iter_results(self):
         """
-        Iterates over the result groups.
+        Iterates over the results.
         
         This method is an iterable generator.
         
         Yields
         ------
-        result_group : ``ResultGroup``
+        result : ``Result``
         """
         for test_file in self.iter_registered_files():
-            yield from test_file.iter_result_groups()
+            yield from test_file.iter_results()
     
     
-    def iter_passed_result_groups(self):
+    def iter_passed_results(self):
         """
-        Iterates over the passed result groups of the test file.
+        Iterates over the passed results of the test file.
         
         This method is an iterable generator.
         
         Yields
         ------
-        result_group : ``ResultGroup``
-        """
-        for test_file in self.iter_registered_files():
-            if not test_file.is_directory():
-                yield from test_file.iter_passed_result_groups()
-    
-    
-    def iter_skipped_result_groups(self):
-        """
-        Iterates over the skipped result groups of the test file.
-        
-        This method is an iterable generator.
-        
-        Yields
-        ------
-        result_group : ``ResultGroup``
+        result : ``Result``
         """
         for test_file in self.iter_registered_files():
             if not test_file.is_directory():
-                yield from test_file.iter_skipped_result_groups()
+                yield from test_file.iter_passed_results()
     
     
-    def iter_failed_result_groups(self):
+    def iter_skipped_results(self):
         """
-        Iterates over the failed result groups of the test file.
+        Iterates over the skipped results of the test file.
         
         This method is an iterable generator.
         
         Yields
         ------
-        result_group : ``ResultGroup``
+        result : ``Result``
         """
         for test_file in self.iter_registered_files():
             if not test_file.is_directory():
-                yield from test_file.iter_failed_result_groups()
+                yield from test_file.iter_skipped_results()
+    
+    
+    def iter_failed_results(self):
+        """
+        Iterates over the failed results of the test file.
+        
+        This method is an iterable generator.
+        
+        Yields
+        ------
+        result : ``Result``
+        """
+        for test_file in self.iter_registered_files():
+            if not test_file.is_directory():
+                yield from test_file.iter_failed_results()
     
     
     def get_passed_test_count(self):
@@ -267,37 +267,37 @@ class RunnerContext(RichAttributeErrorBaseType):
         )
     
     
-    def get_passed_result_groups(self):
+    def get_passed_results(self):
         """
-        Iterates over the passed result groups of the test file.
+        Iterates over the passed results of the test file.
         
         Returns
         -------
-        result_groups : `list` of ``ResultGroup``
+        results : `list` of ``Result``
         """
-        return [*self.iter_passed_result_groups()]
+        return [*self.iter_passed_results()]
     
     
-    def get_skipped_result_groups(self):
+    def get_skipped_results(self):
         """
-        Iterates over the skipped result groups of the test file.
+        Iterates over the skipped results of the test file.
         
         Returns
         -------
-        result_groups : `list` of ``ResultGroup``
+        results : `list` of ``Result``
         """
-        return [*self.iter_skipped_result_groups()]
+        return [*self.iter_skipped_results()]
     
     
-    def get_failed_result_groups(self):
+    def get_failed_results(self):
         """
-        Iterates over the failed result groups of the test file.
+        Iterates over the failed results of the test file.
         
         Returns
         -------
-        result_groups : `list` of ``ResultGroup``
+        results : `list` of ``Result``
         """
-        return [*self.iter_failed_result_groups()]
+        return [*self.iter_failed_results()]
     
     
     def get_load_failed_file_count(self):

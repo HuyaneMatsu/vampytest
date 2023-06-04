@@ -84,7 +84,7 @@ class TestFile(RichAttributeErrorBaseType):
         If loading the test file fails, this attribute is set to details about the occurred exception.
     _module : `None`, `ModuleType`
         The module of the test file. Only set when the first call is made to it.
-    _result_groups : `None`, `list` of ``ResultGroup``
+    _results : `None`, `list` of ``Result``
         Results of already ran tests.
     _sub_files : `None`, `list` of ``TestFile``
         Sub files if we are a directory.
@@ -108,10 +108,10 @@ class TestFile(RichAttributeErrorBaseType):
     
     - Iterators
     
-        - ``.iter_result_groups``
-        - ``.iter_passed_result_groups``
-        - ``.iter_skipped_result_groups``
-        - ``.iter_failed_result_groups``
+        - ``.iter_results``
+        - ``.iter_passed_results``
+        - ``.iter_skipped_results``
+        - ``.iter_failed_results``
         - ``.iter_sub_files``
     
     - Counters
@@ -134,7 +134,7 @@ class TestFile(RichAttributeErrorBaseType):
         - ``.iter_test_files``
     """
     __slots__ = (
-        '__weakref__', '_load_failure', '_module', '_result_groups', '_sub_files', '_test_cases', 'entry', 'import_route'
+        '__weakref__', '_load_failure', '_module', '_results', '_sub_files', '_test_cases', 'entry', 'import_route'
     )
     
     def __new__(cls, entry):
@@ -164,7 +164,7 @@ class TestFile(RichAttributeErrorBaseType):
         self = object.__new__(cls)
         self._load_failure = None
         self._module = None
-        self._result_groups = None
+        self._results = None
         self._sub_files = None
         self._test_cases = None
         self.entry = entry
@@ -376,44 +376,43 @@ class TestFile(RichAttributeErrorBaseType):
         
         Yields
         ------
-        result_group : ``ResultGroup``
+        result : ``Result``
         """
         if self.is_directory():
             return
         
-        result_groups = self._result_groups
-        if (result_groups is not None):
-            return (yield from result_groups)
+        results = self._results
+        if (results is not None):
+            return (yield from results)
         
         environment_manager = apply_environments_for_file_at(environment_manager, self.path)
         for test_case in self.iter_test_cases():
-            result_group = test_case.invoke(environment_manager)
-            
-            if (result_groups is None):
-                result_groups = []
-                self._result_groups = result_groups
-            
-            result_groups.append(result_group)
-            
-            yield result_group
+            for result in test_case.iter_invoke(environment_manager):
+                if (results is None):
+                    results = []
+                    self._results = results
+                
+                results.append(result)
+                
+                yield result
     
     
-    def iter_result_groups(self):
+    def iter_results(self):
         """
-        Iterates over the result groups of the test file.
+        Iterates over the results of the test file.
         
         This method is an iterable generator.
         
         Yields
         ------
-        result_group : ``ResultGroup``
+        result : ``Result``
         """
-        result_groups = self._result_groups
-        if (result_groups is not None):
-            yield from result_groups
+        results = self._results
+        if (results is not None):
+            yield from results
         
         for sub_file in self.iter_sub_files():
-            yield from sub_file.iter_result_groups()
+            yield from sub_file.iter_results()
     
     
     def get_test_case_count(self):
@@ -444,11 +443,11 @@ class TestFile(RichAttributeErrorBaseType):
         -------
         ran_test_count : `int`
         """
-        result_groups = self._result_groups
-        if (result_groups is None):
+        results = self._results
+        if (results is None):
             ran_test_count = 0
         else:
-            ran_test_count = len(result_groups)
+            ran_test_count = len(results)
         
         for sub_file in self.iter_sub_files():
             ran_test_count += sub_file.get_ran_test_count()
@@ -456,49 +455,49 @@ class TestFile(RichAttributeErrorBaseType):
         return ran_test_count
     
     
-    def iter_passed_result_groups(self):
+    def iter_passed_results(self):
         """
-        Iterates over the passed result groups of the test file.
+        Iterates over the passed results of the test file.
         
         This method is an iterable generator.
         
         Yields
         ------
-        result_group : ``ResultGroup``
+        result : ``Result``
         """
-        for result_group in self.iter_result_groups():
-            if result_group.is_passed():
-                yield result_group
+        for result in self.iter_results():
+            if result.is_passed():
+                yield result
     
     
-    def iter_skipped_result_groups(self):
+    def iter_skipped_results(self):
         """
-        Iterates over the skipped result groups of the test file.
+        Iterates over the skipped results of the test file.
         
         This method is an iterable generator.
         
         Yields
         ------
-        result_group : ``ResultGroup``
+        result : ``Result``
         """
-        for result_group in self.iter_result_groups():
-            if result_group.is_skipped():
-                yield result_group
+        for result in self.iter_results():
+            if result.is_skipped():
+                yield result
     
     
-    def iter_failed_result_groups(self):
+    def iter_failed_results(self):
         """
-        Iterates over the failed result groups of the test file.
+        Iterates over the failed results of the test file.
         
         This method is an iterable generator.
         
         Yields
         ------
-        result_group : ``ResultGroup``
+        result : ``Result``
         """
-        for result_group in self.iter_result_groups():
-            if result_group.is_failed():
-                yield result_group
+        for result in self.iter_results():
+            if result.is_failed():
+                yield result
     
     
     def get_passed_test_count(self):
@@ -509,7 +508,7 @@ class TestFile(RichAttributeErrorBaseType):
         -------
         passed_test_count : `int`
         """
-        return sum(result_group.is_passed() for result_group in self.iter_result_groups())
+        return sum(result.is_passed() for result in self.iter_results())
     
     
     def get_skipped_test_count(self):
@@ -520,7 +519,7 @@ class TestFile(RichAttributeErrorBaseType):
         -------
         passed_test_count : `int`
         """
-        return sum(result_group.is_skipped() for result_group in self.iter_result_groups())
+        return sum(result.is_skipped() for result in self.iter_results())
     
     
     def get_failed_test_count(self):
@@ -531,7 +530,7 @@ class TestFile(RichAttributeErrorBaseType):
         -------
         passed_test_count : `int`
         """
-        return sum(result_group.is_failed() for result_group in self.iter_result_groups())
+        return sum(result.is_failed() for result in self.iter_results())
     
     
     def feed_sub_file(self, sub_file):

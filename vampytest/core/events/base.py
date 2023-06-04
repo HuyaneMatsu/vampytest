@@ -68,10 +68,10 @@ class FileEventBase(EventBase):
     
     @copy_docs(EventBase.__repr__)
     def __repr__(self):
-        return f'<{self.__class__.__name__} file={self.file!r}>'
+        return f'<{self.__class__.__name__} file = {self.file!r}>'
 
 
-class ResultGroupEventBase(EventBase):
+class ResultEventBase(EventBase):
     """
     Represents a dispatched event by a test runner.
     
@@ -79,12 +79,12 @@ class ResultGroupEventBase(EventBase):
     ----------
     context : ``RunnerContext``
         The respective test running context.
-    result_group : ``ResultGroup``
-        The respective result group.
+    result : ``Result``
+        The respective result.
     """
-    __slots__ = ('result_group',)
+    __slots__ = ('result',)
     
-    def __new__(cls, context, result_group):
+    def __new__(cls, context, result):
         """
         Creates a new file event instance.
         
@@ -92,14 +92,14 @@ class ResultGroupEventBase(EventBase):
         ----------
         context : ``RunnerContext``
             The respective test running context.
-        result_group : ``ResultGroup``
-            The respective result group.
+        result : ``Result``
+            The respective result.
         """
         self = EventBase.__new__(cls, context)
-        self.result_group = result_group
+        self.result = result
         return self
     
     
     @copy_docs(EventBase.__repr__)
     def __repr__(self):
-        return f'<{self.__class__.__name__} result_group={self.result_group!r}>'
+        return f'<{self.__class__.__name__} result = {self.result!r}>'

@@ -6,7 +6,7 @@ from scarletio import RichAttributeErrorBaseType, WeakReferer
 
 from .handle import Handle
 from .helpers.hashing import hash_object
-from .result import ResultGroup
+from .result import Result
 from .wrappers import WrapperBase
 
 
@@ -145,32 +145,36 @@ class TestCase(RichAttributeErrorBaseType):
             return wrapper.check_conflicts()
     
     
-    def invoke(self, environment_manager):
+    def iter_invoke(self, environment_manager):
         """
-        Invokes the test case.
+        Invokes the test case yielding the results of it.
+        
+        This method is an iterable generator.
         
         Parameters
         ----------
         environment_manager : ``EnvironmentManager``
             Testing environment manager.
         
-        Returns
+        Yields
         -------
-        test_result : ``Result``
+        result : ``Result``
         """
-        test_result_group = ResultGroup(self)
         conflict = self.check_conflicts()
         if (conflict is not None):
-            return test_result_group.with_conflict(conflict)
+            yield Result(self).with_conflict(conflict)
+            return
         
         if self.do_skip():
-            return test_result_group.as_skipped()
+            yield Result(self).as_skipped()
+            return
         
-        for handler in self._iter_handles():
-            test_result = handler.invoke(environment_manager)
-            test_result_group = test_result_group.with_result(test_result)
-        
-        return test_result_group
+        handles = [*self._iter_handles()]
+        for handle, index in zip(handles, reversed(range(len(handles)))):
+            result = handle.invoke(environment_manager)
+            if index:
+                result = result.as_continuous()
+            yield result
     
     
     def _iter_handles(self):
@@ -283,4 +287,3 @@ class TestCase(RichAttributeErrorBaseType):
             return True
         
         return False
-

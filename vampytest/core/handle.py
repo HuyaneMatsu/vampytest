@@ -18,9 +18,9 @@ class CallState(RichAttributeErrorBaseType):
     
     Attributes
     ----------
-    keyword_parameters : `None`, `dict` of (`str`, `Any`) items
+    keyword_parameters : `None`, `dict` of (`str`, `object`) items
         Keyword parameters to the call the test function with.
-    positional_parameters : `None`, `list` of `Any`
+    positional_parameters : `None`, `list` of `object`
         Positional parameters to the the test function with.
     """
     __slots__ = ('keyword_parameters', 'positional_parameters')
@@ -125,14 +125,14 @@ class CallState(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        positional_parameters : `None`, `list` of `Any`
+        positional_parameters : `None`, `list` of `object`
             Positional parameters to the the test function with.
-        keyword_parameters : `None`, `dict` of (`str`, `Any`) items
+        keyword_parameters : `None`, `dict` of (`str`, `object`) items
             Keyword parameters to the call the test function with.
         
         Returns
         -------
-        new : ``CallState``
+        new : `instance<type<self>>`
         """
         positional_parameters = maybe_merge_iterables(self.positional_parameters, positional_parameters)
         keyword_parameters = maybe_merge_mappings(self.keyword_parameters, keyword_parameters)
@@ -162,7 +162,7 @@ class ResultState(RichAttributeErrorBaseType):
     ----------
     raised_exception : `None`, `BaseException`
         The raised exception by the test.
-    returned_value : `None`, `Any`
+    returned_value : `None`, `object`
         The returned value by the test.
     """
     __slots__ = ('raised_exception', 'returned_value')
@@ -173,7 +173,7 @@ class ResultState(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        returned_value : `None`, `Any`
+        returned_value : `None`, `object`
             The returned value by the test.
         raised_exception : `None`, `BaseException`
             The raised exception by the test.
@@ -197,7 +197,7 @@ class ResultState(RichAttributeErrorBaseType):
             else:
                 field_added = True
             
-            repr_parts.append(' returned_value')
+            repr_parts.append(' returned_value = ')
             repr_parts.append(repr(returned_value))
         
         raised_exception = self.raised_exception
@@ -207,7 +207,7 @@ class ResultState(RichAttributeErrorBaseType):
             else:
                 field_added = True
             
-            repr_parts.append(' raised_exception')
+            repr_parts.append(' raised_exception = ')
             repr_parts.append(repr(raised_exception))
         
         
@@ -277,12 +277,12 @@ class ResultState(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        returned_value : `None`, `Any`
+        returned_value : `None`, `object`
             The returned value by the test.
         
         Returns
         -------
-        new : ``ResultState``
+        new : `instance<type<self>>`
         """
         new = object.__new__(type(self))
         new.raised_exception = None
@@ -301,7 +301,7 @@ class ResultState(RichAttributeErrorBaseType):
         
         Returns
         -------
-        new : ``ResultState``
+        new : `instance<type<self>>`
         """
         new = object.__new__(type(self))
         new.raised_exception = raised_exception
@@ -488,9 +488,9 @@ class Handle(RichAttributeErrorBaseType):
         
         Returns
         -------
-        positional_parameters : `list` of `Any`
+        positional_parameters : `list` of `object`
             Positional parameters to call the test with.
-        keyword_parameters : `dict` of (`str`, `Any`) items
+        keyword_parameters : `dict` of (`str`, `object`) items
             Keyword parameters to call the test with.
         """
         call_state = self.final_call_state
@@ -578,7 +578,7 @@ class Handle(RichAttributeErrorBaseType):
         test_result : ``Result``
             Result of the test.
         """
-        test_result = Result(self)
+        test_result = Result(self.case).with_handle(self)
         
         raised_exception = self.final_result_state.raised_exception
         if (raised_exception is not None):
@@ -604,6 +604,7 @@ class Handle(RichAttributeErrorBaseType):
         environments = self.environments
         if (environments is not None):
             yield from environments
+    
     
     def invoke(self, environment_manager):
         """

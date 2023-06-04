@@ -4,7 +4,6 @@ import reprlib
 
 from scarletio import copy_docs
 
-
 from ..assertions import AssertionException
 from ..helpers.exception_matching import try_match_exception
 from ..helpers.hashing import hash_dict, hash_set, hash_tuple, try_hash_method
@@ -339,10 +338,12 @@ class WrapperCall(WrapperBase):
                 raising_exceptions = self.raising_exceptions
                 raising_accept_subtypes = self.raising_accept_subtypes
                 if raised_exception is None:
-                    return Result(handle).with_exception(
-                        raising_exceptions,
-                        None,
-                        raising_accept_subtypes,
+                    return Result(
+                        handle.case
+                    ).with_handle(
+                        handle
+                    ).with_exception(
+                        raising_exceptions, None, raising_accept_subtypes,
                     )
                 
                 if try_match_exception(
@@ -352,15 +353,17 @@ class WrapperCall(WrapperBase):
                         result_state = result_state.with_exception(None)
                 
                 else:
-                    return Result(handle).with_exception(
-                        raising_exceptions,
-                        raised_exception,
-                        raising_accept_subtypes,
+                    return Result(
+                        handle.case
+                    ).with_handle(
+                        handle
+                    ).with_exception(
+                        raising_exceptions, raised_exception, raising_accept_subtypes,
                     )
             
             elif self.is_returning:
                 if (raised_exception is not None):
-                    return Result(handle).with_exception(None, raised_exception, False)
+                    return Result(handle.case).with_handle(handle).with_exception(None, raised_exception, False)
                 
                 if (result_state is None):
                     returned_value = None
@@ -370,7 +373,7 @@ class WrapperCall(WrapperBase):
                 returning_value = self.returning_value
                 
                 if returned_value != returning_value:
-                    return Result(handle).with_return(returning_value, returned_value)
+                    return Result(handle.case).with_handle(handle).with_return(returning_value, returned_value)
         
         yield result_state
     

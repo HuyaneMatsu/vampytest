@@ -288,8 +288,8 @@ class TestRunner(RichAttributeErrorBaseType):
                         # Run test file if loaded successfully
                         if test_file.is_loaded_with_success():
                             
-                            for result_group in test_file.iter_invoke_test_cases(self.environment_manager):
-                                yield TestDoneEvent(context, result_group)
+                            for result in test_file.iter_invoke_test_cases(self.environment_manager):
+                                yield TestDoneEvent(context, result)
                             
                             yield FileTestingDoneEvent(context, test_file)
             

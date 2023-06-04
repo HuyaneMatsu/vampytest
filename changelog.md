@@ -13,8 +13,16 @@
 - Add `where` parameter to `WrapperCall.raising_constructor`.
 - Add `where` parameter to `WrapperCall.raising`.
 - Add `where` parameter to `AssertionRaising.__new__`.
+- `Result` instances now completely replace `ResultGroup`. They also inherit every functionality from them.
+- Add `Result.is_conflicted`.
+- Add `Result.is_last`.
+
+#### Bug fixes
+
+- If a test had `parameters` they were not always rendering.
 
 #### Renames, Deprecation & Removals
 
 - Deprecate `revert`.
 - Rename `revert` values to `reverse`.
+- Remove `ResultGroup`.

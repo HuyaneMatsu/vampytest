@@ -41,7 +41,7 @@ class OutputWriter(RichAttributeErrorBaseType):
         return self
     
     
-    def write_break_line(self, character="="):
+    def write_break_line(self, character = "="):
         """
         Writes a break line.
         

@@ -1,23 +1,22 @@
 __all__ = ()
 
-def render_parameters_into(call_state, into):
+def render_parameters_into(into, positional_parameters, keyword_parameters):
     """
     Renders the input parameters of to the given list.
     
     Parameters
     ----------
-    call_state : ``CallState``
-        Call state containing the parameters.
     into : `list` of `str`
         A list to put the string parts into.
+    positional_parameters : `None`, `list<object>`
+        Positional parameters passed to the test.
+    keyword_parameters : `None`, `dict<str, object>`
+        Keyword parameters passed to the test.
     
     Returns
     -------
     into : `list` of `str`
     """
-    positional_parameters = call_state.positional_parameters
-    keyword_parameters = call_state.keyword_parameters
-    
     field_added = False
     
     if (positional_parameters is not None):
@@ -47,16 +46,16 @@ def render_parameters_into(call_state, into):
     return into
 
 
-def add_route_parts_into(handle, into):
+def render_route_parts_into(into, handle):
     """
     Adds route parts into the given list.
     
     Parameters
     ----------
-    failure : ``Handle``
-        The parent handler to get route of.
     into : `list` of `str`
         A list to put the string parts into.
+    handle : ``Handle``
+        The parent handler to get route of.
     
     Returns
     -------
@@ -71,16 +70,16 @@ def add_route_parts_into(handle, into):
     return into
 
 
-def add_documentation_into(handle, into):
+def render_documentation_into(into, handle):
     """
     Adds the documentation into the given list.
     
     Parameters
     ----------
-    failure : ``Handle``
-        The parent handler to get it's test's documentation of.
     into : `list` of `str`
         A list to put the string parts into.
+    handle : ``Handle``
+        The parent handler to get it's test's documentation of.
     
     Returns
     -------

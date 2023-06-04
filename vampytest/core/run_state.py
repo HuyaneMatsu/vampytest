@@ -13,12 +13,12 @@ class RunState(RichAttributeErrorBaseType):
         Load failures.
     _loaded_test_files : `None`, `list` of ``TestFile``
         The test files which have been successfully loaded.
-    _result_groups : `None`, `list` of ``ResultGroup``
+    _results : `None`, `list` of ``Result``
         The ran tests' results.
     _test_files : `None`, `list` of ``TestFile``
         The collected test files.
     """
-    __slots__ = ('_load_failures', '_loaded_test_files', '_result_groups', '_test_files',)
+    __slots__ = ('_load_failures', '_loaded_test_files', '_results', '_test_files',)
     
     def __new__(cls):
         """
@@ -27,7 +27,7 @@ class RunState(RichAttributeErrorBaseType):
         self = object.__new__(cls)
         self._load_failures = None
         self._loaded_test_files = None
-        self._result_groups = None
+        self._results = None
         self._test_files = None
         return self
     
@@ -156,70 +156,79 @@ class RunState(RichAttributeErrorBaseType):
         loaded_test_files.append(loaded_test_file)
     
 
-    def get_result_group_count(self):
+    def get_results_count(self):
         """
         Returns how much much tests files were collected.
-        """
-        result_groups = self._result_groups
-        if (result_groups is None):
-            result_group_count = 0
-        else:
-            result_group_count = len(result_groups)
         
-        return result_group_count
-    
-    
-    def iter_result_groups(self):
+        Returns
+        -------
+        results_count : `int`
         """
-        Iterates over the result groups.
+        results = self._results
+        if (results is None):
+            results_count = 0
+        else:
+            results_count = len(results)
+        
+        return results_count
+    
+    
+    def iter_results(self):
+        """
+        Iterates over the result.
         
         This method is an iterable generator.
         
         Yields
         ------
-        result_group : ``ResultGroup``
+        results : ``Result``
         """
-        result_groups = self._result_groups
-        if (result_groups is not None):
-            yield from result_groups
+        results = self._results
+        if (results is not None):
+            yield from results
     
     
-    def get_result_groups(self):
+    def get_results(self):
         """
-        Returns a copy of the result groups.
+        Returns a copy of the result.
         
         Returns
         -------
-        result_groups : `list` of ``ResultGroup``
+        results : `list` of ``Result``
         """
-        result_groups = self._result_groups
-        if result_groups is None:
-            result_groups = []
+        results = self._results
+        if results is None:
+            results = []
         else:
-            result_groups = result_groups.copy()
+            results = results.copy()
         
-        return result_groups
+        return results
     
     
-    def add_result_group(self, result_group):
+    def add_results(self, result):
         """
-        Adds a new result group.
+        Adds a new result.
         
         Parameters
         ----------
-        result_group : ``ResultGroup``
+        result : ``Result``
+            The result to add.
         """
-        result_groups = self._result_groups
-        if result_groups is None:
-            result_groups = []
-            self._result_groups = result_groups
+        results = self._results
+        if results is None:
+            results = []
+            self._results = results
         
-        result_groups.append(result_group)
+        results.append(result)
     
     
     def get_test_file_count(self):
         """
         Returns how much much tests files were collected.
+        
+        Returns
+        -------
+        test_file_count : `int`
         """
         test_files = self._test_files
         if (test_files is None):
@@ -289,7 +298,7 @@ class RunState(RichAttributeErrorBaseType):
         repr_parts.append(repr(self.get_test_file_count()))
         
         repr_parts.append(' tests_ran: ')
-        repr_parts.append(repr(self.get_result_group_count()))
+        repr_parts.append(repr(self.get_results_count()))
         
         repr_parts.append('>')
         return ''.join(repr_parts)
