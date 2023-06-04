@@ -1,3 +1,5 @@
+import warnings
+
 from vampytest import call_with, skip
 
 
@@ -10,6 +12,12 @@ def test_skipped():
     """
     I am skipped.
     """
+    print('but i was skipped')
+    
+    warnings.warn(
+        'hello',
+        RuntimeWarning,
+    )
 
 
 def sub_function(val, val2):
@@ -43,6 +51,8 @@ def test_recursion_0(value):
     """
     I am a recursion 2.
     """
+    print('a')
+    
     a(value)
 
 

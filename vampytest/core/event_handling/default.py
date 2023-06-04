@@ -1,20 +1,15 @@
 __all__ = ('create_default_event_handler_manager',)
 
-from scarletio import RichAttributeErrorBaseType, create_ansi_format_code
+from scarletio import RichAttributeErrorBaseType
 
 from ..events import FileLoadDoneEvent, FileRegistrationDoneEvent, FileTestingDoneEvent, TestDoneEvent, TestingEndEvent
 
 from .base import EventHandlerManager
+from .colors import COLOR_FAIL, COLOR_PASS, COLOR_SKIP, COLOR_UNKNOWN
 from .default_output_writer import OutputWriter
 from .rendering_helpers.result_modifier_parameters import build_result_modifier_parameters
+from .rendering_helpers.writers import write_load_failure, write_result_failing, write_result_informal
 from .text_styling import style_text
-
-
-COLOR_FAIL = create_ansi_format_code(foreground_color = (255, 0, 0))
-COLOR_PASS = create_ansi_format_code(foreground_color = (0, 255, 0))
-COLOR_SKIP = create_ansi_format_code(foreground_color = (0, 255, 255))
-COLOR_UNKNOWN = create_ansi_format_code(foreground_color = (255, 0, 255))
-COLOR_RESET = create_ansi_format_code()
 
 
 def create_default_event_handler_manager():
@@ -219,29 +214,19 @@ class DefaultEventFormatter(RichAttributeErrorBaseType):
         context = event.context
         
         load_failures = context.get_file_load_failures()
-        
         for load_failure in load_failures:
-            message = ''.join([
-                'Exception occurred while loading:\n',
-                load_failure.path,
-                '\n\n',
-                load_failure.exception_message,
-            ])
-            
-            output_writer.write_line(message)
-            output_writer.write_break_line()
-        
+            write_load_failure(output_writer, load_failure)
         
         for result in context.iter_failed_results():
-            for failure_message in result.iter_failure_messages():
-                output_writer.write_line(failure_message)
-                output_writer.write_break_line()
+            write_result_failing(output_writer, result)
         
         failed_count = context.get_failed_test_count()
         failed_message_part = f'{failed_count} failed'
         if failed_count:
             failed_message_part = style_text(failed_message_part, COLOR_FAIL)
-        
+        else:
+            for result in context.iter_informal_results():
+                write_result_informal(output_writer, result)
         
         skipped_count = context.get_skipped_test_count()
         skipped_message_part = f'{skipped_count} skipped'

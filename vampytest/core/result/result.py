@@ -2,7 +2,9 @@ __all__ = ('Result',)
 
 from scarletio import RichAttributeErrorBaseType, export
 
-from .failures import FailureAsserting, FailureRaising, FailureReturning, get_reversed_failure_message
+from .reports import (
+    ReportFailureAsserting, ReportFailureRaising, ReportFailureReturning, ReportOutput
+)
 
 
 @export
@@ -20,8 +22,8 @@ class Result(RichAttributeErrorBaseType):
         Whether this is is not the last test of the case.
     handle : ``Handle``
         The test's handle running the test.
-    failures : `None`, `list` of ``FailureBase``
-        Test failures.
+    reports : `None`, `list` of ``ReportBase``
+        Test reports.
     reversed : `bool`
         Whether the test result is reversed.
     skipped : `bool`
@@ -32,9 +34,10 @@ class Result(RichAttributeErrorBaseType):
     - ``.is_passed``
     - ``.is_failed``
     - ``.is_conflicted``
-    - ``.iter_failure_messages``
+    - ``.is_informal``
+    - ``.iter_report_messages``
     """
-    __slots__ = ('case', 'conflict', 'continuous', 'handle', 'failures', 'reversed', 'skipped')
+    __slots__ = ('case', 'conflict', 'continuous', 'handle', 'reports', 'reversed', 'skipped')
     
     def __new__(cls, case):
         """
@@ -50,7 +53,7 @@ class Result(RichAttributeErrorBaseType):
         self.conflict = None
         self.continuous = False
         self.handle = None
-        self.failures = None
+        self.reports = None
         self.reversed = case.do_reverse()
         self.skipped = False
         return self
@@ -70,15 +73,15 @@ class Result(RichAttributeErrorBaseType):
             repr_parts.append(repr(repr_parts))
             field_added = True
         
-        failures = self.failures
-        if (failures is not None):
+        reports = self.reports
+        if (reports is not None):
             if field_added:
                 repr_parts.append(',')
             else:
                 field_added = True
             
-            repr_parts.append(' failures = ')
-            repr_parts.append(repr(failures))
+            repr_parts.append(' reports = ')
+            repr_parts.append(repr(reports))
         
         if self.reversed:
             if field_added:
@@ -168,7 +171,7 @@ class Result(RichAttributeErrorBaseType):
     
     def with_exception(self, expected_exceptions, received_exception, exact_type):
         """
-        Sets except result.
+        Adds unexpected exception as test result.
         
         Parameters
         ----------
@@ -183,15 +186,14 @@ class Result(RichAttributeErrorBaseType):
         -------
         self : `instance<type<self>>`
         """
-        failure = FailureRaising(self.handle, expected_exceptions, received_exception, exact_type)
-        self._add_failure(failure)
-        
+        report = ReportFailureRaising(expected_exceptions, received_exception, exact_type)
+        self._add_report(report)
         return self
     
     
     def with_return(self, expected_value, received_value):
         """
-        Sets return result.
+        Adds return value mismatch as test result.
         
         Parameters
         ----------
@@ -204,15 +206,14 @@ class Result(RichAttributeErrorBaseType):
         -------
         self : `instance<type<self>>`
         """
-        failure = FailureReturning(self.handle, expected_value, received_value)
-        self._add_failure(failure)
-        
+        report = ReportFailureReturning(expected_value, received_value)
+        self._add_report(report)
         return self
     
     
     def with_assertion(self, assertion_exception):
         """
-        Sets assertion as test result.
+        Adds assertion failing as test result.
         
         Parameters
         ----------
@@ -223,27 +224,44 @@ class Result(RichAttributeErrorBaseType):
         -------
         self : `instance<type<self>>`
         """
-        failure = FailureAsserting(self.handle, assertion_exception)
-        self._add_failure(failure)
-        
+        report = ReportFailureAsserting(assertion_exception)
+        self._add_report(report)
         return self
     
     
-    def _add_failure(self, failure):
+    def with_output(self, output):
         """
-        Ads a failure to the test result.
+        Adds captured output as test result. 
         
         Parameters
         ----------
-        failure : ``FailureBase``
-            The test failure to add.
-        """
-        failures = self.failures
-        if (failures is None):
-            failures = []
-            self.failures = failures
+        output : `str`
+            Output to add.
         
-        failures.append(failure)
+        Returns
+        -------
+        self : `instance<type<self>>`
+        """
+        report = ReportOutput(output)
+        self._add_report(report)
+        return self
+    
+    
+    def _add_report(self, report):
+        """
+        Ads a report to the test result.
+        
+        Parameters
+        ----------
+        report : ``ReportBase``
+            The test report to add.
+        """
+        reports = self.reports
+        if (reports is None):
+            reports = []
+            self.reports = reports
+        
+        reports.append(report)
     
     
     def is_skipped(self):
@@ -271,7 +289,7 @@ class Result(RichAttributeErrorBaseType):
         if (self.conflict is not None):
             return False
         
-        return (self.failures is None) != self.reversed
+        return (self.get_failure_report() is None) != self.reversed
     
     
     def is_failed(self):
@@ -288,8 +306,7 @@ class Result(RichAttributeErrorBaseType):
         if (self.conflict is not None):
             return True
         
-        
-        return (self.failures is None) == self.reversed
+        return (self.get_failure_report() is None) == self.reversed
     
     
     def is_conflicted(self):
@@ -303,6 +320,32 @@ class Result(RichAttributeErrorBaseType):
         return (self.conflict is not None)
     
     
+    def is_informal(self):
+        """
+        Returns whether the test result holds only informal results.
+        
+        Returns
+        -------
+        is_informal : `bool`
+        """
+        if self.skipped:
+            return False
+        
+        if (self.conflict is not None):
+            return False
+        
+        has_informal = False
+        
+        for report in self.iter_reports():
+            if report.is_failure():
+                return False
+            
+            if report.is_informal():
+                has_informal = True
+        
+        return has_informal
+        
+    
     def is_last(self):
         """
         Returns whether the result is the last of the test case. Can be used when rendering test tree.
@@ -312,31 +355,6 @@ class Result(RichAttributeErrorBaseType):
         is_last : `bool`
         """
         return (not self.continuous)
-    
-    
-    def iter_failure_messages(self):
-        """
-        Returns the failure message of the test case.
-        
-        This method is an iterable generator.
-        
-        Yields
-        -------
-        failure_message : `str`
-        """
-        conflict = self.conflict
-        if (conflict is not None):
-            yield conflict.get_failure_message()
-        
-        failures = self.failures
-        if self.reversed:
-            if (failures is None):
-                yield get_reversed_failure_message(self.handle)
-        
-        else:
-            if (failures is not None):
-                for failure in failures:
-                    yield failure.get_failure_message()
     
     
     def get_modifier_parameters(self):
@@ -359,3 +377,42 @@ class Result(RichAttributeErrorBaseType):
             return None
         
         return final_call_state.positional_parameters, final_call_state.keyword_parameters
+    
+    
+    def iter_reports(self):
+        """
+        Iterates over the reports of the test result.
+        
+        Yields
+        ------
+        report : ``ReportBase``
+        """
+        reports = self.reports
+        if reports is not None:
+            yield from reports
+    
+    
+    def get_failure_report(self):
+        """
+        Gets the first failure report.
+        
+        Returns
+        -------
+        report : `None`, ``ReportBase``
+        """
+        for report in self.iter_reports():
+            if report.is_failure():
+                return report
+    
+    
+    def get_output_report(self):
+        """
+        Gets the first output report.
+        
+        Returns
+        -------
+        report : `None`, ``ReportOutput``
+        """
+        for report in self.iter_reports():
+            if isinstance(report, ReportOutput):
+                return report

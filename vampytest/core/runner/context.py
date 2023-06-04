@@ -179,7 +179,7 @@ class RunnerContext(RichAttributeErrorBaseType):
     
     def iter_passed_results(self):
         """
-        Iterates over the passed results of the test file.
+        Iterates over the passed results of the runner context.
         
         This method is an iterable generator.
         
@@ -194,7 +194,7 @@ class RunnerContext(RichAttributeErrorBaseType):
     
     def iter_skipped_results(self):
         """
-        Iterates over the skipped results of the test file.
+        Iterates over the skipped results of the runner context.
         
         This method is an iterable generator.
         
@@ -209,7 +209,7 @@ class RunnerContext(RichAttributeErrorBaseType):
     
     def iter_failed_results(self):
         """
-        Iterates over the failed results of the test file.
+        Iterates over the failed results of the runner context.
         
         This method is an iterable generator.
         
@@ -220,6 +220,21 @@ class RunnerContext(RichAttributeErrorBaseType):
         for test_file in self.iter_registered_files():
             if not test_file.is_directory():
                 yield from test_file.iter_failed_results()
+    
+    
+    def iter_informal_results(self):
+        """
+        Iterates over the informal only results of the runner context.
+        
+        This method is an iterable generator.
+        
+        Yields
+        ------
+        result : ``Result``
+        """
+        for test_file in self.iter_registered_files():
+            if not test_file.is_directory():
+                yield from test_file.iter_informal_results()
     
     
     def get_passed_test_count(self):
@@ -269,7 +284,7 @@ class RunnerContext(RichAttributeErrorBaseType):
     
     def get_passed_results(self):
         """
-        Iterates over the passed results of the test file.
+        Iterates over the passed results of the runner context.
         
         Returns
         -------
@@ -280,7 +295,7 @@ class RunnerContext(RichAttributeErrorBaseType):
     
     def get_skipped_results(self):
         """
-        Iterates over the skipped results of the test file.
+        Iterates over the skipped results of the runner context.
         
         Returns
         -------
@@ -291,7 +306,7 @@ class RunnerContext(RichAttributeErrorBaseType):
     
     def get_failed_results(self):
         """
-        Iterates over the failed results of the test file.
+        Iterates over the failed results of the runner context.
         
         Returns
         -------

@@ -21,7 +21,7 @@ class EnvironmentManager(RichAttributeErrorBaseType):
     ----------
     _environments_by_identifier : `dict` of (`int`, ``DefaultEnvironment``) items
     """
-    __slots__ = ('_environments_by_identifier')
+    __slots__ = ('_environments_by_identifier',)
     
     def __new__(cls):
         """
@@ -33,7 +33,7 @@ class EnvironmentManager(RichAttributeErrorBaseType):
     
     def __repr__(self):
         """Returns the testing environment's representation."""
-        return f'<{self.__class__.__name__} environments_by_identifier={self._environments_by_identifier!r}>'
+        return f'<{self.__class__.__name__} environments_by_identifier = {self._environments_by_identifier!r}>'
     
     
     def get_environment_for_test(self, test):

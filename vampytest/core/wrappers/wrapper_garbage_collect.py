@@ -1,10 +1,10 @@
 __all__ = ('WrapperGarbageCollect',)
 
-from gc import collect as gc_collect
+from scarletio import copy_docs
+
+from ..contexts import ContextGarbageCollect
 
 from .wrapper_base import WrapperBase
-
-from scarletio import copy_docs
 
 
 class WrapperGarbageCollect(WrapperBase):
@@ -13,7 +13,7 @@ class WrapperGarbageCollect(WrapperBase):
     
     Attributes
     ----------
-    wrapped : `None`, `Any`
+    wrapped : `None`, `object`
         The wrapped test.
     after : `bool`
         Whether garbage should be collected after the test.
@@ -63,22 +63,9 @@ class WrapperGarbageCollect(WrapperBase):
         return self
     
     
-    @copy_docs(WrapperBase.context)
-    def context(self):
-        call_state = yield None
-        
-        if self.before:
-            gc_collect()
-            gc_collect()
-        
-        try:
-            result_state = yield call_state
-        finally:
-            if self.after:
-                gc_collect()
-                gc_collect()
-        
-        yield result_state
+    @copy_docs(WrapperBase.get_context)
+    def get_context(self, handle):
+        return ContextGarbageCollect(self)
     
     
     @copy_docs(WrapperBase.__repr__)

@@ -500,6 +500,21 @@ class TestFile(RichAttributeErrorBaseType):
                 yield result
     
     
+    def iter_informal_results(self):
+        """
+        Iterates over the informal results of the test file.
+        
+        This method is an iterable generator.
+        
+        Yields
+        ------
+        result : ``Result``
+        """
+        for result in self.iter_results():
+            if result.is_informal():
+                yield result
+    
+    
     def get_passed_test_count(self):
         """
         Returns how much test passed.

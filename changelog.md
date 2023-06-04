@@ -16,6 +16,20 @@
 - `Result` instances now completely replace `ResultGroup`. They also inherit every functionality from them.
 - Add `Result.is_conflicted`.
 - Add `Result.is_last`.
+- Wrappers with contexts now return a context instance instead of a generator. This should reduce wrapper complexity.
+- Add `ContextCalling`.
+- Add `ContextBase`.
+- Add `ContextGarbageCollect`.
+- Add `ReportBase.is_failure`.
+- Add `ReportBase.is_informal`.
+- Add `ReportBase.iter_reports`.
+- Add `ReportBase.get_failure_report`.
+- Add `ReportBase.get_output_report`.
+- Add `Result.with_output`.
+- Output is now more colorful.
+- Add `RunnerContext.iter_informal_results`.
+- Add `TestFile.iter_informal_results`.
+- Add `Result.is_informal`.
 
 #### Bug fixes
 
@@ -26,3 +40,6 @@
 - Deprecate `revert`.
 - Rename `revert` values to `reverse`.
 - Remove `ResultGroup`.
+- Remove `ReportBase.get_report_message`.
+- Remove `WrapperConflict.get_report_message`.
+- Remove `Result.iter_report_messages`.

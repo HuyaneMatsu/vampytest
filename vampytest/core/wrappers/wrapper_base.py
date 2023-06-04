@@ -275,64 +275,20 @@ class WrapperBase(RichAttributeErrorBaseType):
         return False
     
     
-    def context(self, handle):
+    def get_context(self, handle):
         """
-        Context over a test handle.
-        
-        This method is a generator.
+        Returns a context over a test handle.
         
         Parameters
         ----------
         handle : ``Handle``
-            The parent test handle.
-        
-        Yields
-        ------
-        step_result : ``Result``, ``CallState``, ``ResultState``
+            Test handle.
         
         Returns
         -------
-        step_result : ``Result``, ``CallState``, ``ResultState``
-        
-        Example Implementation
-        ----------------------
-        ```py
-        # before first yield we might check the test handle out and return a `Result` if something is wrong.
-        
-        if everything is not good:
-            return Result(handle)....
-        
-        # If we find everything good, we will get back a `CallState` on our yield
-        call_state = yield
-        
-        # We might modify the parameters of the call state with `.with_parameters` method
-        call_state = call_state.with_parameters(positional, keyword)
-        
-        # If something is wrong, we can return a `Result` again.
-        if everything is not good:
-            return Result(handle)....
-        
-        # If everything is good, we yield back our call state. At this time we will get back a `ResultState` on our
-        # yield.
-        
-        result_state = yield call_state
-        
-        # We might check the result state and modify it, or again return a `Result` if something is wrong.
-        
-        if everything is not good:
-            return Result(handle)....
-        
-        # To modify the result state, use the `.with_return` or the `.with_exception` methods.
-        result_state = result_state.with_return(None)
-        result_state = result_state.with_exception(None)
-        
-        At the end yield back our `result_state`
-        yield result_state
-        ```
+        context : ``ContextBase``
         """
-        call_state = yield None
-        result_state = yield call_state
-        yield result_state
+        return None
     
     
     def iter_environments(self):

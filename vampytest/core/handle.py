@@ -4,6 +4,7 @@ import reprlib
 
 from scarletio import RichAttributeErrorBaseType, include
 
+from .contexts import ContextOutputCapturing
 from .helpers.hashing import hash_dict, hash_list, hash_object
 from .helpers.merging import maybe_merge_iterables, maybe_merge_mappings
 
@@ -165,7 +166,7 @@ class ResultState(RichAttributeErrorBaseType):
     returned_value : `None`, `object`
         The returned value by the test.
     """
-    __slots__ = ('raised_exception', 'returned_value')
+    __slots__ = ('raised_exception', 'returned_value',)
     
     def __new__(cls, returned_value, raised_exception):
         """
@@ -209,7 +210,6 @@ class ResultState(RichAttributeErrorBaseType):
             
             repr_parts.append(' raised_exception = ')
             repr_parts.append(repr(raised_exception))
-        
         
         repr_parts.append('>')
         return ''.join(repr_parts)
@@ -372,87 +372,84 @@ class Handle(RichAttributeErrorBaseType):
         """Returns the test handle's representation."""
         repr_parts = ['<', self.__class__.__name__]
         
-        repr_parts.append(' test=')
+        repr_parts.append(' test = ')
         repr_parts.append(reprlib.repr(self.test))
         
         wrappers = self.wrappers
         if (wrappers is not None):
-            repr_parts.append(', wrappers=')
+            repr_parts.append(', wrappers = ')
             repr_parts.append(repr(wrappers))
         
         original_call_state = self.original_call_state
         if (original_call_state is not None) and original_call_state:
-            repr_parts.append(', original_call_state=')
+            repr_parts.append(', original_call_state = ')
             repr_parts.append(repr(original_call_state))
         
         final_call_state = self.final_call_state
         if (final_call_state is not None) and final_call_state:
-            repr_parts.append(', final_call_state=')
+            repr_parts.append(', final_call_state = ')
             repr_parts.append(repr(final_call_state))
             
         original_result_state = self.original_result_state
         if (original_result_state is not None) and original_result_state:
-            repr_parts.append(', original_result_state=')
+            repr_parts.append(', original_result_state = ')
             repr_parts.append(repr(original_result_state))
         
         final_result_state = self.final_result_state
         if (final_result_state is not None) and final_result_state:
-            repr_parts.append(', final_result_state=')
+            repr_parts.append(', final_result_state = ')
             repr_parts.append(repr(final_result_state))
         
         repr_parts.append('>')
         return ''.join(repr_parts)
     
     
-    def _initialise_test_wrapper_contexts(self, test_wrapper_contexts):
+    def _collect_contexts_into(self, contexts):
         """
         Initialises the wrappers of the test handle.
         
         Parameters
         ----------
-        test_wrapper_contexts : `list` of `GeneratorType`
-            Test wrappers to initialize into
+        contexts : `list` of ``ContextBase```
+            Test contexts to put the new ones into.
         """
         wrappers = self.wrappers
         if wrappers is not None:
             for wrapper in wrappers:
-                context = wrapper.context(self)
-                test_wrapper_contexts.append(context)
+                context = wrapper.get_context(self)
+                if (context is not None):
+                    contexts.append(context)
     
     
-    def _start_test_wrapper_contexts(self, test_wrapper_contexts):
+    def _start_contexts(self, contexts):
         """
         Starts the text wrapper contexts.
         
         Parameters
         ----------
-        test_wrapper_contexts : `list` of `GeneratorType`
-            Test wrappers to initialize into
+        contexts : `list` of ``ContextBase``
+            Contexts to start.
         
         Returns
         -------
         test_result : `None`, ``Result``
             Result of the test.
         """
-        for test_wrapper_context in test_wrapper_contexts:
-            try:
-                test_result = test_wrapper_context.send(None)
-            except StopIteration as err:
-                test_result = err.value
-            
+        for context in contexts:
+            test_result = context.start()
             if (test_result is not None):
                 return test_result
     
     
-    def _enter_test_wrapper_contexts(self, test_wrapper_contexts):
+    def _enter_contexts(self, contexts):
         """
         Enters the text wrapper contexts passing them a ``CallState``, expecting them to return a new call state, or
         a test result.
         
         Parameters
         ----------
-        test_wrapper_contexts : `list` of `GeneratorType`
-            Test wrappers to start.
+        contexts : `list` of ``ContextBase``
+            Contexts to enter.
         
         Returns
         -------
@@ -463,23 +460,62 @@ class Handle(RichAttributeErrorBaseType):
         self.original_call_state = call_state
         
         try:
-            for test_wrapper_context in test_wrapper_contexts:
-                try:
-                    enter_result = test_wrapper_context.send(call_state)
-                except StopIteration as err:
-                    enter_result = err.value
+            for context in contexts:
+                test_result, new_call_state = context.enter(call_state)
                 
-                if enter_result is None:
-                    continue
+                if (new_call_state is not None):
+                    call_state = new_call_state
                 
-                if isinstance(enter_result, CallState):
-                    call_state = enter_result
-                
-                if isinstance(enter_result, Result):
-                    return enter_result
-            
+                if (test_result is not None):
+                    return test_result
+        
         finally:
             self.final_call_state = call_state
+    
+    
+    def _exit_contexts(self, contexts):
+        """
+        Exits the contexts passing them a ``ResultState``, expecting them to return a result state, or a result.
+        
+        Parameters
+        ----------
+        contexts : `list` of ``ContextBase``
+            Contexts to exit.
+        
+        Returns
+        -------
+        test_result : `None`, ``Result``
+            Result of the test.
+        """
+        result_state = self.original_result_state
+        
+        try:
+            for context in reversed(contexts):
+                test_result, new_result_state = context.exit(result_state)
+                
+                if (new_result_state is not None):
+                    result_state = new_result_state
+                
+                if (test_result is not None):
+                    return test_result
+            
+        finally:
+            self.final_result_state = result_state
+    
+    
+    def _close_contexts(self, contexts, result):
+        """
+        Exits the contexts.
+        
+        Parameters
+        ----------
+        contexts : `list` of ``ContextBase``
+            Contexts to exit.
+        result : `None`, ``Result˙`
+            Result of the test.
+        """
+        for context in reversed(contexts):
+            context.close(result)
     
     
     def _get_call_parameters(self):
@@ -522,51 +558,10 @@ class Handle(RichAttributeErrorBaseType):
             Testing environment manager.
         """
         positional_parameters, keyword_parameters = self._get_call_parameters()
-        
         test = self.test
-        
         environment = environment_manager.get_environment_for_test(test)
-        
         result_state = environment.run(test, positional_parameters, keyword_parameters)
-        
         self.original_result_state = result_state
-    
-    
-    def _exit_test_wrapper_contexts(self, test_wrapper_contexts):
-        """
-        Exits the text wrapper contexts passing them a ``ResultState``, expecting them to return a new call state, or
-        a test result.
-        
-        Parameters
-        ----------
-        test_wrapper_contexts : `list` of `GeneratorType`
-            Test wrappers to start.
-        
-        Returns
-        -------
-        test_result : `None`, ``Result``
-            Result of the test.
-        """
-        result_state = self.original_result_state
-        
-        try:
-            for test_wrapper_context in test_wrapper_contexts:
-                try:
-                    exit_result = test_wrapper_context.send(result_state)
-                except StopIteration as err:
-                    exit_result = err.value
-                
-                if exit_result is None:
-                    continue
-                
-                if isinstance(exit_result, ResultState):
-                    result_state = exit_result
-                
-                if isinstance(exit_result, Result):
-                    return exit_result
-            
-        finally:
-            self.final_result_state = result_state
     
     
     def _build_default_test_result(self):
@@ -584,7 +579,6 @@ class Handle(RichAttributeErrorBaseType):
         if (raised_exception is not None):
             if isinstance(raised_exception, AssertionException):
                 test_result = test_result.with_assertion(raised_exception)
-            
             else:
                 test_result = test_result.with_exception(None, raised_exception, False)
         
@@ -622,35 +616,31 @@ class Handle(RichAttributeErrorBaseType):
         """
         environment_manager = environment_manager.with_environment(*self._iter_applied_environments())
         
-        test_wrapper_contexts = []
+        contexts = [ContextOutputCapturing()]
+        test_result = None
+        
         try:
-            self._initialise_test_wrapper_contexts(test_wrapper_contexts)
+            self._collect_contexts_into(contexts)
             
-            test_result = self._start_test_wrapper_contexts(test_wrapper_contexts)
+            test_result = self._start_contexts(contexts)
             if (test_result is not None):
                 return test_result
             
-            
-            test_result = self._enter_test_wrapper_contexts(test_wrapper_contexts)
+            test_result = self._enter_contexts(contexts)
             if (test_result is not None):
                 return test_result
             
-            try:
-                self._invoke_test(environment_manager)
-            except:
-                self._exit_test_wrapper_contexts(test_wrapper_contexts)
-                raise
+            self._invoke_test(environment_manager)
             
-            else:
-                test_result = self._exit_test_wrapper_contexts(test_wrapper_contexts)
-                if (test_result is not None):
-                    return test_result
+            test_result = self._exit_contexts(contexts)
+            if (test_result is not None):
+                return test_result
             
-            return self._build_default_test_result()
-            
+            test_result = self._build_default_test_result()
+            return test_result
+        
         finally:
-            for test_wrapper_context in test_wrapper_contexts:
-                test_wrapper_context.close()
+            self._close_contexts(contexts, test_result)
     
     
     def get_test_documentation(self):

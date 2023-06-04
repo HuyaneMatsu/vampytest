@@ -2,7 +2,7 @@ __all__ = ('call_with', 'in_environment', 'raising', 'returning', 'reverse', 're
 
 import warnings
 
-from .wrapper_call import WrapperCall
+from .wrapper_call import WrapperCalling
 from .wrapper_environment import WrapperEnvironment
 from .wrapper_garbage_collect import WrapperGarbageCollect
 from .wrapper_reverse import WrapperReverse
@@ -10,10 +10,10 @@ from .wrapper_skip import WrapperSkip
 from .wrapper_skip_conditional import WrapperSkipConditional
 
 
-call_with = WrapperCall.call_with_constructor
+call_with = WrapperCalling.call_with_constructor
 in_environment = WrapperEnvironment
-raising = WrapperCall.raising_constructor
-returning = WrapperCall.returning_constructor
+raising = WrapperCalling.raising_constructor
+returning = WrapperCalling.returning_constructor
 reverse = WrapperReverse
 skip = WrapperSkip
 skip_if = WrapperSkipConditional

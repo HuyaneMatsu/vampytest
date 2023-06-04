@@ -19,7 +19,7 @@ class OutputWriter(RichAttributeErrorBaseType):
         Whether the last written line was a break line.
     _last_write_ended_with_linebreak : `bool`
         Whether the last write ended with a linebreak.
-    file : `Any`
+    file : `io-like`
         Any writable object.
     """
     def __new__(cls, file = None):
@@ -28,7 +28,7 @@ class OutputWriter(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        file : `None`, `Any` = `None`, Optional
+        file : `None`, `io-like` = `None`, Optional
             Writable object. If not given defaults to `sys.stdout`.
         """
         if file is None:

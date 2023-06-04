@@ -9,31 +9,31 @@ class WrapperConflict(RichAttributeErrorBaseType):
     
     Attributes
     ----------
-    wrapper_1 : ``WrapperBase``
+    wrapper_0 : ``WrapperBase``
         The wrapper 1 with the conflict.
     reason : `None`, `str`
         The reason why the two wrappers are incompatible.
-    wrapper_2 : `None`, ``WrapperBase``
+    wrapper_1 : `None`, ``WrapperBase``
         The wrapper 2 with the conflict.
     """
-    __slots__ = ('reason', 'wrapper_1', 'wrapper_2')
+    __slots__ = ('reason', 'wrapper_0', 'wrapper_1')
     
-    def __new__(cls, wrapper_1, wrapper_2 = None, *, reason = None):
+    def __new__(cls, wrapper_0, wrapper_1 = None, *, reason = None):
         """
         Creates a new wrapper conflict.
         
         Parameters
         ----------
-        wrapper_1 : ``WrapperBase``
+        wrapper_0 : ``WrapperBase``
             Wrapper one with the conflict.
-        wrapper_2 : `None`, ``WrapperBase`` = `None`, Optional
+        wrapper_1 : `None`, ``WrapperBase`` = `None`, Optional
             Wrapper two with the conflict.
         reason : `None`, `str` = `None`, Optional (Keyword only)
             The reason why the two wrappers are incompatible.
         """
         self = object.__new__(cls)
+        self.wrapper_0 = wrapper_0
         self.wrapper_1 = wrapper_1
-        self.wrapper_2 = wrapper_2
         self.reason = reason
         return self
     
@@ -42,13 +42,13 @@ class WrapperConflict(RichAttributeErrorBaseType):
         """Returns the wrapper conflict's representation."""
         repr_parts = ['<', self.__class__.__name__]
         
-        repr_parts.append(' wrapper_1=')
-        repr_parts.append(repr(self.wrapper_1))
+        repr_parts.append(' wrapper_0=')
+        repr_parts.append(repr(self.wrapper_0))
         
-        wrapper_2 = self.wrapper_2
-        if (wrapper_2 is not None):
-            repr_parts.append(', wrapper_2=')
-            repr_parts.append(repr(self.wrapper_2))
+        wrapper_1 = self.wrapper_1
+        if (wrapper_1 is not None):
+            repr_parts.append(', wrapper_1=')
+            repr_parts.append(repr(self.wrapper_1))
         
         reason = self.reason
         if (reason is not None):
@@ -63,11 +63,11 @@ class WrapperConflict(RichAttributeErrorBaseType):
         """Returns the wrapper conflict's hash value."""
         hash_value = 0
         
-        hash_value ^= hash(self.wrapper_1)
+        hash_value ^= hash(self.wrapper_0)
         
-        wrapper_2 = self.wrapper_2
-        if (wrapper_2 is not None):
-            hash_value ^= hash(wrapper_2)
+        wrapper_1 = self.wrapper_1
+        if (wrapper_1 is not None):
+            hash_value ^= hash(wrapper_1)
         
         reason = self.reason
         if (reason is not None):
@@ -99,36 +99,10 @@ class WrapperConflict(RichAttributeErrorBaseType):
         -------
         wrappers : `frozenset` of ``WrapperBase``
         """
-        wrappers = [self.wrapper_1]
+        wrappers = [self.wrapper_0]
         
-        wrapper_2 = self.wrapper_2
-        if (wrapper_2 is not None):
-            wrappers.append(wrapper_2)
+        wrapper_1 = self.wrapper_1
+        if (wrapper_1 is not None):
+            wrappers.append(wrapper_1)
         
         return frozenset(wrappers)
-    
-    
-    def get_failure_message(self):
-        """
-        Returns the failure message of the wrapper conflict.
-        
-        Returns
-        -------
-        failure_message : `str`
-        """
-        failure_message_parts = ['Wrapper conflict']
-        
-        reason = self.reason
-        if (reason is not None):
-            failure_message_parts.append(': ')
-            failure_message_parts.append(reason)
-        
-        failure_message_parts.append('Between wrappers:\n')
-        failure_message_parts.append(repr(self.wrapper_1))
-        
-        wrapper_2 = self.wrapper_2
-        if (wrapper_2 is not None):
-            failure_message_parts.append('\n')
-            failure_message_parts.append(repr(wrapper_2))
-        
-        return ''.join(failure_message_parts)

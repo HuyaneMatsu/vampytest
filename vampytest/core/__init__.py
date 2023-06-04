@@ -1,4 +1,5 @@
 from .assertions import *
+from .contexts import *
 from .environment import *
 from .event_handling import *
 from .events import *
@@ -16,6 +17,7 @@ from .test_case import *
 
 __all__ = (
     *assertions.__all__,
+    *contexts.__all__,
     *environment.__all__,
     *event_handling.__all__,
     *events.__all__,
