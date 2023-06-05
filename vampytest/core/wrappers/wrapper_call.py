@@ -197,11 +197,9 @@ class WrapperCalling(WrapperBase):
         if self.is_returning():
             hash_value ^= try_hash_method(self.returning_value)
         
-        
         if self.is_call_with():
             hash_value ^= hash_tuple(self.calling_positional_parameters)
             hash_value ^= hash_dict(self.calling_keyword_parameters)
-        
         
         return hash_value
     

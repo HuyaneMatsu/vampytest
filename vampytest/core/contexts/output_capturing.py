@@ -26,10 +26,11 @@ class ContextOutputCapturing(ContextBase):
     def __new__(cls):
         """
         Creates a new test context.
-        
         """
         self = object.__new__(cls)
         self.stream = None
+        self.standard_error_stream = None
+        self.standard_output_stream = None
         return self
     
     
@@ -52,6 +53,8 @@ class ContextOutputCapturing(ContextBase):
         
         sys.stdout = self.standard_output_stream
         sys.stderr = self.standard_error_stream
+        self.standard_output_stream = None
+        self.standard_error_stream = None
         
         if (result is not None):
             output = stream.getvalue()

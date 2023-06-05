@@ -38,6 +38,9 @@ def render_result_modifier_parameters(into, modifier_parameters):
         return into
     
     position_parameters, keyword_parameters = modifier_parameters
+    if (position_parameters is None) and (keyword_parameters is None):
+        return into
+    
     into.append('[')
     
     field_added = False

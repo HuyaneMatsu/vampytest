@@ -30,6 +30,7 @@
 - Add `RunnerContext.iter_informal_results`.
 - Add `TestFile.iter_informal_results`.
 - Add `Result.is_informal`.
+- Add `CaptureOutputContextManager`.
 
 #### Bug fixes
 
