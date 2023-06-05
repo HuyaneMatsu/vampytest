@@ -20,7 +20,7 @@ class OutputWriter(RichAttributeErrorBaseType):
     _last_write_ended_with_linebreak : `bool`
         Whether the last write ended with a linebreak.
     file : `io-like`
-        Any writable object.
+        object writable object.
     """
     def __new__(cls, file = None):
         """

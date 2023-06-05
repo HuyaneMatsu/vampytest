@@ -13,7 +13,7 @@ class WrapperEnvironment(WrapperBase):
 
     Attributes
     ----------
-    wrapped : `None`, `Any`
+    wrapped : `None`, `object`
         The wrapped test.
     environment : ``DefaultEnvironment``
         Environment to use while running the test.

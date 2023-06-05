@@ -31,6 +31,8 @@
 - Add `TestFile.iter_informal_results`.
 - Add `Result.is_informal`.
 - Add `CaptureOutputContextManager`.
+- Add `call_from`.
+- Add `WrapperCallingFrom`.
 
 #### Bug fixes
 

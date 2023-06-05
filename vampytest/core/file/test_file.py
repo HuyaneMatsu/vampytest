@@ -42,7 +42,7 @@ def is_test(name, value):
     ----------
     name : `str`
         The name of a a variable.
-    value : `Any`
+    value : `object`
         The variable's value.
     
     Returns

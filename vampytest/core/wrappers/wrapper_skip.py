@@ -11,7 +11,7 @@ class WrapperSkip(WrapperBase):
 
     Attributes
     ----------
-    wrapped : `None`, `Any`
+    wrapped : `None`, `object`
         The wrapped test.
     """
     __slots__ = ()

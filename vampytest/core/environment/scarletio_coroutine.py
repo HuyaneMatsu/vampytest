@@ -86,9 +86,9 @@ class ScarletioCoroutineEnvironment(DefaultEnvironment):
         ----------
         test : `callable`
             The test to call
-        positional_parameters : `list` of `Any`
+        positional_parameters : `list` of `object`
             Positional parameters to call the test with.
-        keyword_parameters : `dict` of (`str`, `Any`) items
+        keyword_parameters : `dict` of (`str`, `object`) items
             Keyword parameters to call the test with.
         
         Returns

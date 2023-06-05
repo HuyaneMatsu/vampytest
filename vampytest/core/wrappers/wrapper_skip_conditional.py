@@ -11,7 +11,7 @@ class WrapperSkipConditional(WrapperSkip):
 
     Attributes
     ----------
-    wrapped : `None`, `Any`
+    wrapped : `None`, `object`
         The wrapped test.
     skip : `bool`
         Whether the test should be skipped.

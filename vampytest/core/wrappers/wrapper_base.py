@@ -14,7 +14,7 @@ class WrapperBase(RichAttributeErrorBaseType):
     
     Attributes
     ----------
-    wrapped : `None`, `Any`
+    wrapped : `None`, `object`
         The wrapped test.
     """
     __slots__ = ('wrapped', )
@@ -34,7 +34,7 @@ class WrapperBase(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        to_wrap : `Any`
+        to_wrap : `object`
             The object to wrap. It can be either a function or an another wrapper.
         
         Returns
@@ -220,7 +220,7 @@ class WrapperBase(RichAttributeErrorBaseType):
         
         Returns
         -------
-        test : `Any`
+        test : `object`
         
         Raises
         ------
