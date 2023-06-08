@@ -321,7 +321,7 @@ def render_report_asserting_into(into, result, report):
     into = render_test_position_into(into, 'Assertion failed', COLOR_FAIL, result)
     maybe_render_parameters_section_into(into, result)
     into.append('\n')
-    into = report.assertion_exception.render_into_into(into)
+    into = report.assertion_exception.render_failure_message_parts_into(into)
     into = maybe_render_output_into(into, result)
     return into
 

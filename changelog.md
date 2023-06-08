@@ -1,4 +1,10 @@
-## 0.0.8
+## 0.0.9 *\[2023-06-08\]*
+
+#### Bug fixes
+
+- Exception occurred when rendering assertions.
+
+## 0.0.8 *\[2023-06-08\]*
 
 #### Improvements
 
