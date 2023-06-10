@@ -2,15 +2,11 @@
     Vampytest
 </h1>
 
-<p align="center">
-    *The framework currently is in alpha stage. It can run tests but many features might be missing.*
-</p>
-
----
-
 Vampytest is a testing framework that allows you, but is not limited to write relative import based tests.
 
----
+> Note that the framework currently is in alpha stage. It can run tests but many features might be missing.
+
+<h1></h1>
 
 Here are several advantages why you would want them:
 
@@ -56,4 +52,4 @@ Here are several advantages why you would want them:
     Developers can directly use relative imports in their test code, resulting in a smoother transition to the
     testing framework.
 
----
+<h1></h1>
