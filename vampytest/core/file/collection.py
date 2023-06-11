@@ -42,7 +42,7 @@ def iter_collect_test_files_in_directory(entry, within_test_directory):
     entry : ``FileSystemEntry``
         The entry to iterate over.
     within_test_directory : `bool`
-        Defines whether
+        Defines whether we are in a test directory and whether we should collect test files from it.
     
     Yields
     ------

@@ -162,7 +162,11 @@ class DefaultEventFormatter(RichAttributeErrorBaseType):
         elif result.is_conflicted():
             keyword = 'C'
             foreground = COLOR_FAIL
-            
+        
+        elif result.is_informal():
+            keyword = 'I'
+            foreground = COLOR_PASS
+        
         elif result.is_passed():
             keyword = 'P'
             foreground = COLOR_PASS

@@ -1,3 +1,14 @@
+## 0.0.10 *\[2023-06-11\]*
+
+#### Improvements
+
+- Informal tests now show up with a `I` prefix.
+
+#### Bug fixes
+
+- Test wrappers were grouped incorrectly resulting badly generated test cases.
+- `WrapperGarbageCollect` was not setting all of its attributes causing `AttributeError`.
+
 ## 0.0.9 *\[2023-06-08\]*
 
 #### Bug fixes

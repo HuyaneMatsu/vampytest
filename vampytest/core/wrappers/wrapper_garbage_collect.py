@@ -57,7 +57,7 @@ class WrapperGarbageCollect(WrapperBase):
                 f'`before` can be `bool`, got {before.__class__.__name__}; {before!r}.'
             )
         
-        self = object.__new__(cls)
+        self = WrapperBase.__new__(cls)
         self.after = after
         self.before = before
         return self

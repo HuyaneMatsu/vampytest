@@ -203,18 +203,20 @@ class TestCase(RichAttributeErrorBaseType):
             
             wrappers = [wrapper for wrapper in wrapper.iter_wrappers() if not wrapper.is_ignored_when_testing()]
             
-            while wrappers:
-                wrapper_to_check = wrappers.pop()
-                wrapper_group = [wrapper_to_check]
+            for initial_wrapper in wrappers:
+                wrapper_group = [initial_wrapper]
                 
                 for wrapper in wrappers:
-                    if wrapper.is_mutually_exclusive_with(wrapper_to_check):
+                    if wrapper in wrapper_group:
                         continue
                     
-                    if wrapper_to_check.is_mutually_exclusive_with(wrapper):
+                    if any(wrapper.is_mutually_exclusive_with(wrapper_to_check) for wrapper_to_check in wrapper_group):
                         continue
                     
-                    wrapper_group.append(wrapper_to_check)
+                    if any(wrapper_to_check.is_mutually_exclusive_with(wrapper) for wrapper_to_check in wrapper_group):
+                        continue
+                    
+                    wrapper_group.append(wrapper)
                     continue
                 
                 wrapper_group = frozenset(wrapper_group)

@@ -4,6 +4,7 @@ from vampytest.core.environment.constants import ENVIRONMENT_TYPE_DEFAULT, ENVIR
 
 class GenerativeReturnTestEnvironment(DefaultEnvironment):
     __slots__ = ()
+    
     identifier = ENVIRONMENT_TYPE_GENERATOR
     
     def run(self, test, positional_parameters, keyword_parameters):

@@ -61,7 +61,7 @@ class ScarletioCoroutineEnvironment(DefaultEnvironment):
         
         try:
             if create_event_loop:
-                event_loop = EventThread(daemon=True, name = 'scarletio.run', start_later=False)
+                event_loop = EventThread(daemon = True, name = 'scarletio.run', start_later = False)
             
             return event_loop.run(
                 self._run_async(test, positional_parameters, keyword_parameters),
@@ -131,7 +131,7 @@ class ScarletioCoroutineEnvironment(DefaultEnvironment):
         
         repr_parts.append('>')
         return ''.join(repr_parts)
-
+    
     
     @copy_docs(DefaultEnvironment.shutdown)
     def shutdown(self):
