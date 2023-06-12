@@ -8,11 +8,11 @@ Vampytest is a testing framework that allows you, but is not limited to write re
 
 <h1></h1>
 
-Here are several advantages why you would want them:
+Here are several advantages why you would want to use a relative import supporting testing framework such as vampytest:
 
 - **Simplicity and ease of use**
 
-    Relative import based tests simplify the process of writing and executing tests.
+    Relative import based tests simplifies the process of writing and executing tests.
     Relative imports provide a straightforward and intuitive way to import and utilize testing functionalities without
     the need for complex configuration or setup.
     Developers can quickly get started with writing tests and running them, making the testing process more accessible
@@ -56,8 +56,7 @@ Here are several advantages why you would want them:
 
 ### Installation
 
-To install vampytest, you can use pip. Pip is the standard package installer for Python.
-Open your terminal and run the following command:
+To install vampytest, you can use pip. Open your terminal and run the following command:
 
 ```sh
 python3 -m pip install vampytest
@@ -84,8 +83,8 @@ def test_subtraction():
     vampytest.assert_eq(5 - 3, 2)
 ```
 
-Use vampytest functionalities starting with `assert_` such as `assert_eq` to check whether the actual behavior matches
-the expected. Using python builtin options such as `assert` works as well, but the report will not be as detailed.
+To check whether the actual behavior matches the expected behavior use `assert_...` functionalities such as `assert_eq`.
+Using python builtin options such as `assert` works as well, but the report will not be as detailed.
 
 ### Running Tests
 
@@ -256,7 +255,7 @@ def test_values_identical(value_0, value_1):
 
 ### Returning and raising tests
 
-With vampytest it is also possible to not only assert inside of tests, but assert the output of them.
+With vampytest, it is possible to assert the output of tests.
 This assertion can be done using the `returning` and `raising` decorators.
 
 ```py3
@@ -293,7 +292,7 @@ def test_convert_to_int(fruit):
     return int(fruit)
 ```
 
-It is also possible to define the expected output for each set of input as well.
+It is also possible to define the expected output for each set of input.
 
 ```py3
 import vampytest
@@ -325,9 +324,9 @@ def test_sum_if_lt_5(value_0, value_1):
     return output
 ```
 
-When using `call_from` not only the already mentioned `raising`, `returning`, `returning_transformed`, but new
-`returning_last` and `raising_last` options are available as well. As their name implies they take the last input
-parameter and expect it to be either raised or returned.
+When using `call_from` not only the already mentioned `raising`, `returning`, `returning_transformed` options
+are available, but also new `returning_last` and `raising_last` too.
+As their name implies they take the last input parameter and expect it to be either raised or returned.
 
 ```py3
 import vampytest
