@@ -18,7 +18,7 @@
   </a>
 </div>
 
-Vampytest is a testing framework that allows you, but is not limited to write relative import based tests.
+Vampytest is a testing framework that allows you, but is not limited to, to write relative import-based tests.
 
 ---
 
@@ -68,7 +68,7 @@ Here are several advantages why you would want to use a relative import supporti
 - **Encourages modular and isolated testing**
 
     Relative import based testing promotes modular and isolated testing practices.
-    It encouraging the testing of individual units in isolation.
+    It's encouraging the testing of individual units in isolation.
     This isolation makes it easier to pinpoint issues, debug problems, and maintain the codebase.
     It also supports the principles of unit testing, where individual units of code are tested independently for their
     expected behavior.
@@ -223,7 +223,7 @@ vampytest.assert_is_not(m, n)
 with vampytest.assert_raises(ValueError):
     raise ValueError
 
-# Asserts that the code inside the context manager raises an equal exception to the defined one.
+# Asserts that the code inside the context manager raises an equal exception as the defined one.
 with vampytest.assert_raises(ValueError('aya')):
     raise ValueError('aya')
 
@@ -281,7 +281,7 @@ def test_values_equal(value_0, value_1):
 ```
 
 Multiple inputs can also be parameterised with one decorator.
-This can be useful when the input is more complex and you might want to define a generator for it.
+This can be useful when the input is more complex, and you might want to define a generator for it.
 
 ```py3
 import vampytest
@@ -327,7 +327,7 @@ def test_convert_to_int():
     return int('apple')
 ```
 
-These decorators pair well with parameterised tests.
+These decorators pair-up well with parameterised tests.
 
 ```py3
 import vampytest
@@ -379,8 +379,8 @@ def test_sum_if_lt_5(value_0, value_1):
     return output
 ```
 
-When using `call_from` not only the already mentioned `raising`, `returning`, `returning_transformed` options
-are available, but also new `returning_last` and `raising_last` too.
+When using `call_from`, aside from the already mentioned `raising`, `returning`, `returning_transformed` options,
+we'll also have `returning_last` and `raising_last` as available.
 As their name implies they take the last input parameter and expect it to be either raised or returned.
 
 ```py3
@@ -417,7 +417,7 @@ def test_get_item_fails(container, key):
 
 ### Skipping tests
 
-Vampytest provides decorators to skip or mark tests as skipped on certain conditions.
+Vampytest provides decorators to skip or mark tests as skipped in certain conditions.
 
 ```py3
 import vampytest
@@ -465,7 +465,7 @@ def test_addition():
 
 ### Garbage collection
 
-By default garbage collection is not explicitly called between each test case since it could easily increase the
+By default, garbage collection is not explicitly called between each test case since it could easily increase the
 time required to run the tests by 10000% on large projects. By using `with_gc` it is possible to explicitly call
 garbage collection before or after a test.
 
@@ -502,7 +502,7 @@ def test_print():
 ```
 
 Vampytest is capturing the `stdout` and `stderr` by default. If a test fails the captured output will show
-up on its report. If the test passes its captured output will only show up if all test passes. This is to help the
+up in its report. If the test passes its captured output will only show up if all tests passed. This is to help the
 developer focus on the failing tests firsts. This feature can be useful to help debug failing tests and to catch
 *warnings* and forgotten *print* calls.
 
@@ -529,10 +529,10 @@ from vampytest.core.environment.constants import ENVIRONMENT_TYPE_GENERATOR
 class GenerativeReturnTestEnvironment(DefaultEnvironment):
     __slots__ = ()
     
-    # Define that this environment is only applicable for generators and propagates the tests' result like that
+    # Define that this environment is only applicable for generators and will propagate the tests' results like that
     identifier = ENVIRONMENT_TYPE_GENERATOR
     
-    # Run is called to run the test with the given parameters and excepts it to return a `ResultState`
+    # Run is called to run the test with the given parameters and we except it to return a `ResultState`
     def run(self, test, positional_parameters, keyword_parameters):
         try:
             returned_value = [*test(*positional_parameters, **keyword_parameters)]
@@ -544,7 +544,7 @@ class GenerativeReturnTestEnvironment(DefaultEnvironment):
         
         return ResultState(returned_value, raised_exception)
     
-    # Shutdown is run when we do not need this environment anymore. Can be useful when using global environments.
+    # Shutdown is called when we do not need this environment anymore. Can be useful when using global environments.
     def shutdown(self):
         pass
 
@@ -562,9 +562,9 @@ Vampytest only defines 2 environments by default: `default` and `scarletio corou
 - `scarletio coroutine` environment applies to coroutine tests.
     Vampytest assumes that every coroutine test is meant to run on a scarletio event loop.
 
-> For generators and coroutine generators there are no environment defined by default.
+> For generators and coroutine generators there is no environment defined by default.
 
-Scarletio based projects might use the the same event loop for their whole lifecycle. To use their event loop in
+Scarletio based projects might use the same event loop for their whole lifecycle. To use their event loop in
 the tests use a global environment for it:
 
 ```py3
