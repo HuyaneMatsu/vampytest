@@ -2,6 +2,22 @@
     Vampytest
 </h1>
 
+
+<div align="center">
+  <a>
+    <img src="https://img.shields.io/badge/stability-alpha-orange.svg?style=flat-square" alt="Stability" />
+  </a>
+  <a>
+    <img src="https://img.shields.io/badge/python-3.6 -- 3.11-blue?style=flat-square" alt="Python version" />
+  </a>
+  <a>
+    <img src="https://img.shields.io/badge/PyPy-Supported-gre?style=flat-square" alt="PyPy" />
+  </a>
+  <a href="https://pypi.org/project/vampytest/">
+    <img src="https://img.shields.io/badge/package-PyPi-blue.svg?style=flat-square" alt="PyPi" />
+  </a>
+</div>
+
 Vampytest is a testing framework that allows you, but is not limited to write relative import based tests.
 
 ---
