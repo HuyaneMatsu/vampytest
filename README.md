@@ -18,7 +18,7 @@
   </a>
 </div>
 
-Vampytest is a testing framework that allows you, but is not limited to, to write relative import-based tests.
+Vampytest is a testing framework that allows, but is not limited to, writing relative import based tests.
 
 ---
 
