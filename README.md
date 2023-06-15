@@ -2,11 +2,52 @@
     Vampytest
 </h1>
 
-Vampytest is a testing framework that allows you, but is not limited to write relative import based tests.
 
-> Note that the framework currently is in alpha stage. It can run tests but many features might be missing.
+<div align="center">
+  <a>
+    <img src="https://img.shields.io/badge/stability-alpha-orange.svg?style=flat-square" alt="Stability" />
+  </a>
+  <a>
+    <img src="https://img.shields.io/badge/python-3.6 -- 3.11-blue?style=flat-square" alt="Python version" />
+  </a>
+  <a>
+    <img src="https://img.shields.io/badge/PyPy-Supported-gre?style=flat-square" alt="PyPy" />
+  </a>
+  <a href="https://pypi.org/project/vampytest/">
+    <img src="https://img.shields.io/badge/package-PyPi-blue.svg?style=flat-square" alt="PyPi" />
+  </a>
+</div>
 
-<h1></h1>
+Vampytest is a testing framework that allows you, but is not limited to, to write relative import-based tests.
+
+---
+
+## Table of contents
+- [Introduction](#introduction)
+- [Installation](#installation)
+- [Writing tests](#writing-tests)
+- [Running tests](#running-tests)
+- [Features](#features)
+  - [Assertions](#assertions)
+    - [Equality assertions](#equality-assertions)
+    - [Boolean assertions](#boolean-assertions)
+    - [Container assertions](#container-assertions)
+    - [Identity assertions](#identity-assertions)
+    - [Exception assertions](#exception-assertions)
+    - [Type assertions](#type-assertions)
+    - [Reversed assertions](#reversed-assertions)
+  - [Parameterized tests](#parameterized-tests)
+  - [Returning and raising tests](#returning-and-raising-tests)
+  - [Skipping tests](#skipping-tests)
+  - [Reversing test results](#reversing-test-results)
+  - [Garbage collection](#garbage-collection)
+  - [Capturing output](#capturing-output)
+- [Advanced features](#advanced-features)
+  - [Testing environments](#testing-environments)
+
+---
+
+## Introduction
 
 Here are several advantages why you would want to use a relative import supporting testing framework such as vampytest:
 
@@ -27,7 +68,7 @@ Here are several advantages why you would want to use a relative import supporti
 - **Encourages modular and isolated testing**
 
     Relative import based testing promotes modular and isolated testing practices.
-    It encouraging the testing of individual units in isolation.
+    It's encouraging the testing of individual units in isolation.
     This isolation makes it easier to pinpoint issues, debug problems, and maintain the codebase.
     It also supports the principles of unit testing, where individual units of code are tested independently for their
     expected behavior.
@@ -52,7 +93,9 @@ Here are several advantages why you would want to use a relative import supporti
     Developers can directly use relative imports in their test code, resulting in a smoother transition to the
     testing framework.
 
-<h1></h1>
+<div align="right">[ <a href="#table-of-contents">↑ Back to top ↑</a> ]</div>
+
+---
 
 ### Installation
 
@@ -86,7 +129,7 @@ def test_subtraction():
 To check whether the actual behavior matches the expected behavior use `assert_...` functionalities such as `assert_eq`.
 Using python builtin options such as `assert` works as well, but the report will not be as detailed.
 
-### Running Tests
+### Running tests
 
 To run the tests, navigate to the directory where your project is located using the terminal.
 Then enter the following command:
@@ -102,6 +145,10 @@ To only run tests in a specified directory you can determine which directory to 
 ```sh
 python3 -m vampytest *project-name* *directory/sub_directory*
 ```
+
+<div align="right">[ <a href="#table-of-contents">↑ Back to top ↑</a> ]</div>
+
+---
 
 # Features
 
@@ -176,7 +223,7 @@ vampytest.assert_is_not(m, n)
 with vampytest.assert_raises(ValueError):
     raise ValueError
 
-# Asserts that the code inside the context manager raises an equal exception to the defined one.
+# Asserts that the code inside the context manager raises an equal exception as the defined one.
 with vampytest.assert_raises(ValueError('aya')):
     raise ValueError('aya')
 
@@ -214,6 +261,10 @@ vampytest.assert_eq(u, v, reverse = True)
 vampytest.assert_instance(w, str, reverse = True)
 ```
 
+<div align="right">[ <a href="#table-of-contents">↑ Back to top ↑</a> ]</div>
+
+---
+
 ### Parameterized tests
 
 Vampytest allows you to write parameterized tests that run the same test function with different sets of inputs.
@@ -230,7 +281,7 @@ def test_values_equal(value_0, value_1):
 ```
 
 Multiple inputs can also be parameterised with one decorator.
-This can be useful when the input is more complex and you might want to define a generator for it.
+This can be useful when the input is more complex, and you might want to define a generator for it.
 
 ```py3
 import vampytest
@@ -253,6 +304,10 @@ def test_values_identical(value_0, value_1):
 
 ```
 
+<div align="right">[ <a href="#table-of-contents">↑ Back to top ↑</a> ]</div>
+
+---
+
 ### Returning and raising tests
 
 With vampytest, it is possible to assert the output of tests.
@@ -272,7 +327,7 @@ def test_convert_to_int():
     return int('apple')
 ```
 
-These decorators pair well with parameterised tests.
+These decorators pair-up well with parameterised tests.
 
 ```py3
 import vampytest
@@ -324,8 +379,8 @@ def test_sum_if_lt_5(value_0, value_1):
     return output
 ```
 
-When using `call_from` not only the already mentioned `raising`, `returning`, `returning_transformed` options
-are available, but also new `returning_last` and `raising_last` too.
+When using `call_from`, aside from the already mentioned `raising`, `returning`, `returning_transformed` options,
+we'll also have `returning_last` and `raising_last` as available.
 As their name implies they take the last input parameter and expect it to be either raised or returned.
 
 ```py3
@@ -356,9 +411,13 @@ def test_get_item_fails(container, key):
     return container[key]
 ```
 
+<div align="right">[ <a href="#table-of-contents">↑ Back to top ↑</a> ]</div>
+
+---
+
 ### Skipping tests
 
-Vampytest provides decorators to skip or mark tests as skipped on certain conditions.
+Vampytest provides decorators to skip or mark tests as skipped in certain conditions.
 
 ```py3
 import vampytest
@@ -381,6 +440,10 @@ def test_repr():
     vampytest.assert_eq(instance.b(), 2)
 ```
 
+<div align="right">[ <a href="#table-of-contents">↑ Back to top ↑</a> ]</div>
+
+---
+
 ### Reversing test results
 
 If you have a test where you expect the assertions to fail they can be marked with the `reverse` decorator.
@@ -396,9 +459,13 @@ def test_addition():
     vampytest.assert_eq(9 + 10, 21)
 ```
 
+<div align="right">[ <a href="#table-of-contents">↑ Back to top ↑</a> ]</div>
+
+---
+
 ### Garbage collection
 
-By default garbage collection is not explicitly called between each test case since it could easily increase the
+By default, garbage collection is not explicitly called between each test case since it could easily increase the
 time required to run the tests by 10000% on large projects. By using `with_gc` it is possible to explicitly call
 garbage collection before or after a test.
 
@@ -411,7 +478,11 @@ def test_addition():
     vampytest.assert_eq(2 + 2, 4)
 ```
 
-### Output capturing
+<div align="right">[ <a href="#table-of-contents">↑ Back to top ↑</a> ]</div>
+
+---
+
+### Capturing output
 
 Capturing `stdout` and `stderr` in tests is useful in scenarios where you need to verify the content, format, or
 structure of the output generated by your code.
@@ -431,9 +502,13 @@ def test_print():
 ```
 
 Vampytest is capturing the `stdout` and `stderr` by default. If a test fails the captured output will show
-up on its report. If the test passes its captured output will only show up if all test passes. This is to help the
+up in its report. If the test passes its captured output will only show up if all tests passed. This is to help the
 developer focus on the failing tests firsts. This feature can be useful to help debug failing tests and to catch
 *warnings* and forgotten *print* calls.
+
+<div align="right">[ <a href="#table-of-contents">↑ Back to top ↑</a> ]</div>
+
+---
 
 # Advanced features
 
@@ -454,10 +529,10 @@ from vampytest.core.environment.constants import ENVIRONMENT_TYPE_GENERATOR
 class GenerativeReturnTestEnvironment(DefaultEnvironment):
     __slots__ = ()
     
-    # Define that this environment is only applicable for generators and propagates the tests' result like that
+    # Define that this environment is only applicable for generators and will propagate the tests' results like that
     identifier = ENVIRONMENT_TYPE_GENERATOR
     
-    # Run is called to run the test with the given parameters and excepts it to return a `ResultState`
+    # Run is called to run the test with the given parameters and we except it to return a `ResultState`
     def run(self, test, positional_parameters, keyword_parameters):
         try:
             returned_value = [*test(*positional_parameters, **keyword_parameters)]
@@ -469,7 +544,7 @@ class GenerativeReturnTestEnvironment(DefaultEnvironment):
         
         return ResultState(returned_value, raised_exception)
     
-    # Shutdown is run when we do not need this environment anymore. Can be useful when using global environments.
+    # Shutdown is called when we do not need this environment anymore. Can be useful when using global environments.
     def shutdown(self):
         pass
 
@@ -487,9 +562,9 @@ Vampytest only defines 2 environments by default: `default` and `scarletio corou
 - `scarletio coroutine` environment applies to coroutine tests.
     Vampytest assumes that every coroutine test is meant to run on a scarletio event loop.
 
-> For generators and coroutine generators there are no environment defined by default.
+> For generators and coroutine generators there is no environment defined by default.
 
-Scarletio based projects might use the the same event loop for their whole lifecycle. To use their event loop in
+Scarletio based projects might use the same event loop for their whole lifecycle. To use their event loop in
 the tests use a global environment for it:
 
 ```py3
@@ -518,3 +593,5 @@ from somewhere import EVENT_LOOP
 async def test_event_loop_same():
     vampytest.assert_is(EVENT_LOOP, get_event_loop())
 ```
+
+<div align="right">[ <a href="#table-of-contents">↑ Back to top ↑</a> ]</div>
