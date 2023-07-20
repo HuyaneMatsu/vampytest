@@ -1,5 +1,6 @@
 from vampytest import DefaultEnvironment, ResultState, in_environment, returning, set_file_environment
-from vampytest.core.environment.constants import ENVIRONMENT_TYPE_DEFAULT, ENVIRONMENT_TYPE_GENERATOR
+
+from ..environment.constants import ENVIRONMENT_TYPE_DEFAULT, ENVIRONMENT_TYPE_GENERATOR
 
 
 class GenerativeReturnTestEnvironment(DefaultEnvironment):

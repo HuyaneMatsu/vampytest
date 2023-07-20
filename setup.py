@@ -59,6 +59,7 @@ setup(
         'vampytest.core.events',
         'vampytest.core.file',
         'vampytest.core.helpers',
+        'vampytest.core.mocking',
         'vampytest.core.result',
         'vampytest.core.result.reports',
         'vampytest.core.runner',

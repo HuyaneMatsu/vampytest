@@ -5,6 +5,7 @@ from .event_handling import *
 from .events import *
 from .file import *
 from .helpers import *
+from .mocking import *
 from .result import *
 from .runner import *
 from .utils import *
@@ -23,6 +24,7 @@ __all__ = (
     *events.__all__,
     *file.__all__,
     *helpers.__all__,
+    *mocking.__all__,
     *result.__all__,
     *runner.__all__,
     *utils.__all__,
