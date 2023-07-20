@@ -87,10 +87,12 @@ def _mock_function_globals(to_mock, recursion, new_values):
     mocked : `FunctionType`
         The mocked function.
     """
-    return FunctionType(
+    mocked = FunctionType(
         to_mock.__code__,
         _mock_globals_dict(recursion, to_mock.__globals__, new_values),
         to_mock.__name__,
         to_mock.__defaults__,
         to_mock.__closure__,
     )
+    mocked.__kwdefaults__ = to_mock.__kwdefaults__
+    return mocked
