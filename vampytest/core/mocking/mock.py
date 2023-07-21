@@ -3,6 +3,28 @@ __all__ = ('mock_globals',)
 from types import FunctionType
 
 
+BUILTINS = {
+    'ArithmeticError', 'AssertionError', 'AttributeError', 'BaseException', 'BlockingIOError', 'BrokenPipeError',
+    'BufferError', 'BytesWarning', 'ChildProcessError', 'ConnectionAbortedError', 'ConnectionError',
+    'ConnectionRefusedError', 'ConnectionResetError', 'DeprecationWarning', 'EOFError', 'Ellipsis', 'EnvironmentError',
+    'Exception', 'False', 'FileExistsError', 'FileNotFoundError', 'FloatingPointError', 'FutureWarning',
+    'GeneratorExit', 'IOError', 'ImportError', 'ImportWarning', 'IndentationError', 'IndexError', 'InterruptedError',
+    'IsADirectoryError', 'KeyError', 'KeyboardInterrupt', 'LookupError', 'MemoryError', 'ModuleNotFoundError',
+    'NameError', 'None', 'NotADirectoryError', 'NotImplemented', 'NotImplementedError', 'OSError', 'OverflowError',
+    'PendingDeprecationWarning', 'PermissionError', 'ProcessLookupError', 'RecursionError', 'ReferenceError',
+    'ResourceWarning', 'RuntimeError', 'RuntimeWarning', 'StopAsyncIteration', 'StopIteration', 'SyntaxError',
+    'SyntaxWarning', 'SystemError', 'SystemExit', 'TabError', 'TimeoutError', 'True', 'TypeError', 'UnboundLocalError',
+    'UnicodeDecodeError', 'UnicodeEncodeError', 'UnicodeError', 'UnicodeTranslateError', 'UnicodeWarning',
+    'UserWarning', 'ValueError', 'Warning', 'ZeroDivisionError', '__import__', 'abs', 'all', 'any', 'ascii', 'bin',
+    'bool', 'breakpoint', 'bytearray', 'bytes', 'callable', 'chr', 'classmethod', 'compile', 'complex', 'copyright',
+    'credits', 'delattr', 'dict', 'dir', 'divmod', 'enumerate', 'eval', 'exec', 'exit', 'filter', 'float', 'format',
+    'frozenset', 'getattr', 'globals', 'hasattr', 'hash', 'help', 'hex', 'id', 'input', 'int', 'isinstance',
+    'issubclass', 'iter', 'len', 'license', 'list', 'locals', 'map', 'max', 'memoryview', 'min', 'next', 'object',
+    'oct', 'open', 'ord', 'pow', 'print', 'property', 'quit', 'range', 'repr', 'reversed', 'round', 'set', 'setattr',
+    'slice', 'sorted', 'staticmethod', 'str', 'sum', 'super', 'tuple', 'type', 'vars', 'zip'
+}
+
+
 def mock_globals(to_mock, recursion = -1, values = None, **keyword_parameters):
     """
     Mocks the globals of the given function.
@@ -53,18 +75,21 @@ def _mock_globals_dict(recursion, old_globals, new_values):
     mew_globals : `dict<str, object>`
     """
     new_globals = {}
-    
     recursion -= 1
     
+    # Add old values that are not present in the mocked ones
     for key, value in old_globals.items():
-        try:
-            value = new_values[key]
-        except KeyError:
+        if (key not in new_values):
             if recursion > 0:
                 if isinstance(value, FunctionType):
                     value = _mock_function_globals(value, recursion, new_values)
         
-        new_globals[key] = value
+            new_globals[key] = value
+    
+    # Mock values as required. We check them from both globals & builtins
+    for key, value in new_values.items():
+        if (key in old_globals.keys()) or (key in BUILTINS):
+            new_globals[key] = value
     
     return new_globals
 

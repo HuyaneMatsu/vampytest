@@ -1,6 +1,6 @@
 from datetime import datetime as DateTime
 
-from vampytest import assert_is, call_from
+from vampytest import assert_is, assert_true, call_from
 
 from ..mock import mock_globals
 
@@ -57,3 +57,17 @@ def test__mock_globals__keyword_default_not_lost():
     
     output = mocked()
     assert_is(output, sentinel)
+
+
+def d():
+    return isinstance(1, bool)
+
+
+def test__mock_globals__builtins():
+    """
+    Tests whether builtins are mocked when using `mock_globals`.
+    """
+    mocked = mock_globals(d, isinstance = lambda x, y: True)
+    
+    output = mocked()
+    assert_true(output)
