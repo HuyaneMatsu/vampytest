@@ -82,6 +82,15 @@ def _create_mocked_globals(potential_globals, recursion, old_globals, new_values
     new_globals = {}
     recursion -= 1
     
+    # There is a python error I cannot reproduce with simple tests, but apparently some shit tries to access
+    # `__builtins__` over actual globals
+    try:
+        builtins = old_globals['__builtins__']
+    except KeyError:
+        pass
+    else:
+        new_globals['__builtins__'] = builtins
+    
     for name in potential_globals:
         try:
             value = old_globals[name]

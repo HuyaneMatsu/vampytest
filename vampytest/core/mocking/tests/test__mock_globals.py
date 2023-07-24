@@ -46,7 +46,7 @@ def test__mock_globals(to_mock, recursion, values):
 
 def test__mock_globals__keyword_default_not_lost():
     """
-    Tests whether keyword defaults aren ot lost when using `mock_globals`.
+    Tests whether keyword defaults aren ot lost when using ``mock_globals``.
     """
     sentinel = object()
     
@@ -65,10 +65,20 @@ def d():
 
 def test__mock_globals__builtins():
     """
-    Tests whether builtins are mocked when using `mock_globals`.
+    Tests whether builtins are mocked when using ``mock_globals``.
     """
     mocked = mock_globals(d, isinstance = lambda x, y: True)
     
     output = mocked()
     
     assert_true(output)
+
+
+def test__mock_globals__builtins__no_error():
+    """
+    Tests whether builtins are still working after ``mock_globals`` call.
+    """
+    mocked = mock_globals(d)
+    
+    # We dont care about the output
+    mocked()
