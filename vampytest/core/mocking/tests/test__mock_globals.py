@@ -70,4 +70,5 @@ def test__mock_globals__builtins():
     mocked = mock_globals(d, isinstance = lambda x, y: True)
     
     output = mocked()
+    
     assert_true(output)
