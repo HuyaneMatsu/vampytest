@@ -127,31 +127,21 @@ def render_parameters_into(into, positional_parameters, keyword_parameters):
     -------
     into : `list` of `str`
     """
-    field_added = False
-    
     if (positional_parameters is not None):
         for parameter_value in positional_parameters:
-            if field_added:
-                into.append(', ')
-            else:
-                field_added = True
-            
+            into.append('\n    ')
             into.append(repr(parameter_value))
     
     
     if (keyword_parameters is not None):
         for (parameter_name, parameter_value) in keyword_parameters.items():
-            if field_added:
-                into.append(', ')
-            else:
-                field_added = True
-            
+            into.append('\n    ')
             into.append(parameter_name)
             into.append(' = ')
             into.append(repr(parameter_value))
     
-    if not field_added:
-        into.append('N/A')
+    if (positional_parameters is None) and (keyword_parameters is None):
+        into.append(' N/A')
     
     return into
 
@@ -173,7 +163,7 @@ def maybe_render_parameters_section_into(into, result):
     """
     final_call_state = result.handle.final_call_state
     if (final_call_state is not None) and final_call_state:
-        into.append('\n\nParameters: ')
+        into.append('\n\nParameters:')
         into = render_parameters_into(into, final_call_state.positional_parameters, final_call_state.keyword_parameters)
     
     return into
@@ -441,5 +431,133 @@ def render_report_output_into(into, result, report):
     into.append(create_break('-'))
     into.append('\n')
     into.append(report.output)
+    
+    return into
+
+
+def render_function_parameters_into(into, parameters):
+    """
+    Renders a function's parameters.
+    
+    Parameters
+    ----------
+    into : `list<str>`
+        Container to render into.
+    parameters : `list<Parameter>`
+        The parameter to render.
+    
+    Returns
+    -------
+    into : `list<str>`
+    """
+    previous = None
+    
+    for parameter in parameters:
+        if previous is not None:
+            if previous.is_positional_only():
+                if parameter.is_keyword_only():
+                    into.append('\n    /\n    *')
+                elif (not parameter.is_positional_only()):
+                    into.append('\n    /')
+            
+            elif previous.is_positional():
+                if parameter.is_keyword_only():
+                    into.append('\n    *')
+        
+        into.append('\n    ')
+        
+        # * or ** ?
+        if parameter.is_args():
+            into.append('*')
+        elif parameter.is_kwargs():
+            into.append('**')
+        
+        # name
+        into.append(parameter.name)
+        
+        # default
+        if parameter.has_default:
+            into.append(' = ')
+            into.append(repr(parameter.default))
+        
+        previous = parameter
+    
+    return into
+
+
+def render_unsatisfied_parameters_into(issue_parts, unsatisfied_parameters):
+    """
+    Renders the unsatisfied parameters.
+    
+    Parameters
+    ----------
+    into : `list<str>`
+        Container to render into.
+    parameters : `list<Parameter>`
+        The parameter to render.
+    
+    Returns
+    -------
+    into : `list<str>`
+    """
+    for parameter in unsatisfied_parameters:
+        issue_parts.append('\n    ')
+        issue_parts.append(parameter.name)
+    
+    return issue_parts
+
+
+def render_extra_parameters_into(issue_parts, extra_positional_parameters, extra_keyword_parameters):
+    if (extra_positional_parameters is not None):
+        for parameter_value in extra_positional_parameters:
+            issue_parts.append('\n    ')
+            issue_parts.append(repr(parameter_value))
+    
+    if (extra_keyword_parameters is not None):
+        for parameter_name, parameter_value in extra_keyword_parameters:
+            issue_parts.append('\n    ')
+            issue_parts.append(parameter_name)
+            issue_parts.append(' = ')
+            issue_parts.append(repr(parameter_value))
+    
+    return issue_parts
+
+
+def render_report_parameter_mismatch_into(into, result, report):
+    """
+    Renders parameter mismatch failure report.
+    
+    Parameter
+    ---------
+    into : `list` of `str`
+        List to render into.
+    result : ``Result``
+        The ran test.
+    report : ``ReportFailureParameterMismatch``
+        Report containing the failure information.
+    
+    Returns
+    -------
+    into : `list` of `str`
+    """
+    into = render_test_position_into(into, 'Parameter mismatch', COLOR_FAIL, result)
+    parameter_mismatch = report.parameter_mismatch
+    
+    into.append('\n\nFunction parameters:')
+    into = render_function_parameters_into(into, parameter_mismatch.parameters)
+    
+    into.append('\n\nParameters:')
+    into = render_parameters_into(into, parameter_mismatch.positional_parameters, parameter_mismatch.keyword_parameters)
+    
+    unsatisfied_parameters = parameter_mismatch.unsatisfied_parameters
+    if (unsatisfied_parameters is not None):
+        into.append('\n\nUnsatisfied function parameters:')
+        into = render_unsatisfied_parameters_into(into, unsatisfied_parameters)
+    
+    extra_positional_parameters = parameter_mismatch.extra_positional_parameters
+    extra_keyword_parameters = parameter_mismatch.extra_keyword_parameters
+    if (extra_positional_parameters is not None) or (extra_keyword_parameters is not None):
+        into.append('\n\nExtra parameters:')
+        into = render_parameters_into(into, extra_positional_parameters, extra_keyword_parameters)
     
     return into

@@ -536,13 +536,10 @@ class GenerativeReturnTestEnvironment(DefaultEnvironment):
     def run(self, test, positional_parameters, keyword_parameters):
         try:
             returned_value = [*test(*positional_parameters, **keyword_parameters)]
-        except BaseException as err:
-            returned_value = None
-            raised_exception = err
-        else:
-            raised_exception = None
+        except BaseException as raised_exception:
+            return ResultState().with_raise(raised_exception)
         
-        return ResultState(returned_value, raised_exception)
+        return ResultState().with_return(returned_value)
     
     # Shutdown is called when we do not need this environment anymore. Can be useful when using global environments.
     def shutdown(self):

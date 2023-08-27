@@ -1,6 +1,7 @@
 __all__ = ('TestFile', )
 
-import sys
+from sys import modules
+from types import FunctionType
 
 from scarletio import RichAttributeErrorBaseType
 
@@ -55,7 +56,10 @@ def is_test(name, value):
     if isinstance(value, WrapperBase):
         return value.has_bound_test()
     
-    return callable(value)
+    if isinstance(value, FunctionType):
+        return True
+    
+    return False
 
 
 def _test_case_sort_key(test_case):
@@ -249,7 +253,7 @@ class TestFile(RichAttributeErrorBaseType):
             self._load_failure = TestFileLoadFailure(self, err)
             return False
         
-        module = sys.modules[import_route]
+        module = modules[import_route]
         self._module = module
         return True
     

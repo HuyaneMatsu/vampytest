@@ -4,7 +4,7 @@ from time import sleep as sync_sleep
 
 from scarletio import copy_docs, EventThread
 
-from ..handle import ResultState
+from ..handling import ResultState
 
 from .constants import ENVIRONMENT_TYPE_COROUTINE
 from .default import DefaultEnvironment
@@ -84,7 +84,7 @@ class ScarletioCoroutineEnvironment(DefaultEnvironment):
         
         Parameters
         ----------
-        test : `callable`
+        test : `FunctionType`
             The test to call
         positional_parameters : `list` of `object`
             Positional parameters to call the test with.
@@ -98,13 +98,10 @@ class ScarletioCoroutineEnvironment(DefaultEnvironment):
         """
         try:
             returned_value = await test(*positional_parameters, **keyword_parameters)
-        except BaseException as err:
-            returned_value = None
-            raised_exception = err
-        else:
-            raised_exception = None
+        except BaseException as raised_exception:
+            return ResultState().with_raise(raised_exception)
         
-        return ResultState(returned_value, raised_exception)
+        return ResultState().with_return(returned_value)
     
     
     @copy_docs(DefaultEnvironment.__repr__)

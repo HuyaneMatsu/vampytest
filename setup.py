@@ -58,6 +58,7 @@ setup(
         'vampytest.core.event_handling.rendering_helpers',
         'vampytest.core.events',
         'vampytest.core.file',
+        'vampytest.core.handling',
         'vampytest.core.helpers',
         'vampytest.core.mocking',
         'vampytest.core.result',

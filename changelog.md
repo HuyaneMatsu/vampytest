@@ -1,6 +1,9 @@
-## 0.0.11 *\[2023-??-??\]*
+## 0.0.11 *\[2023-08-27\]*
 
 - Add `mock_globals`.
+- Now only `FunctionType` and `WrapperBase` instances can be tests.
+- Change `ResultState`'s structure. This is required, so a result can only have 1 state from now on.
+- Add new failure type `ReportFailureParameterMismatch`.
 
 ## 0.0.10 *\[2023-06-11\]*
 

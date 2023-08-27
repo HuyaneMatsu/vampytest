@@ -9,6 +9,7 @@ from .base import ContextBase
 
 AssertionException = include('AssertionException')
 Result = include('Result')
+ResultState = include('ResultState')
 
 
 class ContextCalling(ContextBase):
@@ -62,7 +63,10 @@ class ContextCalling(ContextBase):
     def exit(self, result_state):
         wrapper_calling = self.wrapper_calling
         
-        raised_exception = result_state.raised_exception
+        if (result_state is None) or (not result_state.is_raise()):
+            raised_exception = None
+        else:
+            raised_exception = result_state.result
         
         result = None
         
@@ -87,7 +91,7 @@ class ContextCalling(ContextBase):
                         raising_exceptions, raised_exception, raising_accept_subtypes, wrapper_calling.raising_where
                     ):
                         if (result_state is not None):
-                            result_state = result_state.with_exception(None)
+                            result_state = ResultState()
                     
                     else:
                         result = Result(
@@ -103,10 +107,10 @@ class ContextCalling(ContextBase):
                     result = Result(handle.case).with_handle(handle).with_exception(None, raised_exception, False)
                 
                 else:
-                    if (result_state is None):
+                    if (result_state is None) or (not result_state.is_return()):
                         returned_value = None
                     else:
-                        returned_value = result_state.returned_value
+                        returned_value = result_state.result
                     
                     returning_value = wrapper_calling.returning_value
                     

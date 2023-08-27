@@ -15,7 +15,7 @@ def get_function_environment_identifier(func):
     
     Parameters
     ----------
-    func : `callable`
+    func : `FunctionType`
         The function to check.
     
     Returns

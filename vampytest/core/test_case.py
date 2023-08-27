@@ -4,7 +4,7 @@ import reprlib
 
 from scarletio import RichAttributeErrorBaseType, WeakReferer
 
-from .handle import Handle
+from .handling import Handle
 from .helpers.hashing import hash_object
 from .result import Result
 from .wrappers import WrapperBase
@@ -20,7 +20,7 @@ class TestCase(RichAttributeErrorBaseType):
         The parent test file of the case.
     name : `str`
         The test's name.
-    test : `callable`, ``WrapperBase``
+    test : `FunctionType`, ``WrapperBase``
         The test itself, or the wrapped test.
     wrapper : `None`, ``WrapperBase``
         Wrappers containing the test if any.    
@@ -37,7 +37,7 @@ class TestCase(RichAttributeErrorBaseType):
             The parent test file.
         name : `str`
             The test's name.
-        test : `callable`, ``WrapperBase``
+        test : `FunctionType`, ``WrapperBase``
             The test itself, or the wrapped test.
         """
         if isinstance(test, WrapperBase):

@@ -3,7 +3,7 @@ __all__ = ('Result',)
 from scarletio import RichAttributeErrorBaseType, export
 
 from .reports import (
-    ReportFailureAsserting, ReportFailureRaising, ReportFailureReturning, ReportOutput
+    ReportFailureAsserting, ReportFailureParameterMismatch, ReportFailureRaising, ReportFailureReturning, ReportOutput
 )
 
 
@@ -225,6 +225,24 @@ class Result(RichAttributeErrorBaseType):
         self : `instance<type<self>>`
         """
         report = ReportFailureAsserting(assertion_exception)
+        self._add_report(report)
+        return self
+    
+    
+    def with_parameter_mismatch(self, parameter_mismatch):
+        """
+        Adds a parameter mismatch as a test result.
+        
+        Parameters
+        ----------
+        parameter_mismatch : ``ParameterMismatch``
+            The parameter mismatch to add.
+        
+        Returns
+        -------
+        self : `instance<type<self>>`
+        """
+        report = ReportFailureParameterMismatch(parameter_mismatch)
         self._add_report(report)
         return self
     

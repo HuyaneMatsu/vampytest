@@ -1,13 +1,15 @@
 __all__ = ()
 
-from ...result import ReportFailureAsserting, ReportFailureRaising, ReportFailureReturning
+from ...result import (
+    ReportFailureAsserting, ReportFailureParameterMismatch, ReportFailureRaising, ReportFailureReturning
+)
 
 from ..colors import COLOR_FAIL, COLOR_PATH
 from ..text_styling import style_text_into
 
 from .result_rendering import (
-    render_report_asserting_into, render_report_output_into, render_report_raising_into, render_report_returning_into,
-    render_report_reversed_into, render_wrapper_conflict_into
+    render_report_asserting_into, render_report_output_into, render_report_parameter_mismatch_into,
+    render_report_raising_into, render_report_returning_into, render_report_reversed_into, render_wrapper_conflict_into
 )
 
 
@@ -62,6 +64,9 @@ def write_result_failing(output_writer, result):
         elif isinstance(failure_report, ReportFailureReturning):
             message_parts = render_report_returning_into(message_parts, result, failure_report)
         
+        elif isinstance(failure_report, ReportFailureParameterMismatch):
+            message_parts = render_report_parameter_mismatch_into(message_parts, result, failure_report)
+            
         else:
             # No other case.
             return

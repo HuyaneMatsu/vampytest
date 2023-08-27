@@ -4,7 +4,7 @@ import vampytest
 # Section 0
 
 @vampytest.returning(True)
-def test_values_equal__section_0():
+def test__values_equal__section_0():
     return 2 == 2
 
 
@@ -17,7 +17,7 @@ def test_convert_to_int__section_0():
 @vampytest.returning(True)
 @vampytest.call_with(2, 2)
 @vampytest.call_with(3, 3)
-def test_values_equal__section_1(value_0, value_1):
+def test__values_equal__section_1(value_0, value_1):
     return value_0 == value_1
 
 

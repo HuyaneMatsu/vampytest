@@ -2,7 +2,7 @@ __all__ = ('DefaultEnvironment',)
 
 from scarletio import RichAttributeErrorBaseType
 
-from ..handle import ResultState
+from ..handling import ResultState
 
 from .constants import ENVIRONMENT_TYPE_DEFAULT
 
@@ -38,7 +38,7 @@ class DefaultEnvironment(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        test : `callable`
+        test : `FunctionType`
             The test to call
         positional_parameters : `list` of `object`
             Positional parameters to call the test with.
@@ -52,13 +52,10 @@ class DefaultEnvironment(RichAttributeErrorBaseType):
         """
         try:
             returned_value = test(*positional_parameters, **keyword_parameters)
-        except BaseException as err:
-            returned_value = None
-            raised_exception = err
-        else:
-            raised_exception = None
+        except BaseException as raised_exception:
+            return ResultState().with_raise(raised_exception)
         
-        return ResultState(returned_value, raised_exception)
+        return ResultState().with_return(returned_value)
     
     
     def shutdown(self):

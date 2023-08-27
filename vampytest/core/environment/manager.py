@@ -42,7 +42,7 @@ class EnvironmentManager(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        test : `callable`
+        test : `FunctionType`
             Test function.
         
         Returns

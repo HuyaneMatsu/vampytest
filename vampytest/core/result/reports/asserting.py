@@ -34,7 +34,7 @@ class ReportFailureAsserting(ReportBase):
     def __repr__(self):
         repr_parts = ['<', self.__class__.__name__]
         
-        repr_parts.append(' assertion')
+        repr_parts.append(' assertion = ')
         repr_parts.append(repr(self.assertion_exception))
         
         repr_parts.append('>')

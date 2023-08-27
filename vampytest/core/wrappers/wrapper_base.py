@@ -1,5 +1,7 @@
 __all__ = ('WrapperBase', )
 
+from types import FunctionType
+
 from scarletio import RichAttributeErrorBaseType, include
 
 from ..helpers.hashing import hash_object
@@ -14,7 +16,7 @@ class WrapperBase(RichAttributeErrorBaseType):
     
     Attributes
     ----------
-    wrapped : `None`, `object`
+    wrapped : `None`, ``WrapperBase``, `FunctionType`
         The wrapped test.
     """
     __slots__ = ('wrapped', )
@@ -48,7 +50,7 @@ class WrapperBase(RichAttributeErrorBaseType):
             Wrapper already called.
         """
         if to_wrap is None:
-            raise RuntimeError(f'Cannot wrap `None`; self={self!r}.')
+            raise RuntimeError(f'Cannot wrap `None`; self = {self!r}.')
         
         
         wrapped = self.wrapped
@@ -79,6 +81,12 @@ class WrapperBase(RichAttributeErrorBaseType):
         
         if (wrapped is not None):
             raise RuntimeError(f'Wrapped already wrapped; self = {self!r}, to_wrap = {to_wrap!r}.')
+        
+        
+        if not isinstance(to_wrap, FunctionType):
+            raise TypeError(
+                f'Only functions and other wrappers can be wrapped; Got self = {self!r}; to_wrap = {to_wrap!r}.'
+            )
         
         self.wrapped = to_wrap
         return self

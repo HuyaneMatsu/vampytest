@@ -26,7 +26,7 @@ class ReportOutput(ReportBase):
     
     def __repr__(self):
         """Returns the report's representation."""
-        return ''.join(['<', self.__class__.__name__, 'output = ', repr(self.output), '>'])
+        return ''.join(['<', self.__class__.__name__, ' output = ', repr(self.output), '>'])
     
     
     @copy_docs(ReportBase.is_informal)
