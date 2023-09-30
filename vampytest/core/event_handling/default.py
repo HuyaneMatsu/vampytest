@@ -1,17 +1,21 @@
 __all__ = ('create_default_event_handler_manager',)
 
-from scarletio import RichAttributeErrorBaseType
+from scarletio import RichAttributeErrorBaseType, export
 
-from ..events import FileLoadDoneEvent, FileRegistrationDoneEvent, FileTestingDoneEvent, TestDoneEvent, TestingEndEvent
-
+from ..events import (
+    FileLoadDoneEvent, FileRegistrationDoneEvent, FileTestingDoneEvent, SourceLoadFailureEvent, TestDoneEvent,
+    TestingEndEvent
+)
 from .base import EventHandlerManager
 from .colors import COLOR_FAIL, COLOR_PASS, COLOR_SKIP, COLOR_UNKNOWN
 from .default_output_writer import OutputWriter
+from .rendering_helpers.load_failure_rendering import render_load_failure_exception
 from .rendering_helpers.result_modifier_parameters import build_result_modifier_parameters
 from .rendering_helpers.writers import write_load_failure, write_result_failing, write_result_informal
 from .text_styling import style_text
 
 
+@export
 def create_default_event_handler_manager():
     """
     Creates a default event handler manager if non is given.
@@ -28,6 +32,7 @@ def create_default_event_handler_manager():
     event_handler_manager.events(output_formatter.test_done)
     event_handler_manager.events(output_formatter.file_testing_done)
     event_handler_manager.events(output_formatter.testing_end)
+    event_handler_manager.events(output_formatter.source_load_failure)
     
     return event_handler_manager
 
@@ -39,7 +44,7 @@ class DefaultEventFormatter(RichAttributeErrorBaseType):
     Attributes
     ----------
     rendered_entries : `set` of ``FileSystemEntry``
-        The rendered entries by the
+        The  already rendered file system entries.
     output_writer : ``OutputWriter``
         The output writer to write the output with.
     """
@@ -248,4 +253,20 @@ class DefaultEventFormatter(RichAttributeErrorBaseType):
         if load_failures:
             output_writer.write(
                 style_text(f' | {len(load_failures)} files failed to load', COLOR_FAIL))
+        output_writer.end_line()
+    
+    
+    def source_load_failure(self, event: SourceLoadFailureEvent):
+        """
+        Called when a source is failed to load.
+        
+        Parameters
+        ----------
+        event : ``TestDoneEvent``
+            The dispatched event.
+        """
+        output_writer = self.output_writer
+        output_writer.write_line(f'Failed to import {event.source} from {event.context.runner._source_directory}')
+        output_writer.write_break_line()
+        output_writer.write(render_load_failure_exception(event.exception))
         output_writer.end_line()

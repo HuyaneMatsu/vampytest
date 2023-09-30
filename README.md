@@ -135,15 +135,23 @@ To run the tests, navigate to the directory where your project is located using 
 Then enter the following command:
 
 ```sh
-python3 -m vampytest *project-name*
+python3 -m vampytest
 ```
 
-Replace `*project-name*` with your project's name.
-
-To only run tests in a specified directory you can determine which directory to scan.
+If the project has a setup file, it will detect which are your project's directories and import its files beforehand.
+If you do not have a file like that, you might want to navigate into your project or pass the target path where the
+tests should be loaded from:
 
 ```sh
-python3 -m vampytest *project-name* *directory/sub_directory*
+python3 -m vampytest *directory*
+```
+
+By navigating into a specific directory it is possible to limit the test lookup only to the directories / files under
+it.
+The same can be achieved by passing the path to the location.
+
+```sh
+python3 -m vampytest *directory/sub_directory/etc*
 ```
 
 <div align="right">[ <a href="#table-of-contents">↑ Back to top ↑</a> ]</div>

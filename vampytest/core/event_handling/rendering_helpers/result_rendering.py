@@ -255,7 +255,7 @@ def render_wrapper_conflict_into(into, result):
     
     return into
 
-    
+
 def ignore_invoke_test_frame(file_name, name, line_number, line):
     """
     Ignores the frame where the test is called from.
@@ -546,7 +546,7 @@ def render_report_parameter_mismatch_into(into, result, report):
     into.append('\n\nFunction parameters:')
     into = render_function_parameters_into(into, parameter_mismatch.parameters)
     
-    into.append('\n\nParameters:')
+    into.append('\n\nGiven Parameters:')
     into = render_parameters_into(into, parameter_mismatch.positional_parameters, parameter_mismatch.keyword_parameters)
     
     unsatisfied_parameters = parameter_mismatch.unsatisfied_parameters

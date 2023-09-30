@@ -6,6 +6,33 @@ from os.path import join as join_paths, isdir as is_directory, isfile as is_file
 from scarletio import RichAttributeErrorBaseType, WeakReferer
 
 
+PYTHON_EXTENSIONS = ('.py', '.pyd', '.pyc', '.so')
+
+def is_python_file(path):
+    """
+    Returns whether the given path refers to a python file.
+    
+    Parameters
+    ----------
+    path : `str`
+        Path to the file.
+    
+    Returns
+    -------
+    path : `str`
+    """
+    if is_file(path):
+        return path
+    
+    if not path.endswith(PYTHON_EXTENSIONS):
+        for extension in PYTHON_EXTENSIONS:
+            file_path = path + extension
+            if is_file(file_path):
+                return file_path
+    
+    return None
+
+
 class FileSystemEntry(RichAttributeErrorBaseType):
     __slots__ = (
         '__weakref__', '_directory', '_directory_path', '_entries', '_full_path', '_name', '_parent_reference',
@@ -20,15 +47,17 @@ class FileSystemEntry(RichAttributeErrorBaseType):
         ----------
         path : `str`
             Path to the entry's directory.
-        name : `str`
+        name : `str | None`
             The name of the entry.
-        limit_lookup_to : `None`, `list` of `str`
+        limit_lookup_to : `None | list<str>`
             Limits sub-directory lookups to only the given path.
+        
+        Returns
+        -------
+        entry : `None | instance<cls>`
         """
         full_path = join_paths(path, name)
         directory = is_directory(full_path)
-        if (not directory) and (not is_file(full_path)):
-            return None
         
         entries = None
         
@@ -51,6 +80,12 @@ class FileSystemEntry(RichAttributeErrorBaseType):
                         entries = []
                     
                     entries.append(entry)
+        else:
+            file_path = is_python_file(full_path)
+            if file_path is None:
+                return None
+            
+            full_path = file_path
         
         self = object.__new__(cls)
         self._directory = directory
@@ -80,7 +115,7 @@ class FileSystemEntry(RichAttributeErrorBaseType):
         """Returns the entry's representation."""
         repr_parts = ['<', self.__class__.__name__]
         
-        repr_parts.append(' path=')
+        repr_parts.append(' path = ')
         repr_parts.append(repr(self.get_path()))
         
         repr_parts.append(', entry count: ')

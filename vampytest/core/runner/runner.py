@@ -2,38 +2,35 @@ __all__ = ('TestRunner', 'run_tests_in')
 
 import sys
 from functools import partial as partial_func
-from os.path import isfile as is_file, split as split_paths
 from sys import path as system_paths, modules as system_modules
 
-from scarletio import RichAttributeErrorBaseType, render_exception_into
+from scarletio import RichAttributeErrorBaseType, include, render_exception_into
 
 from ... import __package__ as PACKAGE_NAME
 
 from ..environment import EnvironmentManager
 from ..events import (
-    FileLoadDoneEvent, FileRegistrationEvent, FileRegistrationDoneEvent, FileTestingDoneEvent, TestDoneEvent,
-    TestingEndEvent, TestingStartEvent
+    FileLoadDoneEvent, FileRegistrationEvent, FileRegistrationDoneEvent, FileTestingDoneEvent, SourceLoadFailureEvent,
+    TestDoneEvent, TestingEndEvent, TestingStartEvent
 )
-from ..event_handling import create_default_event_handler_manager
 from ..file import FileSystemEntry, iter_collect_test_files_in
 
 from .context import RunnerContext
 
 
+create_default_event_handler_manager = include('create_default_event_handler_manager')
+
+
 def setup_test_library_import():
     """
     Setups test directory import if not on path instead running it relatively.
-    
-    Returns
-    -------
-    added_system_path : `None`, `str`
-        Returns the added system path if any.
     """
     split = PACKAGE_NAME.split('.')
     if len(split) <= 1:
         return None
     
     module = __import__(PACKAGE_NAME)
+    
     for directory_name in split[1:]:
         module = module.__dict__[directory_name]
     
@@ -120,10 +117,12 @@ class TestRunner(RichAttributeErrorBaseType):
     """
     Attributes
     ----------
-    _base_path : `str`
-        The path to run tests from.
-    _path_parts : `list` of `str`   
+    _path_parts : `None | list<str>`
         Added path parts to specify from which which directory we want to collect the tests from.
+    _source_directory : `str`
+        The path to run tests from.
+    sources : `set<str>`
+        Sources to import before executing any test.
     _stopped : `bool`
         Whether testing is stopped.
     _teardown_callbacks : `None`, `list` of `callable`
@@ -140,27 +139,33 @@ class TestRunner(RichAttributeErrorBaseType):
     - ``.add_teardown_callback``
     """
     __slots__ = (
-        '_base_path', '_path_parts', '_stopped', '_teardown_callbacks', 'environment_manager', 'event_handler_manager'
+        '_path_parts', '_source_directory', '_sources', '_stopped', '_teardown_callbacks', 'environment_manager',
+        'event_handler_manager'
     )
     
-    def __new__(cls, base_path, path_parts = None, *, environment_manager = None, event_handler_manager = None):
+    def __new__(
+        cls, source_directory, sources, path_parts = None, *, environment_manager = None, event_handler_manager = None
+    ):
         """
         Parameters
         ----------
-        base_path : `str`
+        source_directory : `str`
             The path to run tests from.
-        path_parts : `None`, `list` of `str` = `None`, Optional
+        sources : `set<str>`
+            Sources to import before executing any test.
+        path_parts : `None | list<str>` = `None`, Optional
             Added path parts to specify from which which directory we want to collect the tests from.
         environment_manager : `None`, ``EnvironmentManager`` = `None`, Optional (Keyword only)
             Testing environment manager.
         event_handler_manager : `None`, ``EventHandlerManager`` = `None`, Optional (Keyword only)
             Event handler container.
         """
-        if path_parts is None:
-            path_parts = []
-        else:
-            path_parts = path_parts.copy()
-        
+        if (path_parts is not None):
+            if path_parts:
+                path_parts = path_parts.copy()
+            else:
+                path_parts = None
+            
         if environment_manager is None:
             environment_manager = EnvironmentManager()
         
@@ -170,8 +175,9 @@ class TestRunner(RichAttributeErrorBaseType):
             event_handler_manager = create_default_event_handler_manager()
         
         self = object.__new__(cls)
-        self._base_path = base_path
         self._path_parts = path_parts
+        self._source_directory = source_directory
+        self._sources = sources
         self._stopped = False
         self._teardown_callbacks = None
         self.environment_manager = environment_manager
@@ -183,24 +189,16 @@ class TestRunner(RichAttributeErrorBaseType):
         """
         Setups the test dependencies.
         """
-        base_path = self._base_path
-        path_parts = self._path_parts
+        source_directory = self._source_directory
         
-        if is_file(base_path):
-            base_path, file_name = split_paths(base_path)
-            path_parts.insert(0, file_name)
-        
-        if base_path in system_paths:
-            base_path_in_system_paths = True
+        if source_directory in system_paths:
+            source_directory_in_system_paths = True
         else:
-            system_paths.append(base_path)
-            base_path_in_system_paths = False
+            system_paths.append(source_directory)
+            source_directory_in_system_paths = False
         
-        self._base_path = base_path
-        self._path_parts = path_parts
-        
-        if base_path_in_system_paths:
-            self.add_teardown_callback(partial_func(_remove_from_system_path_callback, base_path))
+        if not source_directory_in_system_paths:
+            self.add_teardown_callback(partial_func(_remove_from_system_path_callback, source_directory))
         
         setup_test_library_import()
     
@@ -251,19 +249,36 @@ class TestRunner(RichAttributeErrorBaseType):
         ------
         event : ``EventBase``
         """
-
         try:
             # Setup
             self._setup()
             
-            context = RunnerContext(self, FileSystemEntry(*split_paths(self._base_path), self._path_parts))
+            # Build context.
+            path_parts = self._path_parts
+            if path_parts is None:
+                file_system_entries = [
+                    FileSystemEntry(self._source_directory, source, None) for source in self._sources
+                ]
+            else:
+                file_system_entries = [FileSystemEntry(self._source_directory, path_parts[0], path_parts[1:])]
+            
+            context = RunnerContext(self, file_system_entries)
+            
+            # Import plugins.
+            for source in self._sources:
+                try:
+                    __import__(source)
+                except BaseException as err:
+                    yield SourceLoadFailureEvent(context, source, err)
+                    return
             
             yield TestingStartEvent(context)
             
             # Collect test files
-            for test_file in iter_collect_test_files_in(context.file_system_entry):
-                context.register_file(test_file)
-                yield FileRegistrationEvent(context, test_file)
+            for file_system_entry in context.file_system_entries:
+                for test_file in iter_collect_test_files_in(file_system_entry):
+                    context.register_file(test_file)
+                    yield FileRegistrationEvent(context, test_file)
             
             yield FileRegistrationDoneEvent(context)
             
@@ -312,6 +327,11 @@ class TestRunner(RichAttributeErrorBaseType):
             for event_handler in event_handler_manager.iter_handlers_for_event(event):
                 try:
                     event_handler(event)
+                except (KeyboardInterrupt, SystemExit):
+                    sys.stderr.write('Shutting down test runner...\n')
+                    sys.stderr.flush()
+                    raise
+                
                 except BaseException as err:
                     sys.stderr.write(_render_event_exception(event_handler, event, err))
             
@@ -326,15 +346,18 @@ class TestRunner(RichAttributeErrorBaseType):
         self._stopped = True
 
 
-def run_tests_in(base_path, path_parts):
+def run_tests_in(source_directory, sources, test_collection_route):
     """
-    Runs tests from the given `base_path` and collects them the added `path_parts`.
+    Runs tests from the given `source_directory` and collects them from the given `test_collection_route`.
+    Or from `sources` if not specified.
     
     Parameters
     ----------
-    base_path : `str`
-        The path to run tests from.
-    path_parts : `list` of `str`
+    source_directory : `str`
+        The path to import the sources from.
+    sources : `set<str>`
+        Sources to import before executing any test.
+    test_collection_route : `None | list<str>`
         Added path parts to specify from which which directory we want to collect the tests from.
     """
-    TestRunner(base_path, path_parts).run()
+    TestRunner(source_directory, sources, test_collection_route).run()

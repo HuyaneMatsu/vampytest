@@ -1,3 +1,11 @@
+## 0.0.12 *\[2023-09-30\]*
+
+- Add new `SourceLoadFailureEvent`.
+- The first command line parameter is now auto detected on a smart way.
+    It tries to resolve the current library we are at, or we are looking at.
+- Imports the tested library before running any tests.
+    This means wont all test fail because of a failing import, instead no tests will run.
+
 ## 0.0.11 *\[2023-08-27\]*
 
 - Add `mock_globals`.

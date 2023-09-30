@@ -11,6 +11,8 @@ class RunnerContext(RichAttributeErrorBaseType):
     ----------
     _registered_files : `None`, `list` of ``TestFile``
         The collected test files.
+    file_system_entries : `list<FileSystemEntry>`
+        The file system entries built with the test runner's settings.
     runner : ``TestRunner``
         The respective test runner running tests.
     
@@ -51,22 +53,22 @@ class RunnerContext(RichAttributeErrorBaseType):
     
         - ``.register_file``
     """
-    __slots__ = ('_registered_files', 'file_system_entry', 'runner',)
+    __slots__ = ('_registered_files', 'file_system_entries', 'runner',)
     
-    def __new__(cls, runner, file_system_entry):
+    def __new__(cls, runner, file_system_entries):
         """
         Creates a new runner context.
         
         Parameters
         ----------
-        file_system_entry : ``FileSystemEntry`
-            The file system entry built with the test runner's settings.
         runner : ``TestRunner``
             The respective test runner running tests.
+        file_system_entries : `list<FileSystemEntry>`
+            The file system entries built with the test runner's settings.
         """
         self = object.__new__(cls)
         self._registered_files = None
-        self.file_system_entry = file_system_entry
+        self.file_system_entries = file_system_entries
         self.runner = runner
         return self
     
