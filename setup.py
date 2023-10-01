@@ -40,6 +40,11 @@ setup(
         'Topic :: Software Development :: Libraries :: Python Modules',
     ],
     description = 'A vampy test framework',
+    entry_points = {
+        'console_scripts': [
+            'vampytest = vampytest.__main__:__main__'
+        ],
+    },
     include_package_data = True,
     install_requires = [
         'scarletio',

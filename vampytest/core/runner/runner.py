@@ -2,7 +2,8 @@ __all__ = ('TestRunner', 'run_tests_in')
 
 import sys
 from functools import partial as partial_func
-from sys import path as system_paths, modules as system_modules
+from os import getcwd as get_current_working_directory
+from os.path import sep as PATH_SEPARATOR
 
 from scarletio import RichAttributeErrorBaseType, include, render_exception_into
 
@@ -34,8 +35,24 @@ def setup_test_library_import():
     for directory_name in split[1:]:
         module = module.__dict__[directory_name]
     
-    system_modules[split[-1]] = module
+    sys.modules[split[-1]] = module
 
+
+def _add_to_system_path_callback(path, runner):
+    """
+    Removes the given path from `sys.path`.
+    
+    Parameters
+    ----------
+    path : `str`
+        The path to remove.
+    runner : ``TestRunner``
+        The respective test runner.
+    """
+    if path not in sys.path:
+        sys.path.append(path)
+        
+    
 
 def _remove_from_system_path_callback(path, runner):
     """
@@ -49,7 +66,7 @@ def _remove_from_system_path_callback(path, runner):
         The respective test runner.
     """
     try:
-        system_paths.remove(path)
+        sys.path.remove(path)
     except ValueError:
         pass
 
@@ -189,16 +206,36 @@ class TestRunner(RichAttributeErrorBaseType):
         """
         Setups the test dependencies.
         """
+        # Add source directory to sys.path if not there
         source_directory = self._source_directory
         
-        if source_directory in system_paths:
+        if source_directory in sys.path:
             source_directory_in_system_paths = True
         else:
-            system_paths.append(source_directory)
+            sys.path.append(source_directory)
             source_directory_in_system_paths = False
         
         if not source_directory_in_system_paths:
             self.add_teardown_callback(partial_func(_remove_from_system_path_callback, source_directory))
+        
+        # Remove working directory from sys.path if under source directory
+        working_directory = get_current_working_directory()
+        if (
+            working_directory in sys.path and
+            len(working_directory) > len(source_directory) and
+            working_directory.startswith(source_directory) and
+            working_directory[len(source_directory)] == PATH_SEPARATOR
+        ):
+            working_directory_under_source = True
+            try:
+                sys.path.remove(working_directory)
+            except ValueError:
+                pass
+        else:
+            working_directory_under_source = False
+        
+        if not working_directory_under_source:
+            self.add_teardown_callback(partial_func(_add_to_system_path_callback, working_directory))
         
         setup_test_library_import()
     

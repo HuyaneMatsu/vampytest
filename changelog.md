@@ -1,4 +1,14 @@
+## 0.0.13 *\[2023-10-01\]*
+
+#### Improvements
+
+- Remove current working directory from `sys.path` in case, we are executing from inside of a library.
+    This caused confused imports.
+- Add cli entry point.
+
 ## 0.0.12 *\[2023-09-30\]*
+
+#### Improvements
 
 - Add new `SourceLoadFailureEvent`.
 - The first command line parameter is now auto detected on a smart way.
@@ -7,6 +17,8 @@
     This means wont all test fail because of a failing import, instead no tests will run.
 
 ## 0.0.11 *\[2023-08-27\]*
+
+#### Improvements
 
 - Add `mock_globals`.
 - Now only `FunctionType` and `WrapperBase` instances can be tests.

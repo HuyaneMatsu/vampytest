@@ -461,10 +461,9 @@ def get_source_and_target(parameters, index):
     # check current
     if source_directory is None:
         if is_file(base_path):
-            split = split_path(base_path[-1])
+            split = split_path(base_path)
             source_directory = split[0]
             sources = {split_extension(split[1])[0]}
-        
         else:
             if errors is None:
                 errors = []

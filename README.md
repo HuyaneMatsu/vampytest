@@ -135,7 +135,7 @@ To run the tests, navigate to the directory where your project is located using 
 Then enter the following command:
 
 ```sh
-python3 -m vampytest
+vampytest
 ```
 
 If the project has a setup file, it will detect which are your project's directories and import its files beforehand.
@@ -143,7 +143,7 @@ If you do not have a file like that, you might want to navigate into your projec
 tests should be loaded from:
 
 ```sh
-python3 -m vampytest *directory*
+vampytest *directory*
 ```
 
 By navigating into a specific directory it is possible to limit the test lookup only to the directories / files under
@@ -151,8 +151,10 @@ it.
 The same can be achieved by passing the path to the location.
 
 ```sh
-python3 -m vampytest *directory/sub_directory/etc*
+vampytest *directory/sub_directory/etc*
 ```
+
+> Note: To test vampytest itself `vampytest` command wont work. Use `python3 -m vampytest` instead.
 
 <div align="right">[ <a href="#table-of-contents">↑ Back to top ↑</a> ]</div>
 
