@@ -193,7 +193,7 @@ class TestFile(RichAttributeErrorBaseType):
         """Returns the representation of a test file."""
         repr_parts = ['<', self.__class__.__name__]
         
-        repr_parts.append(' path=')
+        repr_parts.append(' path = ')
         repr_parts.append(get_short_path_repr(self.path))
         
         repr_parts.append('>')

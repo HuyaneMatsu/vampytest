@@ -42,12 +42,12 @@ class WrapperConflict(RichAttributeErrorBaseType):
         """Returns the wrapper conflict's representation."""
         repr_parts = ['<', self.__class__.__name__]
         
-        repr_parts.append(' wrapper_0=')
+        repr_parts.append(' wrapper_0 = ')
         repr_parts.append(repr(self.wrapper_0))
         
         wrapper_1 = self.wrapper_1
         if (wrapper_1 is not None):
-            repr_parts.append(', wrapper_1=')
+            repr_parts.append(', wrapper_1 = ')
             repr_parts.append(repr(self.wrapper_1))
         
         reason = self.reason

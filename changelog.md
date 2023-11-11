@@ -1,3 +1,9 @@
+## 0.0.14 *\[2023-11-11\]*
+
+#### Improvements
+
+- Now its checked whether every dependency is satisfied before importing the framework.
+
 ## 0.0.13 *\[2023-10-01\]*
 
 #### Improvements
