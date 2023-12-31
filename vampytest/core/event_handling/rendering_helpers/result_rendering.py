@@ -256,20 +256,14 @@ def render_wrapper_conflict_into(into, result):
     return into
 
 
-def ignore_invoke_test_frame(file_name, name, line_number, line):
+def ignore_invoke_test_frame(frame):
     """
     Ignores the frame where the test is called from.
     
     Parameters
     ----------
-    file_name : `str`
-        The frame's respective file's name.
-    name : `str`
-        The frame's respective function's name.
-    line_number : `int`
-        The line's index where the exception occurred.
-    line : `str`
-        The frame's respective stripped line.
+    frame : ``FrameProxyBase``
+        The frame to check.
     
     Returns
     -------
@@ -277,6 +271,10 @@ def ignore_invoke_test_frame(file_name, name, line_number, line):
         Whether the frame should be shown.
     """
     should_show_frame = True
+    
+    file_name = frame.file_name
+    name = frame.name
+    line = frame.line
     
     if file_name == VAMPYTEST_ENVIRONMENT_DEFAULT_FILE_PATH:
         if name == 'run':

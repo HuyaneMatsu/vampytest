@@ -71,20 +71,14 @@ def _remove_from_system_path_callback(path, runner):
         pass
 
 
-def _ignore_test_call_frame(file_name, name, line_number, line):
+def _ignore_test_call_frame(frame):
     """
     Ignores test runner frames when rendering event handler exception
     
     Parameters
     ----------
-    file_name : `str`
-        The frame's respective file's name.
-    name : `str`
-        The frame's respective function's name.
-    line_number : `int`
-        The line's index where the exception occurred.
-    line : `str`
-        The frame's respective stripped line.
+    frame : ``FrameProxyBase``
+        The frame to check.
     
     Returns
     -------
@@ -92,6 +86,10 @@ def _ignore_test_call_frame(file_name, name, line_number, line):
         Whether the frame should be shown.
     """
     should_show_frame = True
+    
+    file_name = frame.file_name
+    name = frame.name
+    line = frame.line
     
     if file_name == __file__:
         if name == 'run':
@@ -125,7 +123,7 @@ def _render_event_exception(event_handler, event, err):
         '\n\n'
     ]
     
-    render_exception_into(err, exception_message_parts, filter=_ignore_test_call_frame)
+    render_exception_into(err, exception_message_parts, filter = _ignore_test_call_frame)
     
     return ''.join(exception_message_parts)
 

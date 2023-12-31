@@ -7,20 +7,14 @@ from scarletio import RichAttributeErrorBaseType, render_exception_into
 from .test_file import __file__ as VAMPYTEST_TEST_FILE_PATH
 
 
-def _ignore_module_import_frame(file_name, name, line_number, line):
+def _ignore_module_import_frame(frame):
     """
     Ignores the frame, where the test file was imported.
     
     Parameters
     ----------
-    file_name : `str`
-        The frame's respective file's name.
-    name : `str`
-        The frame's respective function's name.
-    line_number : `int`
-        The line's index where the exception occurred.
-    line : `str`
-        The frame's respective stripped line.
+    frame : ``frameProxyBase``
+        The frame to check.
     
     Returns
     -------
@@ -28,6 +22,10 @@ def _ignore_module_import_frame(file_name, name, line_number, line):
         Whether the frame should be shown.
     """
     should_show_frame = True
+    
+    file_name = frame.file_name
+    name = frame.name
+    line = frame.line
     
     if file_name == VAMPYTEST_TEST_FILE_PATH:
         if name == '_try_load_module':

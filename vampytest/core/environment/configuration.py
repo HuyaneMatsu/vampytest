@@ -25,7 +25,7 @@ def _set_environment_by_scope(environment, scope, detail):
     ----------
     environment : ``Environment``
         The environment to store.
-    scope : `inŧ`
+    scope : `int`
         The scope of the storage.
     detail : `str`
         Additional detail for lookup.
