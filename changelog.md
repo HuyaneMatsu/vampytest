@@ -1,3 +1,9 @@
+## 0.0.16 *\[2023-12-31\]*
+
+#### Bug fixes
+
+- Fix `AttributeError` in an incorrectly updated frame filter.
+
 ## 0.0.15 *\[2023-12-31\]*
 
 #### Improvements

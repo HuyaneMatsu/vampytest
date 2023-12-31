@@ -21,7 +21,7 @@ def ignore_invoke_test_frame(frame):
     """
     should_show_frame = True
     
-    file_name = frame.frame
+    file_name = frame.file_name
     name = frame.name
     line = frame.line
     
