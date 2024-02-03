@@ -63,11 +63,16 @@ class ScarletioCoroutineEnvironment(DefaultEnvironment):
             if create_event_loop:
                 event_loop = EventThread(daemon = True, name = 'scarletio.run', start_later = False)
             
-            return event_loop.run(
-                self._run_async(test, positional_parameters, keyword_parameters),
-                timeout = self.timeout,
-            )
-        
+            try:
+                return event_loop.run(
+                    self._run_async(test, positional_parameters, keyword_parameters),
+                    timeout = self.timeout,
+                )
+            except KeyboardInterrupt as exception:
+                # In case it is frozen lets provide a better output. Better than nothing.
+                raise KeyboardInterrupt(
+                    f'`{type(self).__name__}.run` interrupted while running {test!r}.'
+                ) from exception
         finally:
             if create_event_loop:
                 if (event_loop is not None):

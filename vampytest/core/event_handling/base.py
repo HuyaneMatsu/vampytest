@@ -51,7 +51,7 @@ class EventHandlerManager(RichAttributeErrorBaseType):
             if parameter.is_keyword_only() or parameter.is_args() or parameter.is_kwargs():
                 raise TypeError(
                     f'Event handlers do not support keyword only, args or kwargs parameters, '
-                    f'got event_handler={event_handler!r} with parameter={parameter!r}.'
+                    f'got event_handler= {event_handler!r} with parameter= {parameter!r}.'
                 )
             
             if event_parameter is None:
@@ -61,33 +61,33 @@ class EventHandlerManager(RichAttributeErrorBaseType):
                 if not parameter.has_default():
                     raise TypeError(
                         f'To event handlers only 1 parameter is passed, but the given one expects more, '
-                        f'got event_handler={event_handler!r} with parameter={parameter!r}.'
+                        f'got event_handler = {event_handler!r} with parameter = {parameter!r}.'
                     )
         
         
         if (event_parameter is None):
             raise TypeError(
                 f'To event handlers 1 parameter is passed, but the given one expects zero, '
-                f'got event_handler={event_handler!r}.'
+                f'got event_handler= {event_handler!r}.'
             )
         
         if not event_parameter.has_annotation:
             raise TypeError(
                 'Event handler\'s event parameter should be annotated with an event\'s type, '
-                f'got event_handler={event_handler!r} with parameter={event_parameter!r}.'
+                f'got event_handler = {event_handler!r} with parameter = {event_parameter!r}.'
             )
         
         annotation = event_parameter.annotation
         if (not isinstance(annotation, type)) or (not issubclass(annotation, EventBase)):
             raise TypeError(
                 'Event handler\'s event parameter should be annotated with an event\'s type, '
-                f'got event_handler={event_handler!r} with parameter={event_parameter!r}; annotation={annotation!r}.'
+                f'got event_handler= {event_handler!r} with parameter= {event_parameter!r}; annotation= {annotation!r}.'
             )
         
         if annotation.identifier == EventBase.identifier:
             raise TypeError(
                 'Event handler\'s event parameter is annotated with a base event type, '
-                f'got event_handler={event_handler!r} with parameter={event_parameter!r}; annotation={annotation!r}.'
+                f'got event_handler= {event_handler!r} with parameter= {event_parameter!r}; annotation= {annotation!r}.'
             )
         
         # Register event handler
