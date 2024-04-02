@@ -1,3 +1,20 @@
+## 0.0.17 *\[2024-04-02\]*
+
+#### Improvements
+
+- Add `TestFile.has_failed_test`.
+- Add `RunnerContext.has_failed_test`.
+- Add `TestRunner.get_return_code`.
+- Add `TestRunner.set_return_code`.
+- `TestRunner.run` now returns its return code instead of a boolean.
+- `run_tests_in` now returns its return code instead of none.
+- `execute_from_parameters` now returns its return code instead of boolean.
+- `__main__` now exits with the respective return code.
+
+#### Renames, Deprecation & Removals
+
+- Rename `execute_from_terminal` to `execute_from_parameters`.
+
 ## 0.0.16 *\[2023-12-31\]*
 
 #### Bug fixes

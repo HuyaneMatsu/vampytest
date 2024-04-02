@@ -18,6 +18,9 @@ class RunnerContext(RichAttributeErrorBaseType):
     
     Utility Methods
     ---------------
+    - Checks & State
+        - ``.has_any_failure``
+    
     - Count getters
     
         - ``.get_registered_file_count``
@@ -405,3 +408,22 @@ class RunnerContext(RichAttributeErrorBaseType):
         load_failures : `list` of ``TestFileLoadFailure``
         """
         return [*self.iter_file_load_failures()]
+    
+    
+    def has_any_failure(self):
+        """
+        Returns whether there were any failed tests.
+        
+        Returns
+        -------
+        has_any_failure : `bool`
+        """
+        for test_file in self.iter_registered_files():
+            if test_file.is_loaded_with_failure():
+                return True
+        
+        for test_file in self.iter_registered_files():
+            if test_file.has_failed_test():
+                return True
+        
+        return False

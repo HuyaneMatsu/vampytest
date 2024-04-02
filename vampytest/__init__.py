@@ -14,4 +14,11 @@ del scarletio
 
 from .core import *
 
-__all__ = core.__all__
+from .return_codes import *
+
+
+__all__ = (
+    *core.__all__,
+    
+    *return_codes.__all__,
+)

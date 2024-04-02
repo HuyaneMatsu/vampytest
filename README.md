@@ -27,6 +27,7 @@ Vampytest is a testing framework that allows, but is not limited to, writing rel
 - [Installation](#installation)
 - [Writing tests](#writing-tests)
 - [Running tests](#running-tests)
+- [Return codes](#running-tests)
 - [Features](#features)
   - [Assertions](#assertions)
     - [Equality assertions](#equality-assertions)
@@ -155,6 +156,22 @@ vampytest *directory/sub_directory/etc*
 ```
 
 > Note: To test vampytest itself `vampytest` command wont work. Use `python3 -m vampytest` instead.
+
+### Return codes
+
+By reading the return code of the vampytest call it is possible to determine how the testing went without actually
+reading the output.
+
+
+| Return code   | Description                                           |
+|---------------|-------------------------------------------------------|
+| 0             | Tests passed                                          |
+| 1             | Internal error occurred                               |
+| 2             | Any test failed                                       |
+| 4             | Test runner stopped (from inside)                     |
+| 5             | Test runner interrupted (from outside presumably)     |
+| 7             | Could not identify from where the tests should run    |
+
 
 <div align="right">[ <a href="#table-of-contents">↑ Back to top ↑</a> ]</div>
 

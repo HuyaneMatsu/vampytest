@@ -8,6 +8,9 @@ from os.path import sep as PATH_SEPARATOR
 from scarletio import RichAttributeErrorBaseType, include, render_exception_into
 
 from ... import __package__ as PACKAGE_NAME
+from ...return_codes import (
+    RETURN_CODE_FAILURE, RETURN_CODE_SUCCESS, RETURN_CODE_TEST_RUNNER_STOPPED, RETURN_CODE_UNSET
+)
 
 from ..environment import EnvironmentManager
 from ..events import (
@@ -134,9 +137,11 @@ class TestRunner(RichAttributeErrorBaseType):
     ----------
     _path_parts : `None | list<str>`
         Added path parts to specify from which which directory we want to collect the tests from.
+    _return_code : `int`
+        The return code of the test runner.
     _source_directory : `str`
         The path to run tests from.
-    sources : `set<str>`
+    _sources : `set<str>`
         Sources to import before executing any test.
     _stopped : `bool`
         Whether testing is stopped.
@@ -152,16 +157,20 @@ class TestRunner(RichAttributeErrorBaseType):
     - ``.run``
     - ``.stop``
     - ``.add_teardown_callback``
+    - ``.get_return_code``
+    - ``.set_return_code``
     """
     __slots__ = (
-        '_path_parts', '_source_directory', '_sources', '_stopped', '_teardown_callbacks', 'environment_manager',
-        'event_handler_manager'
+        '_path_parts', '_return_code', '_source_directory', '_sources', '_stopped', '_teardown_callbacks',
+        'environment_manager', 'event_handler_manager'
     )
     
     def __new__(
         cls, source_directory, sources, path_parts = None, *, environment_manager = None, event_handler_manager = None
     ):
         """
+        Creates a new test runner instance.
+        
         Parameters
         ----------
         source_directory : `str`
@@ -191,6 +200,7 @@ class TestRunner(RichAttributeErrorBaseType):
         
         self = object.__new__(cls)
         self._path_parts = path_parts
+        self._return_code = RETURN_CODE_UNSET
         self._source_directory = source_directory
         self._sources = sources
         self._stopped = False
@@ -284,6 +294,8 @@ class TestRunner(RichAttributeErrorBaseType):
         ------
         event : ``EventBase``
         """
+        context = None
+        
         try:
             # Setup
             self._setup()
@@ -345,6 +357,14 @@ class TestRunner(RichAttributeErrorBaseType):
             
             yield TestingEndEvent(context)
         
+        except GeneratorExit:
+            self.set_return_code(RETURN_CODE_TEST_RUNNER_STOPPED)
+            raise
+        
+        else:
+            if (context is not None):
+                self.set_return_code(RETURN_CODE_FAILURE if context.has_any_failure() else RETURN_CODE_SUCCESS)
+        
         finally:
             self._teardown()
     
@@ -352,9 +372,13 @@ class TestRunner(RichAttributeErrorBaseType):
     def run(self):
         """
         Runs the tests of the test runner.
+        
+        Returns
+        -------
+        return_code : `int`
         """
         if self._stopped:
-            return
+            return self.get_return_code()
         
         event_handler_manager = self.event_handler_manager
         
@@ -363,8 +387,6 @@ class TestRunner(RichAttributeErrorBaseType):
                 try:
                     event_handler(event)
                 except (KeyboardInterrupt, SystemExit):
-                    sys.stderr.write('Shutting down test runner...\n')
-                    sys.stderr.flush()
                     raise
                 
                 except BaseException as err:
@@ -372,6 +394,8 @@ class TestRunner(RichAttributeErrorBaseType):
             
             if self._stopped:
                 break
+        
+        return self.get_return_code()
     
     
     def stop(self):
@@ -379,6 +403,35 @@ class TestRunner(RichAttributeErrorBaseType):
         Stops the testing step loop.
         """
         self._stopped = True
+        self.set_return_code(RETURN_CODE_TEST_RUNNER_STOPPED)
+    
+    
+    def get_return_code(self):
+        """
+        Gets the set return code.
+        
+        Returns
+        -------
+        return_code : `int`
+        """
+        return_code = self._return_code
+        if return_code == RETURN_CODE_UNSET:
+            return_code = RETURN_CODE_SUCCESS
+        
+        return return_code
+    
+    
+    def set_return_code(self, return_code):
+        """
+        Sets the test runner's return code if not set yet.
+        
+        Parameters
+        ----------
+        return_code : `int`
+            Return code to set.
+        """
+        if self._return_code == RETURN_CODE_UNSET:
+            self._return_code = return_code
 
 
 def run_tests_in(source_directory, sources, test_collection_route):
@@ -394,5 +447,9 @@ def run_tests_in(source_directory, sources, test_collection_route):
         Sources to import before executing any test.
     test_collection_route : `None | list<str>`
         Added path parts to specify from which which directory we want to collect the tests from.
+    
+    Returns
+    -------
+    return_code : `int`
     """
-    TestRunner(source_directory, sources, test_collection_route).run()
+    return TestRunner(source_directory, sources, test_collection_route).run()

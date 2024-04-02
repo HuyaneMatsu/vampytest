@@ -1,9 +1,12 @@
-__all__ = ('execute_from_terminal',)
+__all__ = ('execute_from_parameters',)
 
 import sys
 from os import getcwd as get_current_working_directory
 
+from scarletio import write_exception_sync
+
 from ..core import run_tests_in, shutdown_environments
+from ..return_codes import RETURN_CODE_TEST_LOCATION_FAILURE, RETURN_CODE_TEST_RUNNER_INTERRUPTED
 
 from .source_lookup import get_source_and_target
 
@@ -61,7 +64,7 @@ def build_error_message(errors, parameters):
     return ''.join(error_message_parts)
 
 
-def execute_from_terminal(parameters):
+def execute_from_parameters(parameters):
     """
     Executes vampytest from terminal.
     
@@ -72,19 +75,19 @@ def execute_from_terminal(parameters):
     
     Returns
     -------
-    success : `bool`
-        This does not mean all tests passed.
+    return_code : `int`
     """
     source_directory, sources, test_collection_route, errors, index = get_source_and_target(parameters, 0)
     
     if (source_directory is None) or (sources is None):
         sys.stderr.write(build_error_message(errors, parameters))
-        return False
-    
+        return RETURN_CODE_TEST_LOCATION_FAILURE
     
     try:
-        run_tests_in(source_directory, sources, test_collection_route)
+        return run_tests_in(source_directory, sources, test_collection_route)
+    except KeyboardInterrupt as exception:
+        write_exception_sync(exception, before = '\nTest running interrupted...')
+        return RETURN_CODE_TEST_RUNNER_INTERRUPTED
+    
     finally:
         shutdown_environments()
-    
-    return True

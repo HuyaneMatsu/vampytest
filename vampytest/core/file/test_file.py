@@ -109,6 +109,7 @@ class TestFile(RichAttributeErrorBaseType):
         - ``.get_load_failure``
         - ``.is_directory``
         - ``.is_loaded``
+        - ``.has_failed_test``
     
     - Iterators
     
@@ -550,6 +551,17 @@ class TestFile(RichAttributeErrorBaseType):
         passed_test_count : `int`
         """
         return sum(result.is_failed() for result in self.iter_results())
+    
+    
+    def has_failed_test(self):
+        """
+        Returns whether there were any failed tests.
+        
+        Returns
+        -------
+        has_failed_tests : `bool`
+        """
+        return any(result.is_failed() for result in self.iter_results())
     
     
     def feed_sub_file(self, sub_file):
