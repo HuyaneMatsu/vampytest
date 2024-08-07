@@ -53,7 +53,7 @@ def render_route_parts_into(into, result):
     case = result.handle.case
     
     into.append(case.import_route)
-    into.append('.')
+    into.append(':')
     into.append(case.name)
     
     return into

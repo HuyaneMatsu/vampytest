@@ -1,3 +1,9 @@
+## 0.0.18 *\[2024-08-07\]*
+
+#### Improvements
+
+- Use `:` to separate file path and test name. From `.`. This allows easier copy pasting.
+
 ## 0.0.17 *\[2024-04-02\]*
 
 #### Improvements

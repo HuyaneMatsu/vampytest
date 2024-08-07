@@ -1,4 +1,4 @@
-from datetime import datetime as DateTime
+from datetime import datetime as DateTime, timezone as TimeZone
 
 from vampytest import assert_is, assert_true, call_from
 
@@ -6,11 +6,11 @@ from ..mock import mock_globals
 
 
 def b():
-    out = DateTime.utcnow()
+    out = DateTime.now(TimeZone.utc)
     assert_is(out, None)
 
 def a():
-    out = DateTime.utcnow()
+    out = DateTime.now(TimeZone.utc)
     assert_is(out, None)
     
     b()
@@ -18,7 +18,7 @@ def a():
 
 def _iter_options():
     class mocked_date_time:
-        def utcnow():
+        def now(time_zone):
             return None
     
     yield b, 0, {'DateTime': mocked_date_time}
