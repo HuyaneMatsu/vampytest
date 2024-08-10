@@ -13,9 +13,14 @@ def test__get_project_sources_from_setup__success():
     """
     modules_count_before = len(sys.modules)
     
-    path = '/orin/setup.py'
+    directory_path = '/orin'
+    file_path = '/orin/setup.py'
     execute_called = False
     execute_called_with_path = None
+    file_paths = {
+        file_path,
+        '/orin/vampy/__init__.py',
+    }
     
     def execute_setup_file(path):
         nonlocal execute_called
@@ -27,19 +32,27 @@ def test__get_project_sources_from_setup__success():
         import setuptools
         setuptools.setup(name = 'vampy', packages = ['vampy'])
     
+    
+    def is_file_mock(path):
+        nonlocal file_paths
+        return path in file_paths
+    
+    
     try:
         mocked = mock_globals(
             get_project_sources_from_setup,
+            recursion = 5,
             execute_setup_file = execute_setup_file,
+            is_file = is_file_mock,
         )
         
-        project_sources, error_message = mocked(path)
+        project_sources, error_message = mocked(directory_path, file_path)
         
         assert_eq(project_sources, {'vampy'})
         assert_is(error_message, None)
         
         assert_true(execute_called)
-        assert_eq(execute_called_with_path, path)
+        assert_eq(execute_called_with_path, file_path)
         
         modules_count_after = len(sys.modules)
         assert_eq(modules_count_before, modules_count_after)
@@ -64,9 +77,14 @@ def test__get_project_sources_from_setup__no_call():
     """
     modules_count_before = len(sys.modules)
     
-    path = '/orin/setup.py'
+    directory_path = '/orin'
+    file_path = '/orin/setup.py'
     execute_called = False
     execute_called_with_path = None
+    file_paths = {
+        file_path,
+        '/orin/vampy/__init__.py',
+    }
     
     def execute_setup_file(path):
         nonlocal execute_called
@@ -75,19 +93,27 @@ def test__get_project_sources_from_setup__no_call():
         execute_called = True
         execute_called_with_path = path
     
+    
+    def is_file_mock(path):
+        nonlocal file_paths
+        return path in file_paths
+    
+    
     try:
         mocked = mock_globals(
             get_project_sources_from_setup,
+            recursion = 5,
+            is_file = is_file_mock,
             execute_setup_file = execute_setup_file,
         )
         
-        project_sources, error_message = mocked(path)
+        project_sources, error_message = mocked(directory_path, file_path)
         
         assert_is(project_sources, None)
         assert_eq(error_message, '`setup.py` never actually called `setup`.')
         
         assert_true(execute_called)
-        assert_eq(execute_called_with_path, path)
+        assert_eq(execute_called_with_path, file_path)
         
         modules_count_after = len(sys.modules)
         assert_eq(modules_count_before, modules_count_after)

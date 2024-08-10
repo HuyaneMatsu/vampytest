@@ -1,3 +1,11 @@
+## 0.0.19 *\[2024-08-10\]*
+
+#### Improvements
+
+- Improve source root lookup: Correctly handle fallback for project name.
+- Improve source root lookup: Add fallback for project scripts.
+- Improve source root lookup: Add fallback for git.
+
 ## 0.0.18 *\[2024-08-07\]*
 
 #### Improvements

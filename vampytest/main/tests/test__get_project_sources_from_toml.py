@@ -14,10 +14,15 @@ def test__get_project_sources_from_toml__success():
     """
     modules_count_before = len(sys.modules)
     
-    path = '/orin/pyproject.toml'
+    directory_path = '/orin'
+    file_path = '/orin/pyproject.toml'
     file_content = 'koishi'
     toml_library_name = 'toml'
     loaded = {'project': {'name': 'vampy', 'packages': ['vampy']}}
+    file_paths = {
+        file_path,
+        '/orin/vampy/__init__.py',
+    }
     
     get_toml_loader_called = False
     
@@ -48,7 +53,7 @@ def test__get_project_sources_from_toml__success():
         return loaded
     
     
-    def open(path, mode):
+    def open_mock(path, mode):
         nonlocal open_called
         nonlocal open_called_with_path
         nonlocal open_called_with_mode
@@ -63,14 +68,22 @@ def test__get_project_sources_from_toml__success():
         io.seek(0)
         return io
     
+    
+    def is_file_mock(path):
+        nonlocal file_paths
+        return path in file_paths
+    
+    
     try:
         mocked = mock_globals(
             get_project_sources_from_toml,
+            recursion = 5,
             get_toml_loader = get_toml_loader,
-            open = open,
+            is_file = is_file_mock,
+            open = open_mock,
         )
         
-        project_sources, error_message = mocked(path)
+        project_sources, error_message = mocked(directory_path, file_path)
         
         assert_eq(project_sources, {'vampy'})
         assert_is(error_message, None)
@@ -81,7 +94,7 @@ def test__get_project_sources_from_toml__success():
         assert_eq(loader_called_with_content, file_content)
         
         assert_true(open_called)
-        assert_eq(open_called_with_path, path)
+        assert_eq(open_called_with_path, file_path)
         assert_eq(open_called_with_mode, 'rb')
         
         modules_count_after = len(sys.modules)
@@ -99,16 +112,21 @@ def test__get_project_sources_from_toml__success():
             pass
 
 
-def test__get_project_sources_from_toml__no_call():
+def test__get_project_sources_from_toml__no_loader():
     """
     Tests whether ``get_project_sources_from_toml`` works as intended.
     
-    Case: No setup call.
+    Case: No toml loader.
     """
     modules_count_before = len(sys.modules)
     
-    path = '/orin/pyproject.toml'
+    directory_path = '/orin'
+    file_path = '/orin/pyproject.toml'
     get_toml_loader_called = False
+    file_paths = {
+        file_path,
+        '/orin/vampy/__init__.py',
+    }
     
     def get_toml_loader():
         nonlocal get_toml_loader_called
@@ -116,13 +134,21 @@ def test__get_project_sources_from_toml__no_call():
         get_toml_loader_called = True
         return None, None
     
+    
+    def is_file_mock(path):
+        nonlocal file_paths
+        return path in file_paths
+    
+    
     try:
         mocked = mock_globals(
             get_project_sources_from_toml,
+            recursion = 5,
             get_toml_loader = get_toml_loader,
+            is_file = is_file_mock,
         )
         
-        project_sources, error_message = mocked(path)
+        project_sources, error_message = mocked(directory_path, file_path)
         
         assert_is(project_sources, None)
         assert_eq(error_message, 'Failed to read `pyproject.toml`, no `.toml` reader available.')
