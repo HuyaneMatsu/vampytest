@@ -1,6 +1,6 @@
 __all__ = ('mock_globals',)
 
-from types import FunctionType
+from types import CodeType, FunctionType
 
 
 BUILTINS = {
@@ -157,9 +157,56 @@ def _iter_potential_globals_of(function):
     ------
     name : `str`
     """
-    code_object = function.__code__
+    yielded = set()
+    yielded_length = 0
     
-    local_variable_names = {*code_object.co_varnames}
-    for name in code_object.co_names:
-        if name not in local_variable_names:
+    code_objects = _collect_code_objects(function)
+    
+    for code_object in code_objects:
+        local_variable_names = {*code_object.co_varnames}
+        for name in code_object.co_names:
+            if name in local_variable_names:
+                continue
+            
+            yielded.add(name)
+            yielded_length_new = len(yielded)
+            if yielded_length == yielded_length_new:
+                continue
+            
+            yielded_length = yielded_length_new
             yield name
+            continue
+
+
+def _collect_code_objects(function):
+    """
+    Collects all the code objects present in the given function.
+    
+    Parameters
+    ----------
+    function : `FunctionType`
+        The function to collect its code objects of.
+    
+    Returns
+    -------
+    code_objects : `set<CodeType>`
+    """
+    code_objects = set()
+    to_do = [function.__code__]
+    
+    while to_do:
+        code_object = to_do.pop()
+        if code_object in code_objects:
+            continue
+        
+        code_objects.add(code_object)
+        
+        constants = code_object.co_consts
+        if constants is None:
+            continue
+        
+        for constant in constants:
+            if type(constant) is CodeType:
+                to_do.append(constant)
+    
+    return code_objects

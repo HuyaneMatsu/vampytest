@@ -103,7 +103,7 @@ def un_nest_types(types):
         if not isinstance(type_value, type):
             raise TypeError(
                 f'`type` can be `type`, `tuple` of (`type`, ...)`, '
-                f'got {type_value.__class__.__name__}; {type_value!r}.'
+                f'got {type(type_value).__name__}; {type_value!r}.'
             )
     
     return types

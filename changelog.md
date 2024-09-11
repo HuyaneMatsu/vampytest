@@ -1,3 +1,8 @@
+## 0.0.20 *\[2024-09-11\]*
+
+- Fix `mock_globals` did not analyze nested code objects.
+  Caused `NameError` when mocking a function with inline generator.
+
 ## 0.0.19 *\[2024-08-10\]*
 
 #### Improvements

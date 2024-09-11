@@ -1,6 +1,6 @@
 from datetime import datetime as DateTime, timezone as TimeZone
 
-from vampytest import assert_is, assert_true, call_from
+from vampytest import assert_eq, assert_is, assert_true, call_from
 
 from ..mock import mock_globals
 
@@ -8,6 +8,7 @@ from ..mock import mock_globals
 def b():
     out = DateTime.now(TimeZone.utc)
     assert_is(out, None)
+
 
 def a():
     out = DateTime.now(TimeZone.utc)
@@ -82,3 +83,35 @@ def test__mock_globals__builtins__no_error():
     
     # We dont care about the output
     mocked()
+
+
+def f(value):
+    return 1
+
+
+def e():
+    return [f(value) for value in range(2)]
+
+
+def test__mock_globals__inline_generator_no_fail():
+    """
+    Tests whether ``mock_globals`` works as intended.
+    
+    Case: handling inline generators & do not fail.
+    """
+    mocked = mock_globals(e)
+    
+    # We dont care about the output
+    mocked()
+
+
+def test__mock_globals__inline_generator_mock_nested():
+    """
+    Tests whether ``mock_globals`` works as intended.
+    
+    Case: handling inline generators & mock nested.
+    """
+    mocked = mock_globals(e, f = (lambda value: 2))
+    
+    output = mocked()
+    assert_eq(output, [2, 2])
