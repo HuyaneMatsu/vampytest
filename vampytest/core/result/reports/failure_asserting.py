@@ -11,8 +11,8 @@ class ReportFailureAsserting(ReportBase):
     
     Attributes
     ----------
-    handle : ``Handle``
-        The test's handle running the test.
+    assertion_exception : ``AssertionException``
+        The assertion's exception.
     """
     __slots__ = ('assertion_exception',)
     
@@ -23,7 +23,7 @@ class ReportFailureAsserting(ReportBase):
         Parameters
         ----------
         assertion_exception : ``AssertionException``
-            The failed assertion.
+            The assertion's exception.
         """
         self = object.__new__(cls)
         self.assertion_exception = assertion_exception
@@ -32,9 +32,9 @@ class ReportFailureAsserting(ReportBase):
     
     @copy_docs(ReportBase.__repr__)
     def __repr__(self):
-        repr_parts = ['<', self.__class__.__name__]
+        repr_parts = ['<', type(self).__name__]
         
-        repr_parts.append(' assertion = ')
+        repr_parts.append(' assertion_exception = ')
         repr_parts.append(repr(self.assertion_exception))
         
         repr_parts.append('>')

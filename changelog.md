@@ -1,11 +1,39 @@
+## 0.0.21 *\[2024-12-23\]*
+
+### Improvements
+
+- Test file & directory name checks are now more specific.
+- `TestFileLoadFailure` now stores the exception instead of its message.
+    Originally wanted to deallocate the traceback, but representing the exception with deallocated turned out to be
+    a longer task than expected. This also means that the default writer now highlights it as intended.
+- `AssertionException` rendering moved out to rendering.
+- Add missing `AssertionException.__new__`.
+- Conditional assertions are not using a meta type to invoke them after constructor instead all uses a top level
+    function. This is to make them easier to test with.
+- Assertion rendering is now highlighted.
+- Add `TestFile.path_parts`. `TestFile.import_route` is now a property.
+- Add `TestCase.path_parts`.
+- Add `Handle.get_test_documentation_lines`.
+     Remove old `.get_test_documentation` which also added a prefix in front of each line.
+- Add `highlighter` parameter to `DefaultEventFormatter.__new__`.
+- Reorder `ReportFailureRaising`'s and `Result.with_exception`'s parameters.
+    In short: from `accept, received, accept`; to `accept, accept, received`.
+- Reports are now highlighted.
+- Assertion report renderer now displays exceptions raised while invoking their condition.
+- `AssertionRaising` now differentiates if it failed due to not receiving exception & receiving a different exception.
+- Assertion report rendering now renders the captured different exception inside of a `AssertionRaising`.
+- Results are now highlighted.
+
 ## 0.0.20 *\[2024-09-11\]*
+
+### Bug fixes
 
 - Fix `mock_globals` did not analyze nested code objects.
   Caused `NameError` when mocking a function with inline generator.
 
 ## 0.0.19 *\[2024-08-10\]*
 
-#### Improvements
+### Improvements
 
 - Improve source root lookup: Correctly handle fallback for project name.
 - Improve source root lookup: Add fallback for project scripts.
@@ -13,13 +41,13 @@
 
 ## 0.0.18 *\[2024-08-07\]*
 
-#### Improvements
+### Improvements
 
 - Use `:` to separate file path and test name. From `.`. This allows easier copy pasting.
 
 ## 0.0.17 *\[2024-04-02\]*
 
-#### Improvements
+### Improvements
 
 - Add `TestFile.has_failed_test`.
 - Add `RunnerContext.has_failed_test`.
@@ -30,31 +58,31 @@
 - `execute_from_parameters` now returns its return code instead of boolean.
 - `__main__` now exits with the respective return code.
 
-#### Renames, Deprecation & Removals
+### Renames, Deprecation & Removals
 
 - Rename `execute_from_terminal` to `execute_from_parameters`.
 
 ## 0.0.16 *\[2023-12-31\]*
 
-#### Bug fixes
+### Bug fixes
 
 - Fix `AttributeError` in an incorrectly updated frame filter.
 
 ## 0.0.15 *\[2023-12-31\]*
 
-#### Improvements
+### Improvements
 
 - Use new scarletio in dependencies.
 
 ## 0.0.14 *\[2023-11-11\]*
 
-#### Improvements
+### Improvements
 
 - Now its checked whether every dependency is satisfied before importing the framework.
 
 ## 0.0.13 *\[2023-10-01\]*
 
-#### Improvements
+### Improvements
 
 - Remove current working directory from `sys.path` in case, we are executing from inside of a library.
     This caused confused imports.
@@ -62,7 +90,7 @@
 
 ## 0.0.12 *\[2023-09-30\]*
 
-#### Improvements
+### Improvements
 
 - Add new `SourceLoadFailureEvent`.
 - The first command line parameter is now auto detected on a smart way.
@@ -72,7 +100,7 @@
 
 ## 0.0.11 *\[2023-08-27\]*
 
-#### Improvements
+### Improvements
 
 - Add `mock_globals`.
 - Now only `FunctionType` and `WrapperBase` instances can be tests.
@@ -81,24 +109,24 @@
 
 ## 0.0.10 *\[2023-06-11\]*
 
-#### Improvements
+### Improvements
 
 - Informal tests now show up with a `I` prefix.
 
-#### Bug fixes
+### Bug fixes
 
 - Test wrappers were grouped incorrectly resulting badly generated test cases.
 - `WrapperGarbageCollect` was not setting all of its attributes causing `AttributeError`.
 
 ## 0.0.9 *\[2023-06-08\]*
 
-#### Bug fixes
+### Bug fixes
 
 - Exception occurred when rendering assertions.
 
 ## 0.0.8 *\[2023-06-08\]*
 
-#### Improvements
+### Improvements
 
 - Add `changelog` file.
 - `AssertionSubtype` now accepts multiple parameters.
@@ -132,11 +160,11 @@
 - Add `call_from`.
 - Add `WrapperCallingFrom`.
 
-#### Bug fixes
+### Bug fixes
 
 - If a test had `parameters` they were not always rendering.
 
-#### Renames, Deprecation & Removals
+### Renames, Deprecation & Removals
 
 - Deprecate `revert`.
 - Rename `revert` values to `reverse`.

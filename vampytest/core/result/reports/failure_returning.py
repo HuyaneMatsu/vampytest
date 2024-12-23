@@ -11,9 +11,9 @@ class ReportFailureReturning(ReportBase):
     
     Attributes
     ----------
-    expected_value : `None`, `object`
+    expected_value : `None | object`
         The expected returned value.
-    received_value : `None`, `object`
+    received_value : `None | object`
         The received returned value.
     """
     __slots__ = ('expected_value', 'received_value',)
@@ -24,9 +24,9 @@ class ReportFailureReturning(ReportBase):
         
         Parameters
         ----------
-        expected_value : `None`, `object`
+        expected_value : `None | object`
             The expected returned value.
-        received_value : `None`, `object`
+        received_value : `None | object`
             The received returned value.
         """
         self = object.__new__(cls)
@@ -37,7 +37,7 @@ class ReportFailureReturning(ReportBase):
     
     @copy_docs(ReportBase.__repr__)
     def __repr__(self):
-        repr_parts = ['<', self.__class__.__name__]
+        repr_parts = ['<', type(self).__name__]
         
         repr_parts.append(' expected_value = ')
         repr_parts.append(repr(self.expected_value))

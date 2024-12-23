@@ -244,11 +244,29 @@ class TestCase(RichAttributeErrorBaseType):
         
         Returns
         -------
-        test_file : `None`, ``TestFile``
+        test_file : `None | TestFile`
         """
         test_file_reference = self._test_file_reference
         if (test_file_reference is not None):
             return test_file_reference()
+    
+    
+    @property
+    def path_parts(self):
+        """
+        Returns the path parts from the base path to import the file from.
+        
+        Returns
+        -------
+        path_parts : `tuple<str>`
+        """
+        test_file = self.get_test_file()
+        if (test_file is None):
+            path_parts = ()
+        else:
+            path_parts = test_file.path_parts
+        
+        return path_parts
     
     
     @property

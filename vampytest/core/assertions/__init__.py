@@ -11,14 +11,13 @@ def test_equals():
 
 
 def test_raises():
-    with vampytest.raises(TypeError):
+    with vampytest.assert_raises(TypeError):
         'nice' + 69
 
 def test_contains():
     vampytest.assert_in(range(7), 5)
 ```
 """
-from .aliases import *
 from .assertion_base import *
 from .assertion_conditional_base import *
 from .assertion_contains import *
@@ -33,11 +32,11 @@ from .assertion_raising import *
 from .assertion_states import *
 from .assertion_subtype import *
 from .assertion_true import *
-from .exceptions import *
+from .exception import *
+from .top_level import *
 
 
 __all__ = (
-    *aliases.__all__,
     *assertion_raising.__all__,
     *assertion_base.__all__,
     *assertion_conditional_base.__all__,
@@ -52,5 +51,6 @@ __all__ = (
     *assertion_states.__all__,
     *assertion_subtype.__all__,
     *assertion_true.__all__,
-    *exceptions.__all__,
+    *exception.__all__,
+    *top_level.__all__,
 )

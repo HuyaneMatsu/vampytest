@@ -44,7 +44,7 @@ class ContextCalling(ContextBase):
     
     @copy_docs(ContextBase.__repr__)
     def __repr__(self):
-        return ''.join(['<', self.__class__.__name__, '>'])
+        return ''.join(['<', type(self).__name__, '>'])
     
     
     @copy_docs(ContextBase.enter)
@@ -83,7 +83,7 @@ class ContextCalling(ContextBase):
                     ).with_handle(
                         handle
                     ).with_exception(
-                        raising_exceptions, None, raising_accept_subtypes,
+                        raising_exceptions, raising_accept_subtypes, None,
                     )
                 
                 else:
@@ -99,12 +99,12 @@ class ContextCalling(ContextBase):
                         ).with_handle(
                             handle
                         ).with_exception(
-                            raising_exceptions, raised_exception, raising_accept_subtypes,
+                            raising_exceptions, raising_accept_subtypes, raised_exception,
                         )
             
             elif wrapper_calling.is_returning():
                 if (raised_exception is not None):
-                    result = Result(handle.case).with_handle(handle).with_exception(None, raised_exception, False)
+                    result = Result(handle.case).with_handle(handle).with_exception(None, False, raised_exception)
                 
                 else:
                     if (result_state is None) or (not result_state.is_return()):

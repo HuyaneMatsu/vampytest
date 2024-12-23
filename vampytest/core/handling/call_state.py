@@ -12,9 +12,10 @@ class CallState(RichAttributeErrorBaseType):
     
     Attributes
     ----------
-    keyword_parameters : `None`, `dict` of (`str`, `object`) items
+    keyword_parameters : `None | dict<str, object>`
         Keyword parameters to the call the test function with.
-    positional_parameters : `None`, `list` of `object`
+    
+    positional_parameters : `None | list<object>`
         Positional parameters to the the test function with.
     """
     __slots__ = ('keyword_parameters', 'positional_parameters')
@@ -31,7 +32,7 @@ class CallState(RichAttributeErrorBaseType):
     
     def __repr__(self):
         """Returns the representation of the call state."""
-        repr_parts = ['<', self.__class__.__name__]
+        repr_parts = ['<', type(self).__name__]
         
         field_added = False
         
@@ -130,9 +131,10 @@ class CallState(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        positional_parameters : `None`, `list` of `object`
+        positional_parameters : `None | list<object>`
             Positional parameters to the the test function with.
-        keyword_parameters : `None`, `dict` of (`str`, `object`) items
+        
+        keyword_parameters : `None | dict<str, object>`
             Keyword parameters to the call the test function with.
         
         Returns

@@ -9,52 +9,22 @@ from .assertion_states import ASSERTION_STATE_CREATED, ASSERTION_STATE_PASSED, A
 AssertionException = include('AssertionException')
 
 
-class InvokeAfterConstructor(type):
-    """
-    Metatype for invoking a test after calling its `__new__`.
-    """
-    def __call__(type_, *positional_parameters, **keyword_parameter):
-        """
-        Instantiates the type and invokes it.
-        
-        Parameters
-        ----------
-        type_ : `type`
-            The type to Instantiate and invoke.
-        *positional_parameters : `tuple<object>`
-            Positional parameters to pass to the type's constructor.
-        keyword_parameter : `dict<str, object>`
-            Keyword parameters to pass to the type's constructor.
-        
-        Returns
-        -------
-        condition_return : `object`
-            The returned value by the condition. Usually a boolean.
-        
-        Raises
-        ------
-        AssertionException
-            The condition failed.
-        BaseException
-            An other occurred exceptions.
-        """
-        return type_.__new__(type_, *positional_parameters, **keyword_parameter).invoke()
-
-
-class AssertionConditionalBase(AssertionBase, metaclass = InvokeAfterConstructor):
+class AssertionConditionalBase(AssertionBase):
     """
     Base class for conditional assertions.
     
     Attributes
     ----------
-    exception : `None`, `BaseException`
+    exception : `None | BaseException`
         Exception raised by the condition if any.
+    
     reverse : `bool`
         Whether the condition should be reversed.
+    
     state : `str`
         The condition's state.
     """
-    __slots__ = ('exception', 'reverse')
+    __slots__ = ('reverse')
     
     def __new__(cls, *, reverse = False):
         """
@@ -66,7 +36,6 @@ class AssertionConditionalBase(AssertionBase, metaclass = InvokeAfterConstructor
             Whether the condition should be reversed.
         """
         self = AssertionBase.__new__(cls)
-        self.exception = None
         self.reverse = reverse
         self.state = ASSERTION_STATE_CREATED
         return self
@@ -80,12 +49,6 @@ class AssertionConditionalBase(AssertionBase, metaclass = InvokeAfterConstructor
         if reverse:
             into.append(', reverse = ')
             into.append(repr(reverse))
-            
-        
-        exception = self.exception
-        if (exception is not None):
-            into.append(', exception = ')
-            into.append(repr(exception))
         
         return into
     
@@ -112,9 +75,9 @@ class AssertionConditionalBase(AssertionBase, metaclass = InvokeAfterConstructor
             else:
                 passed = False
         
-        except BaseException as err:
+        except BaseException as exception:
             self.state = ASSERTION_STATE_FAILED
-            self.exception = err
+            self.exception = exception
             
         else:
             if self.reverse:
@@ -143,113 +106,6 @@ class AssertionConditionalBase(AssertionBase, metaclass = InvokeAfterConstructor
             The condition's result.
         """
         raise NotImplementedError
-    
-    
-    def _get_operation_representation(self):
-        """
-        Gets the assertion's operation's representation.
-        
-        Returns
-        -------
-        operation_representation : `str`
-        """
-        return ''
-    
-    
-    def _render_operation_representation_into(self, into):
-        """
-        Adds the operation representation to the given list.
-        
-        Parameters
-        ----------
-        into : `list` of `str`
-            A list to extend with the rendered strings.
-        
-        Returns
-        -------
-        into : `list` of `str`
-        """
-        into.append('Operation: "')
-        into.append(self._get_operation_representation())
-        into.append('"')
-        
-        if self.reverse:
-            into.append(' (reversed)')
-        
-        return into
-    
-    
-    @copy_docs(AssertionBase.render_failure_message_parts_into)
-    def render_failure_message_parts_into(self, failure_message_parts):
-        self._render_operation_representation_into(failure_message_parts)
-        failure_message_parts.append('\n')
-        return failure_message_parts
-
-
-def _render_parameters_representation_into(parameter_name, parameter_value, into):
-    """
-    Renders the given parameter into the given list of strings.
-    
-    Parameters
-    ----------
-    parameter_name : `str`
-        The parameter's name.
-    parameter_value : `object`
-        The parameter's value.
-    into : `list` of `str`
-        A list to extend with the rendered strings.
-    
-    Returns
-    -------
-    into : `list` of `str`
-    """
-    into.append(parameter_name)
-    into.append(' = ')
-    into.append(repr(parameter_value))
-    into.append('\n')
-    
-    return into
-
-
-def _render_types_parameter_representation_into(parameter_name, types, into):
-    """
-    Renders the given types parameter into the given list of strings.
-    
-    Parameters
-    ----------
-    parameter_name : `str`
-        The parameter's name.
-    types : `set` of `type`
-        The parameter's value.
-    into : `list` of `str`
-        A list to extend with the rendered strings.
-    
-    Returns
-    -------
-    into : `list` of `str`
-    """
-    into.append(parameter_name)
-    into.append(' = ')
-    
-    type_representations = sorted(str(type.__name__) for type in types)
-    length = len(type_representations)
-    if length:
-        index = 0
-        
-        while True:
-            type_representation = type_representations[index]
-            into.append(type_representation)
-            
-            index += 1
-            if index == length:
-                break
-            
-            into.append(', ')
-            continue
-    
-    into.append('\n')
-    
-    return into
 
 
 class AssertionConditionalBase1Value(AssertionConditionalBase):
@@ -258,12 +114,15 @@ class AssertionConditionalBase1Value(AssertionConditionalBase):
     
     Attributes
     ----------
-    state : `str`
+    state : `int`
         The condition's state.
-    exception : `None`, `BaseException`
+    
+    exception : `None | BaseException`
         Exception raised by the condition if any.
+    
     reverse : `bool`
         Whether the condition should be reversed.
+    
     value_0 : `object`
         The value to call the condition on.
     """
@@ -276,7 +135,8 @@ class AssertionConditionalBase1Value(AssertionConditionalBase):
         Parameters
         ----------
         value_0 : `object`
-            First value to assert equality with.
+            The value to assert with.
+        
         reverse : `bool` = `False`, Optional (Keyword only)
             Whether the condition should be reversed.
         """
@@ -293,13 +153,6 @@ class AssertionConditionalBase1Value(AssertionConditionalBase):
         into.append(repr(self.value_0))
         
         return into
-    
-    
-    @copy_docs(AssertionConditionalBase.render_failure_message_parts_into)
-    def render_failure_message_parts_into(self, failure_message_parts):
-        AssertionConditionalBase.render_failure_message_parts_into(self, failure_message_parts)
-        _render_parameters_representation_into('parameter', self.value_0, failure_message_parts)
-        return failure_message_parts
 
 
 class AssertionConditionalBase2Value(AssertionConditionalBase1Value):
@@ -308,14 +161,18 @@ class AssertionConditionalBase2Value(AssertionConditionalBase1Value):
     
     Attributes
     ----------
-    state : `str`
+    state : `int`
         The condition's state.
-    exception : `None`, `BaseException`
+    
+    exception : `None | BaseException`
         Exception raised by the condition if any.
+    
     reverse : `bool`
         Whether the condition should be reversed.
+    
     value_0 : `object`
         The value to call the condition on.
+    
     value_1 : `object`
         The value to call the condition with.
     """
@@ -328,9 +185,11 @@ class AssertionConditionalBase2Value(AssertionConditionalBase1Value):
         Parameters
         ----------
         value_0 : `object`
-            First value to assert equality with.
+            The first value to assert with.
+        
         value_1 : `object`
-            The second value to assert equality with.
+            The second value to assert with.
+        
         reverse : `bool` = `False`, Optional (Keyword only)
             Whether the condition should be reversed.
         """
@@ -347,20 +206,3 @@ class AssertionConditionalBase2Value(AssertionConditionalBase1Value):
         into.append(repr(self.value_1))
         
         return into
-    
-    
-    @copy_docs(AssertionConditionalBase1Value._render_operation_representation_into)
-    def _render_operation_representation_into(self, into):
-        AssertionConditionalBase._render_operation_representation_into(self, into)
-        into.append(' as "parameter_0 ')
-        into.append(self._get_operation_representation())
-        into.append(' parameter_1"')
-        return into
-    
-    
-    @copy_docs(AssertionConditionalBase1Value.render_failure_message_parts_into)
-    def render_failure_message_parts_into(self, failure_message_parts):
-        AssertionConditionalBase.render_failure_message_parts_into(self, failure_message_parts)
-        _render_parameters_representation_into('parameter_0', self.value_0, failure_message_parts)
-        _render_parameters_representation_into('parameter_1', self.value_1, failure_message_parts)
-        return failure_message_parts

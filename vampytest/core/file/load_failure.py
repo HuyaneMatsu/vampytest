@@ -1,8 +1,6 @@
 __all__ = ()
 
-import reprlib
-
-from scarletio import RichAttributeErrorBaseType, render_exception_into
+from scarletio import RichAttributeErrorBaseType
 
 from .test_file import __file__ as VAMPYTEST_TEST_FILE_PATH
 
@@ -41,12 +39,13 @@ class TestFileLoadFailure(RichAttributeErrorBaseType):
     
     Attributes
     ----------
-    exception_message : `str`
-        Exception message with traceback.
+    exception : `BaseException`
+        The exception.
+    
     path : `str`
         The files path which failed to load.
     """
-    __slots__ = ('path', 'exception_message')
+    __slots__ = ('path', 'exception')
     
     def __new__(cls, test_file, exception):
         """
@@ -57,16 +56,12 @@ class TestFileLoadFailure(RichAttributeErrorBaseType):
         exception : `BaseException`
             The occurred exception.
         """
-        exception_message_parts = []
-        render_exception_into(exception, exception_message_parts, filter=_ignore_module_import_frame)
-        exception_message = ''.join(exception_message_parts)
-        
         self = object.__new__(cls)
-        self.exception_message = exception_message
+        self.exception = exception
         self.path = test_file.path
         return self
     
     
     def __repr__(self):
         """Returns the test loading failure's representation."""
-        return f'<{self.__class__.__name__} of {reprlib.repr(self.path)}>'
+        return f'<{type(self).__name__} of {self.path!r}>'

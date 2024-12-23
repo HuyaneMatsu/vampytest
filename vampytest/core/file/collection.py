@@ -95,13 +95,13 @@ def is_test_file_name(file_name):
     if file_name.startswith('_'):
         return False
     
-    if file_name == 'test.py':
+    if file_name in ('test.py', 'tests.py'):
         return True
     
-    if file_name.startswith('test_') and file_name.endswith('.py'):
+    if file_name.startswith('test_') and file_name.endswith('.py') and (len(file_name) > (len('test_') + len('.py'))):
         return True
     
-    if file_name.endswith('_tests.py'):
+    if file_name.endswith('_tests.py') and (len(file_name) > len('_tests.py')):
         return True
     
     return False
@@ -120,13 +120,19 @@ def is_test_directory_name(directory_name):
     -------
     is_test_directory_name : `bool`
     """
+    if directory_name.startswith('_'):
+        return False
+    
     if directory_name == 'tests':
         return True
     
-    if directory_name.startswith(('test_', 'tests_')):
+    if directory_name.startswith('test_') and (len(directory_name) > len('test_')):
         return True
     
-    if directory_name.endswith('_tests'):
+    if directory_name.startswith('tests_') and (len(directory_name) > len('tests_')):
+        return True
+    
+    if directory_name.endswith('_tests') and (len(directory_name) > len('_tests')):
         return True
     
     return False

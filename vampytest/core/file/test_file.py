@@ -97,8 +97,8 @@ class TestFile(RichAttributeErrorBaseType):
         the first time.
     entry : ``FileSystemEntry``
         The test file's respective file's or directory's entry in the file system.
-    import_route : `str`
-        Import route from the base path to import the file from.
+    path_parts : `tuple<str>`
+        Path parts from the base path to import the file from.
     
     Utility Methods
     ---------------
@@ -139,7 +139,7 @@ class TestFile(RichAttributeErrorBaseType):
         - ``.iter_test_files``
     """
     __slots__ = (
-        '__weakref__', '_load_failure', '_module', '_results', '_sub_files', '_test_cases', 'entry', 'import_route'
+        '__weakref__', '_load_failure', '_module', '_results', '_sub_files', '_test_cases', 'entry', 'path_parts'
     )
     
     def __new__(cls, entry):
@@ -163,9 +163,6 @@ class TestFile(RichAttributeErrorBaseType):
                 if last_path_part.endswith('.py'):
                     path_parts[-1] = last_path_part[:-len('.py')]
         
-        
-        import_route = '.'.join(path_parts)
-        
         self = object.__new__(cls)
         self._load_failure = None
         self._module = None
@@ -173,7 +170,7 @@ class TestFile(RichAttributeErrorBaseType):
         self._sub_files = None
         self._test_cases = None
         self.entry = entry
-        self.import_route = import_route
+        self.path_parts = path_parts
         return self
     
     
@@ -199,6 +196,18 @@ class TestFile(RichAttributeErrorBaseType):
         
         repr_parts.append('>')
         return ''.join(repr_parts)
+    
+    
+    @property
+    def import_route(self):
+        """
+        Returns the import route from the base path to import the file from.
+        
+        Returns
+        -------
+        import_route : `str`
+        """
+        return '.'.join(self.path_parts)
     
     
     @property

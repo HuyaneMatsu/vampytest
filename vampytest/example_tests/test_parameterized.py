@@ -12,7 +12,7 @@ def input_generator():
     yield a, a
     
     b = 'apple'
-    yield b ,b
+    yield b, b
     
     c = int
     yield c, c

@@ -1,19 +1,13 @@
 __all__ = ()
 
-from ...result import (
-    ReportFailureAsserting, ReportFailureParameterMismatch, ReportFailureRaising, ReportFailureReturning
-)
+from scarletio import DEFAULT_ANSI_HIGHLIGHTER, HIGHLIGHT_TOKEN_TYPES, add_highlighted_part_into, render_exception_into
 
-from ..colors import COLOR_FAIL, COLOR_PATH
-from ..text_styling import style_text_into
+from ...file.load_failure import _ignore_module_import_frame
 
-from .result_rendering import (
-    render_report_asserting_into, render_report_output_into, render_report_parameter_mismatch_into,
-    render_report_raising_into, render_report_returning_into, render_report_reversed_into, render_wrapper_conflict_into
-)
+from .result_rendering import render_result_failing_into, render_result_informal_into
 
 
-def write_load_failure(output_writer, load_failure):
+def write_load_failure(output_writer, load_failure, highlighter):
     """
     Writes load failure.
     
@@ -21,20 +15,34 @@ def write_load_failure(output_writer, load_failure):
     ----------
     output_writer : ``OutputWriter``
         The output writer to write the output with.
+    
     load_failure : ``TestFileLoadFailure``
         Test file load failure.
+    
+    highlighter : `None | HighlightFormatterContext`
+        Highlighter to use.
     """
     message_parts = []
-    message_parts = style_text_into(message_parts, 'Exception occurred while loading:\n', COLOR_FAIL)
-    message_parts = style_text_into(message_parts, load_failure.path, COLOR_PATH)
+    message_parts = add_highlighted_part_into(
+        HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_TEXT_NEGATIVE, 'Exception occurred while loading:', highlighter, message_parts
+    )
+    message_parts.append('\n')
+    message_parts = add_highlighted_part_into(
+        HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_TRACE_LOCATION_PATH, load_failure.path, highlighter, message_parts
+    )
     message_parts.append('\n\n')
-    message_parts = style_text_into(message_parts, load_failure.exception_message, COLOR_FAIL)
+    message_parts = render_exception_into(
+        load_failure.exception,
+        message_parts,
+        filter = _ignore_module_import_frame,
+        highlighter = DEFAULT_ANSI_HIGHLIGHTER,
+    )
     
     output_writer.write_line(''.join(message_parts))
     output_writer.write_break_line()
 
 
-def write_result_failing(output_writer, result):
+def write_result_failing(output_writer, result, highlighter):
     """
     Writes a failing test.
     
@@ -42,40 +50,20 @@ def write_result_failing(output_writer, result):
     ----------
     output_writer : ``OutputWriter``
         The output writer to write the output with.
+    
     result : ``Result``
         The failing test.
+    
+    highlighter : `None | HighlightFormatterContext`
+        Highlighter to use.
     """
     message_parts = []
-    
-    if result.is_conflicted():
-        message_parts = render_wrapper_conflict_into(message_parts, result)
-    
-    elif result.reversed:
-        message_parts = render_report_reversed_into(message_parts, result)
-    
-    else:
-        failure_report = result.get_failure_report()
-        if isinstance(failure_report, ReportFailureAsserting):
-            message_parts = render_report_asserting_into(message_parts, result, failure_report)
-        
-        elif isinstance(failure_report, ReportFailureRaising):
-            message_parts = render_report_raising_into(message_parts, result, failure_report)
-        
-        elif isinstance(failure_report, ReportFailureReturning):
-            message_parts = render_report_returning_into(message_parts, result, failure_report)
-        
-        elif isinstance(failure_report, ReportFailureParameterMismatch):
-            message_parts = render_report_parameter_mismatch_into(message_parts, result, failure_report)
-            
-        else:
-            # No other case.
-            return
-        
+    message_parts = render_result_failing_into(result, highlighter, message_parts)
     output_writer.write_line(''.join(message_parts))
     output_writer.write_break_line()
 
 
-def write_result_informal(output_writer, result):
+def write_result_informal(output_writer, result, highlighter):
     """
     Writes the extra information attached to the test.
     
@@ -83,15 +71,15 @@ def write_result_informal(output_writer, result):
     ----------
     output_writer : ``OutputWriter``
         The output writer to write the output with.
+    
     result : ``Result``
         The informal test.
+    
+    highlighter : `None | HighlightFormatterContext`
+        Highlighter to use.
     """
-    output_report = result.get_output_report()
-    if output_report is None:
-        return
-    
     message_parts = []
-    render_report_output_into(message_parts, result, output_report)
-    output_writer.write_line(''.join(message_parts))
-    output_writer.write_break_line()
-    
+    message_parts = render_result_informal_into(result, highlighter, message_parts)
+    if message_parts:
+        output_writer.write_line(''.join(message_parts))
+        output_writer.write_break_line()

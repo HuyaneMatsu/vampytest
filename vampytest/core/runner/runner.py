@@ -5,7 +5,7 @@ from functools import partial as partial_func
 from os import getcwd as get_current_working_directory
 from os.path import sep as PATH_SEPARATOR
 
-from scarletio import RichAttributeErrorBaseType, include, render_exception_into
+from scarletio import DEFAULT_ANSI_HIGHLIGHTER, RichAttributeErrorBaseType, include, render_exception_into
 
 from ... import __package__ as PACKAGE_NAME
 from ...return_codes import (
@@ -102,7 +102,7 @@ def _ignore_test_call_frame(frame):
     return should_show_frame
 
 
-def _render_event_exception(event_handler, event, err):
+def _render_event_exception(event_handler, event, exception):
     """
     Renders exception occurred inside of en event handler.
     
@@ -114,7 +114,7 @@ def _render_event_exception(event_handler, event, err):
     event : ``EventBase``
         The dispatched event.
     
-    err : `BaseException`
+    exception : `BaseException`
         The occurred exception.
     """
     
@@ -126,7 +126,12 @@ def _render_event_exception(event_handler, event, err):
         '\n\n'
     ]
     
-    render_exception_into(err, exception_message_parts, filter = _ignore_test_call_frame)
+    exception_message_parts = render_exception_into(
+        exception,
+        exception_message_parts,
+        filter = _ignore_test_call_frame,
+        highlighter = DEFAULT_ANSI_HIGHLIGHTER,
+    )
     
     return ''.join(exception_message_parts)
 

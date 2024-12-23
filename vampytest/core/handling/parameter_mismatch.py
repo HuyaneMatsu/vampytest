@@ -1,4 +1,4 @@
-__all__ = ()
+__all__ = ('ParameterMismatch',)
 
 from scarletio import RichAttributeErrorBaseType
 
@@ -15,12 +15,12 @@ class ParameterMismatch(RichAttributeErrorBaseType):
         Extra positional parameters that would been passed.
     keyword_parameters : `None | dict<str, object>`
         Keyword parameters to call the test with.
-    parameters : `list<parameter>`
+    parameters : `list<Parameter>`
         The test's parameters.
     positional_parameters : `None | list<object>`
         Positional parameters to call the test with.
     unsatisfied_parameters : `None | list<Parameter>`
-        Parameters that would nto be satisfied.
+        Parameters that would not be satisfied.
     """
     __slots__ = (
         'extra_keyword_parameters', 'extra_positional_parameters', 'keyword_parameters', 'parameters',
@@ -41,14 +41,14 @@ class ParameterMismatch(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        parameters : `list<parameter>`
+        parameters : `list<Parameter>`
             The test's parameters.
         positional_parameters : `None | list<object>`
             Positional parameters to call the test with.
         keyword_parameters : `None | dict<str, object>`
             Keyword parameters to call the test with.
         unsatisfied_parameters : `None | list<Parameter>`
-            Parameters that would nto be satisfied.
+            Parameters that would not be satisfied.
         extra_positional_parameters : `None | list<object>`
             Extra positional parameters that would been passed.
         extra_keyword_parameters : `None | dict<str, object>`
@@ -66,7 +66,7 @@ class ParameterMismatch(RichAttributeErrorBaseType):
     
     def __repr__(self):
         """Returns the parameter mismatch's representation."""
-        repr_parts = ['<', self.__class__.__name__]
+        repr_parts = ['<', type(self).__name__]
         
         repr_parts.append(' parameters = ')
         repr_parts.append(repr(self.parameters))

@@ -9,7 +9,7 @@ def test__has_init__false():
     """
     Tests whether ``has_init`` is works as intended.
     
-    Case: Does nto exist.
+    Case: Does not exist.
     """
     path = '/orin'
     

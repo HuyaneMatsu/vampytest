@@ -321,7 +321,7 @@ class Handle(RichAttributeErrorBaseType):
             if isinstance(raised_exception, AssertionException):
                 test_result = test_result.with_assertion(raised_exception)
             else:
-                test_result = test_result.with_exception(None, raised_exception, False)
+                test_result = test_result.with_exception(None, False, raised_exception)
         
         return test_result
     
@@ -388,13 +388,13 @@ class Handle(RichAttributeErrorBaseType):
             self._close_contexts(contexts, test_result)
     
     
-    def get_test_documentation(self):
+    def get_test_documentation_lines(self):
         """
-        Returns the test's documentation.
+        Returns the test's documentation's lines if it has any.
         
         Returns
         -------
-        documentation : `None`, `str`
+        documentation : `None | list<str>`
         """
         test_name = getattr(self.test, '__name__', None)
         if (test_name is None) or (not isinstance(test_name, str)):
@@ -451,20 +451,4 @@ class Handle(RichAttributeErrorBaseType):
             del lines[0]
             continue
         
-        
-        documentation_parts = []
-        index = 0
-        line_count = len(lines)
-        
-        while True:
-            documentation_parts.append('> ')
-            documentation_parts.append(lines[index])
-            
-            index += 1
-            if index == line_count:
-                break
-            
-            documentation_parts.append('\n')
-            continue
-        
-        return ''.join(documentation_parts)
+        return lines

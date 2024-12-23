@@ -61,7 +61,7 @@ class Result(RichAttributeErrorBaseType):
     
     def __repr__(self):
         """Returns the test result's representation."""
-        repr_parts = ['<', self.__class__.__name__]
+        repr_parts = ['<', type(self).__name__]
         
         
         conflict = self.conflict
@@ -169,24 +169,26 @@ class Result(RichAttributeErrorBaseType):
         return self
     
     
-    def with_exception(self, expected_exceptions, received_exception, exact_type):
+    def with_exception(self, expected_exceptions, accept_subtypes, received_exception):
         """
         Adds unexpected exception as test result.
         
         Parameters
         ----------
-        expected_exceptions : `None`, `set` of `BaseException`
+        expected_exceptions : `None | set<type<BaseException> | instance<BaseException>>`
             A set of the expected exceptions.
-        received_exception : `None`, ``BaseException``
+        
+        accept_subtypes : `bool`
+            Whether exception subclasses are allowed
+        
+        received_exception : `None | BaseException`
             The received exception.
-        exact_type : `bool`
-            Whether exception subclasses are disallowed.
         
         Returns
         -------
         self : `instance<type<self>>`
         """
-        report = ReportFailureRaising(expected_exceptions, received_exception, exact_type)
+        report = ReportFailureRaising(expected_exceptions, accept_subtypes, received_exception)
         self._add_report(report)
         return self
     

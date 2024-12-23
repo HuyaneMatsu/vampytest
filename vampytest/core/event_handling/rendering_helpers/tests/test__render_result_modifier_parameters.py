@@ -1,16 +1,36 @@
-from vampytest import assert_instance, call_with
+from ....assertions import assert_instance
+from ....utils import _
+from ....wrappers import call_from
 
 from ..result_modifier_parameters import render_result_modifier_parameters
 
 
-@call_with(None)
-@call_with((None, None),)
-@call_with((None, {'a': 'b'}),)
-@call_with((['a'], None),)
-@call_with((['a', 'b'], {'a': 'b', 'c': 'd'}),)
+def _iter_options():
+    yield None, ''
+    yield (None, None), ''
+    yield (None, {'a': 'b'}), '[a = \'b\']'
+    yield (['a'], None), '[\'a\']'
+    yield (['a', 'b'], {'a': 'b', 'c': 'd'}),'[\'a\', \'b\', a = \'b\', c = \'d\']'
+
+
+@_(call_from(_iter_options()).returning_last())
 def test__render_result_modifier_parameters(parameters):
-    output = render_result_modifier_parameters([], parameters)
-    assert_instance(output, list)
+    """
+    Tests whether ``render_result_modifier_parameters`` works as intended.
     
-    for value in output:
-        assert_instance(value, str)
+    Parameters
+    ----------
+    modifier_parameters : `None | (None | list<object>, None | dict<str, object)`
+        Positional - keyword parameters pair.
+    
+    Returns
+    -------
+    output : `str`
+    """
+    into = render_result_modifier_parameters(parameters, [])
+    
+    assert_instance(into, list)
+    for element in into:
+        assert_instance(element, str)
+    
+    return ''.join(into)

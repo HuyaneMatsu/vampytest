@@ -45,9 +45,9 @@ setup(
             'vampytest = vampytest.__main__:__main__'
         ],
     },
-    include_package_data = True,
+    include_package_data = False,
     install_requires = [
-        'scarletio>=1.0.64',
+        'scarletio>=1.0.83',
     ],
     license = 'DBAD',
     long_description = README,

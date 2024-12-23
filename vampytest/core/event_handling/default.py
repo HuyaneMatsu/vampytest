@@ -1,18 +1,23 @@
 __all__ = ('create_default_event_handler_manager',)
 
-from scarletio import RichAttributeErrorBaseType, export
+from sys import platform as PLATFORM
+
+from scarletio import (
+    DEFAULT_ANSI_HIGHLIGHTER, HIGHLIGHT_TOKEN_TYPES, RichAttributeErrorBaseType, add_highlighted_part_into, export
+)
 
 from ..events import (
     FileLoadDoneEvent, FileRegistrationDoneEvent, FileTestingDoneEvent, SourceLoadFailureEvent, TestDoneEvent,
     TestingEndEvent
 )
 from .base import EventHandlerManager
-from .colors import COLOR_FAIL, COLOR_PASS, COLOR_SKIP, COLOR_UNKNOWN
 from .default_output_writer import OutputWriter
 from .rendering_helpers.load_failure_rendering import render_load_failure_exception
 from .rendering_helpers.result_modifier_parameters import build_result_modifier_parameters
 from .rendering_helpers.writers import write_load_failure, write_result_failing, write_result_informal
-from .text_styling import style_text
+
+
+IS_WINDOWS = PLATFORM == 'win32'
 
 
 @export
@@ -43,26 +48,42 @@ class DefaultEventFormatter(RichAttributeErrorBaseType):
     
     Attributes
     ----------
-    rendered_entries : `set` of ``FileSystemEntry``
+    highlighter : `None | HighlightFormatterContext`
+        Highlighter to use.
+    
+    rendered_entries : `set<FileSystemEntry>`
         The  already rendered file system entries.
+    
     output_writer : ``OutputWriter``
         The output writer to write the output with.
     """
-    __slots__ = ('rendered_entries', 'output_writer',)
+    __slots__ = ('highlighter', 'rendered_entries', 'output_writer',)
     
-    def __new__(cls, output_writer = None):
+    def __new__(cls, *, highlighter = ..., output_writer = ...):
         """
         Creates a new default event formatter.
         
         Parameters
         ----------
-        output_writer : `None`, ``OutputWriter` = `None`, Optional
+        highlighter : `None | HighlightFormatterContext`, Optional (Keyword only)
+            Highlighter to use.
+        
+        output_writer : `OutputWriter`, Optional (Keyword only)
             The output writer to write the output with.
         """
-        if (output_writer is None):
+        # highlighter
+        if highlighter is ...:
+            if IS_WINDOWS:
+                highlighter = None
+            else:
+                highlighter = DEFAULT_ANSI_HIGHLIGHTER
+        
+        # output_writer
+        if (output_writer is ...):
             output_writer = OutputWriter()
         
         self = object.__new__(cls)
+        self.highlighter = highlighter
         self.rendered_entries = set()
         self.output_writer = output_writer
         return self
@@ -70,7 +91,21 @@ class DefaultEventFormatter(RichAttributeErrorBaseType):
     
     def __repr__(self):
         """Returns the output formatter representation."""
-        return f'<{self.__class__.__name__} output_writer = {self.output_writer!r}>'
+        repr_parts = ['<', type(self).__name__]
+        
+        # highlighter
+        highlighter = self.highlighter
+        if (highlighter is not None):
+            repr_parts.append(' highlighter = ')
+            repr_parts.append(repr(highlighter))
+            repr_parts.append(',')
+        
+        # output_writer
+        repr_parts.append(' output_writer = ')
+        repr_parts.append(repr(self.output_writer))
+        
+        repr_parts.append('>')
+        return ''.join(repr_parts)
     
     
     def file_registration_done(self, event: FileRegistrationDoneEvent):
@@ -101,9 +136,10 @@ class DefaultEventFormatter(RichAttributeErrorBaseType):
             message_parts = self._maybe_render_test_file_into(
                 [],
                 file.entry,
-                name = style_text(
-                    file.entry.get_name(),
-                    COLOR_FAIL,
+                name = ''.join(
+                    add_highlighted_part_into(
+                        HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_TEXT_NEGATIVE, file.entry.get_name(), self.highlighter, []
+                    )
                 ),
             )
             
@@ -162,32 +198,36 @@ class DefaultEventFormatter(RichAttributeErrorBaseType):
         result = event.result
         if result.is_skipped():
             keyword = 'S'
-            foreground = COLOR_SKIP
+            token_type = HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_TEXT_NEUTRAL
         
         elif result.is_conflicted():
             keyword = 'C'
-            foreground = COLOR_FAIL
+            token_type = HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_TEXT_NEGATIVE
         
         elif result.is_informal():
             keyword = 'I'
-            foreground = COLOR_PASS
+            token_type = HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_TEXT_POSITIVE
         
         elif result.is_passed():
             keyword = 'P'
-            foreground = COLOR_PASS
+            token_type = HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_TEXT_POSITIVE
         
         elif result.is_failed():
             keyword = 'F'
-            foreground = COLOR_FAIL
+            token_type = HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_TEXT_NEGATIVE
         
         else:
             keyword = '?'
-            foreground = COLOR_UNKNOWN
+            token_type = HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_TEXT_UNKNOWN
         
         result_modifiers = build_result_modifier_parameters(result.get_modifier_parameters())
         message_parts = test_file.entry.render_custom_sub_directory_into(
             message_parts,
-            style_text(f'{keyword} {result.case.name}{result_modifiers}', foreground),
+            ''.join(
+                add_highlighted_part_into(
+                    token_type, f'{keyword} {result.case.name}{result_modifiers}', self.highlighter, []
+                )
+            ),
             result.is_last() and result.case.is_last(),
         )
         
@@ -224,35 +264,92 @@ class DefaultEventFormatter(RichAttributeErrorBaseType):
         
         load_failures = context.get_file_load_failures()
         for load_failure in load_failures:
-            write_load_failure(output_writer, load_failure)
+            write_load_failure(output_writer, load_failure, self.highlighter)
         
         for result in context.iter_failed_results():
-            write_result_failing(output_writer, result)
+            write_result_failing(output_writer, result, self.highlighter)
         
         failed_count = context.get_failed_test_count()
-        failed_message_part = f'{failed_count} failed'
-        if failed_count:
-            failed_message_part = style_text(failed_message_part, COLOR_FAIL)
-        else:
+        if not failed_count:
             for result in context.iter_informal_results():
-                write_result_informal(output_writer, result)
+                write_result_informal(output_writer, result, self.highlighter)
         
+        # build the summary line
+        message_parts = []
+        highlighter = self.highlighter
+        
+        # Failed
+        if failed_count:
+            token_type = HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_TEXT_NEGATIVE
+        else:
+            token_type = HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_TEXT
+        message_parts = add_highlighted_part_into(
+            token_type, f'{failed_count} failed', highlighter, message_parts
+        )
+        
+        # Separator
+        message_parts = add_highlighted_part_into(
+            HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_SPACE, ' ', highlighter, message_parts
+        )
+        message_parts = add_highlighted_part_into(
+            HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_TEXT, '|', highlighter, message_parts
+        )
+        message_parts = add_highlighted_part_into(
+            HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_SPACE, ' ', highlighter, message_parts
+        )
+        
+        # Skipped
         skipped_count = context.get_skipped_test_count()
-        skipped_message_part = f'{skipped_count} skipped'
         if skipped_count:
-            skipped_message_part = style_text(skipped_message_part, COLOR_SKIP)
+            token_type = HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_TEXT_NEUTRAL
+        else:
+            token_type = HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_TEXT
+        message_parts = add_highlighted_part_into(
+            token_type, f'{skipped_count} skipped', highlighter, message_parts
+        )
         
+        # Separator
+        message_parts = add_highlighted_part_into(
+            HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_SPACE, ' ', highlighter, message_parts
+        )
+        message_parts = add_highlighted_part_into(
+            HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_TEXT, '|', highlighter, message_parts
+        )
+        message_parts = add_highlighted_part_into(
+            HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_SPACE, ' ', highlighter, message_parts
+        )
         
+        # passed
         passed_count = context.get_passed_test_count()
-        passed_message_part = f'{passed_count} passed'
         if passed_count:
-            passed_message_part = style_text(passed_message_part, COLOR_PASS)
+            token_type = HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_TEXT_POSITIVE
+        else:
+            token_type = HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_TEXT
+        message_parts = add_highlighted_part_into(
+            token_type, f'{passed_count} passed', self.highlighter, message_parts
+        )
         
-        
-        output_writer.write(f'{failed_message_part} | {skipped_message_part} | {passed_message_part}')
         if load_failures:
-            output_writer.write(
-                style_text(f' | {len(load_failures)} files failed to load', COLOR_FAIL))
+            # Separator
+            message_parts = add_highlighted_part_into(
+                HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_SPACE, ' ', highlighter, message_parts
+            )
+            message_parts = add_highlighted_part_into(
+                HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_TEXT, '|', highlighter, message_parts
+            )
+            message_parts = add_highlighted_part_into(
+                HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_SPACE, ' ', highlighter, message_parts
+            )
+            
+            # load_failures
+            message_parts = add_highlighted_part_into(
+                HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_TEXT_NEGATIVE,
+                f'{len(load_failures)} files failed to load',
+                highlighter,
+                message_parts,
+            )
+        
+        output_writer.write(''.join(message_parts))
         output_writer.end_line()
     
     
@@ -268,5 +365,5 @@ class DefaultEventFormatter(RichAttributeErrorBaseType):
         output_writer = self.output_writer
         output_writer.write_line(f'Failed to import {event.source} from {event.context.runner._source_directory}')
         output_writer.write_break_line()
-        output_writer.write(render_load_failure_exception(event.exception))
+        output_writer.write(render_load_failure_exception(event.exception, self.highlighter))
         output_writer.end_line()

@@ -9,30 +9,31 @@ def build_result_modifier_parameters(modifier_parameters):
     
     Parameters
     ----------
-    modifier_parameters : `None | (None | list<object>, None | dict<str, object)`
+    modifier_parameters : `None | (None | list<object>, None | dict<str, object>)`
         Positional - keyword parameters pair.
     
     Returns
     -------
     built_value : `str`
     """
-    return ''.join(render_result_modifier_parameters([], modifier_parameters))
+    return ''.join(render_result_modifier_parameters(modifier_parameters, []))
 
 
-def render_result_modifier_parameters(into, modifier_parameters):
+def render_result_modifier_parameters(modifier_parameters, into):
     """
     Renders the result modifier parameters into the given container.
     
     Parameters
     ----------
-    into : `list` of `str`
-        String parts to render into.
-    modifier_parameters : `None | (None | list<object>, None | dict<str, object)`
+    modifier_parameters : `None | (None | list<object>, None | dict<str, object>)`
         Positional - keyword parameters pair.
+    
+    into : `list<str>`
+        String parts to render into.
     
     Returns
     ----------
-    into : `list` of `str`
+    into : `list<str>`
     """
     if modifier_parameters is None:
         return into

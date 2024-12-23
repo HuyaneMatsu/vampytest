@@ -11,13 +11,19 @@ class ReportOutput(ReportBase):
     
     Attributes
     ----------
-    str : `bool`
+    output : `str`
+        Test output.
     """
     __slots__ = ('output',)
     
     def __new__(cls, output):
         """
         Creates a new report.
+        
+        Attributes
+        ----------
+        output : `str`
+            Test output.
         """
         self =  object.__new__(cls)
         self.output = output
@@ -26,7 +32,14 @@ class ReportOutput(ReportBase):
     
     def __repr__(self):
         """Returns the report's representation."""
-        return ''.join(['<', self.__class__.__name__, ' output = ', repr(self.output), '>'])
+        repr_parts = ['<', type(self).__name__]
+        
+        # output
+        repr_parts.append(' output = ')
+        repr_parts.append(repr(self.output))
+        
+        repr_parts.append('>')
+        return ''.join(repr_parts)
     
     
     @copy_docs(ReportBase.is_informal)

@@ -18,7 +18,7 @@ class ReportBase(RichAttributeErrorBaseType):
     
     def __repr__(self):
         """Returns the report's representation."""
-        return ''.join(['<', self.__class__.__name__, '>'])
+        return ''.join(['<', type(self).__name__, '>'])
     
     
     def is_failure(self):

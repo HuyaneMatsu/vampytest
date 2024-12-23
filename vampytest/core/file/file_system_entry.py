@@ -8,6 +8,7 @@ from scarletio import RichAttributeErrorBaseType, WeakReferer
 
 PYTHON_EXTENSIONS = ('.py', '.pyd', '.pyc', '.so')
 
+
 def is_python_file(path):
     """
     Returns whether the given path refers to a python file.
@@ -377,7 +378,7 @@ class FileSystemEntry(RichAttributeErrorBaseType):
         return into
     
     
-    def render_custom_sub_directory_into(self, into, name, is_last):
+    def render_custom_sub_directory_into(self, into, name, last):
         """
         Renders a custom sub directory.
         
@@ -387,7 +388,7 @@ class FileSystemEntry(RichAttributeErrorBaseType):
             List to render self into.
         name : `str`
             The name of the sub-directory.
-        is_last : `bool`
+        last : `bool`
             Whether self is the last element on the line.
         
         Returns
@@ -406,7 +407,7 @@ class FileSystemEntry(RichAttributeErrorBaseType):
             else:
                 into.append('│  ')
         
-        if is_last:
+        if last:
             into.append('└─ ')
         else:
             into.append('├─ ')

@@ -14,6 +14,6 @@ def _(value):
     
     Returns
     -------
-    value : `object`
+    value : `value`
     """
     return value

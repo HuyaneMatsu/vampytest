@@ -1,11 +1,11 @@
 __all__ = ()
 
-from scarletio import DEFAULT_ANSI_HIGHLIGHTER, render_exception_into
+from scarletio import render_exception_into
 
 from ...runner.runner import __file__ as VAMPYTEST_RUNNER_FILE_PATH
 
 
-def ignore_invoke_test_frame(frame):
+def _ignore_invoke_test_frame(frame):
     """
     Ignores the frame where the import was called from.
     
@@ -33,7 +33,7 @@ def ignore_invoke_test_frame(frame):
     return should_show_frame
 
 
-def render_load_failure_exception(exception):
+def render_load_failure_exception(exception, highlighter):
     """
     Renders load failure exception
     
@@ -41,6 +41,9 @@ def render_load_failure_exception(exception):
     ----------
     exception : ``BaseException``
         The raised exception.
+    
+    highlighter : `None | HighlightFormatterContext`
+        Highlighter to use.
     
     Returns
     -------
@@ -50,7 +53,7 @@ def render_load_failure_exception(exception):
         render_exception_into(
             exception,
             [],
-            filter = ignore_invoke_test_frame,
-            highlighter = DEFAULT_ANSI_HIGHLIGHTER
+            filter = _ignore_invoke_test_frame,
+            highlighter = highlighter,
         )
     )
