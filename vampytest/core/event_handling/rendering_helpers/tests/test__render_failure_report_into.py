@@ -203,7 +203,7 @@ def _iter_options():
             '\n'
             'Given parameters: N/A\n'
             '\n'
-            'Unsatisfied function parameters:'
+            'Unsatisfied function parameters:\n'
             '    yukari\n'
         ),
     )
@@ -250,7 +250,7 @@ def _iter_options():
             '    ran = \'pocky\'\n'
             '    marisa = \'stew\'\n'
             '\n'
-            'Unsatisfied function parameters:'
+            'Unsatisfied function parameters:\n'
             '    chen\n'
             '\n'
             'Extra parameters:\n'
@@ -289,7 +289,7 @@ def _iter_options():
             '\n'
             'Given parameters: N/A\n'
             '\n'
-            'Unsatisfied function parameters:'
+            'Unsatisfied function parameters:\n'
             '    yukari\n'
         ),
     )

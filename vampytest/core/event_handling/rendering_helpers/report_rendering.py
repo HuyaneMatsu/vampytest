@@ -420,6 +420,7 @@ def _render_report_parameter_mismatch_into(
         into = add_highlighted_part_into(
             HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_TEXT_TITLE, 'Unsatisfied function parameters:', highlighter, into
         )
+        into.append('\n')
         into = _render_unsatisfied_parameters_into(unsatisfied_parameters, highlighter, into)
     
     extra_positional_parameters = parameter_mismatch.extra_positional_parameters

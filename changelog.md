@@ -1,3 +1,9 @@
+## 0.0.22 *\[2024-12-28\]*
+
+### Bug fixes
+
+- In reports `Unsatisfied function parameters` section was not rendering as intended.
+
 ## 0.0.21 *\[2024-12-23\]*
 
 ### Improvements
