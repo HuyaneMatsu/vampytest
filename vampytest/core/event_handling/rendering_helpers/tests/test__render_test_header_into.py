@@ -51,7 +51,7 @@ def _iter_options():
         ),
     )
     
-    # with call state
+    # with call state (parameters)
     yield (
         'Hey mister',
         ('here', 'there'),
@@ -65,6 +65,21 @@ def _iter_options():
             'Parameters:\n'
             '    12\n'
             '    mister = int\n'
+        ),
+    )
+    
+    # with call state (named)
+    yield (
+        'Hey mister',
+        ('here', 'there'),
+        'this',
+        None,
+        CallState().with_name('koishi'),
+        None,
+        (
+            'Hey mister at: here.there:this\n'
+            '\n'
+            'Named: koishi\n'
         ),
     )
     

@@ -370,8 +370,8 @@ def test_values_equal(value_0, value_1):
 @vampytest.raising(ValueError)
 @vampytest.call_with('apple')
 @vampytest.call_with('peach')
-def test_convert_to_int(fruit):
-    return int(fruit)
+def test_convert_to_int(value):
+    return int(value)
 ```
 
 It is also possible to define the expected output for each set of input.
@@ -383,8 +383,8 @@ import vampytest
 @vampytest.call_with('apple').raising(ValueError)
 @vampytest.call_with('peach').raising(ValueError)
 @vampytest.call_with('12').returning(12)
-def test_convert_to_int(fruit):
-    return int(fruit)
+def test_convert_to_int(value):
+    return int(value)
 ```
 
 For cases when the returned value could be easily calculated from the input parameters the `returning_transformed`
@@ -441,6 +441,59 @@ def test_get_item_fails(container, key):
 <div align="right">[ <a href="#table-of-contents">↑ Back to top ↑</a> ]</div>
 
 ---
+
+### Named test cases
+
+More test cases mean more confusion. To avoid this each test case can also be named.
+
+```py3
+import vampytest
+
+THRESHOLD = 10
+
+@vampytest.named('over threshold').call_with(THRESHOLD + 1).returning(True)
+@vampytest.named('at threshold').call_with(THRESHOLD).returning(True)
+@vampytest.named('under threshold').call_with(THRESHOLD - 1).returning(False)
+def test_over_or_equal_to_threshold(value):
+    return value >= THRESHOLD
+```
+
+This is particularly true when using generator(s) to produce the test cases.
+When there are many scenarios it becomes cumbersome to find out which one exactly failed even tho the calling parameters
+are listed to help debugging.
+Comments are also nice in the code, but they still do not point at the exact location.
+As a guardian angel, the named test cases descend to save the day.
+
+```py3
+import vampytest
+
+THRESHOLD = 10
+
+def _iter_options():
+    yield (
+        'over threshold',
+        THRESHOLD + 1,
+        True,
+    )
+    
+    yield (
+        'at threshold',
+        THRESHOLD,
+        True,
+    )
+    
+    yield (
+        'under threshold',
+        THRESHOLD - 1,
+        False,
+    )
+
+
+@vampytest.call_from(_iter_options()).named_first().returning_last()
+def test_over_or_equal_to_threshold(value):
+    return value >= THRESHOLD
+```
+
 
 ### Skipping tests
 

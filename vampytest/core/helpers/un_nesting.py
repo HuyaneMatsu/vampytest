@@ -73,7 +73,7 @@ def un_nest_exceptions(exceptions):
         
         raise TypeError(
             f'`exception` can be `BaseException` or its instance, `tuple` of (`BaseException`, ...)`, '
-            f'got {exception.__class__.__name__}; {exception!r}.'
+            f'got {type(exception).__name__}; {exception!r}.'
         )
     
     return exceptions

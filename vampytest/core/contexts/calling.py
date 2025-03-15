@@ -56,6 +56,11 @@ class ContextCalling(ContextBase):
                 wrapper_calling.calling_keyword_parameters,
             )
         
+        if wrapper_calling.is_named():
+            call_state = call_state.with_name(
+                wrapper_calling.name,
+            )
+        
         return (None, call_state)
     
     

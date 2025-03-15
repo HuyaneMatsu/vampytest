@@ -34,7 +34,7 @@ class Handle(RichAttributeErrorBaseType):
         Result state created from the test's result.
     test : ``FunctionType``
         The test to invoke.
-    wrappers : `None`, `tuple` of ``WrapperBase``
+    wrappers : `None | list<WrapperBase>`
         Wrappers wrapping the test.
     """
     __slots__ = (
@@ -52,7 +52,7 @@ class Handle(RichAttributeErrorBaseType):
             The parent test case.
         test : `FunctionType`
             The test to call.
-        wrappers : `None`, `tuple` of ``WrapperBase``
+        wrappers : `None | list<WrapperBase>
             Wrappers wrapping the test.
         environments : `None`, `tuple` of ``Environment``
             Environments to use to use when testing.

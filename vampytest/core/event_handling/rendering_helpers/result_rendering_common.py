@@ -113,15 +113,52 @@ def render_test_header_into(token_type, title, path_parts, name, documentation_l
             continue
     
     # call_state (parameters)
-    if (call_state is not None) and call_state:
-        into = render_parameters_section_into(
-            'Parameters:',
-            call_state.positional_parameters,
-            call_state.keyword_parameters,
-            highlighter,
-            into,
-        )
+    if (call_state is not None):
+        case_name = call_state.name
+        if (case_name is not None):
+            into = render_case_name_section_into(case_name, highlighter, into)
+        
+        positional_parameters = call_state.positional_parameters
+        keyword_parameters = call_state.keyword_parameters
+        
+        if (positional_parameters is not None) or (keyword_parameters is not None):
+            into = render_parameters_section_into(
+                'Parameters:',
+                positional_parameters,
+                keyword_parameters,
+                highlighter,
+                into,
+            )
     
+    return into
+
+
+def render_case_name_section_into(name, highlighter, into):
+    """
+    Renders the test case's name into the given list.
+    
+    Parameters
+    ----------
+    name : `str`
+        The test case's name.
+    
+    highlighter : `None | HighlightFormatterContext`
+        Highlighter to use.
+    
+    into : `list<str>`
+        A list to put the string parts into.
+    
+    Returns
+    -------
+    into : `list<str>`
+    """
+    into.append('\n')
+    into = add_highlighted_part_into(
+        HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_TEXT_TITLE, 'Named:', highlighter, into
+    )
+    into = add_highlighted_part_into(HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_SPACE, ' ', highlighter, into)
+    into = add_highlighted_part_into(HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_TEXT_TITLE, name, highlighter, into)
+    into.append('\n')
     return into
 
 

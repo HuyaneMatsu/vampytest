@@ -24,16 +24,16 @@ def test__values_equal__section_1(value_0, value_1):
 @vampytest.raising(ValueError)
 @vampytest.call_with('apple')
 @vampytest.call_with('peach')
-def test_convert_to_int__section_1(fruit):
-    return int(fruit)
+def test_convert_to_int__section_1(value):
+    return int(value)
 
 # Section 2
 
 @vampytest._(vampytest.call_with('apple').raising(ValueError))
 @vampytest._(vampytest.call_with('peach').raising(ValueError))
 @vampytest._(vampytest.call_with('12').returning(12))
-def test_convert_to_int__section_2(fruit):
-    return int(fruit)
+def test_convert_to_int__section_2(value):
+    return int(value)
 
 # Section 3
 

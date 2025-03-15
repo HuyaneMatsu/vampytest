@@ -1,5 +1,6 @@
 __all__ = (
-    'call_from', 'call_with', 'in_environment', 'raising', 'returning', 'reverse', 'skip', 'skip_if', 'with_gc',
+    'call_from', 'call_with', 'in_environment', 'named', 'raising', 'returning', 'reverse', 'skip', 'skip_if',
+    'with_gc',
 )
 
 
@@ -14,6 +15,7 @@ from .wrapper_skip_conditional import WrapperSkipConditional
 call_from = WrapperCallingFrom.calling_from_constructor
 call_with = WrapperCalling.call_with_constructor
 in_environment = WrapperEnvironment
+named = WrapperCalling.named_constructor
 raising = WrapperCalling.raising_constructor
 returning = WrapperCalling.returning_constructor
 reverse = WrapperReverse

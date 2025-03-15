@@ -1,3 +1,16 @@
+## 0.0.23 *\[2025-03-15\]*
+
+### Improvements
+
+- Test cases and any other wrappers now kept in the order of addition.
+- Add "`named`" wrapper.
+- Add `WrapperCalling.named`.
+- Add `WrapperCallingFrom.named`.
+- Add `WrapperCallingFrom.named_first`.
+- Add `CallState.name`. 
+- Modify `Result.get_modifier_parameters` to `get_final_call_state`, since now we require also the name, so returning
+  the whole call state sounds more reasonable.
+
 ## 0.0.22 *\[2024-12-28\]*
 
 ### Bug fixes

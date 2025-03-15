@@ -79,7 +79,7 @@ class TestCase(RichAttributeErrorBaseType):
     
     def __repr__(self):
         """Returns the test case's representation."""
-        repr_parts = ['<', self.__class__.__name__]
+        repr_parts = ['<', type(self).__name__]
         
         repr_parts.append(' name = ')
         repr_parts.append(repr(self.name))
@@ -193,7 +193,8 @@ class TestCase(RichAttributeErrorBaseType):
             environments = None
         
         else:
-            wrapper_groups = set()
+            wrapper_groups_unique = set()
+            wrapper_groups = []
             
             environment_wrappers = [*wrapper.iter_environments()]
             if environment_wrappers:
@@ -204,6 +205,7 @@ class TestCase(RichAttributeErrorBaseType):
             wrappers = [wrapper for wrapper in wrapper.iter_wrappers() if not wrapper.is_ignored_when_testing()]
             
             for initial_wrapper in wrappers:
+                wrapper_group_unique = {initial_wrapper}
                 wrapper_group = [initial_wrapper]
                 
                 for wrapper in wrappers:
@@ -216,11 +218,19 @@ class TestCase(RichAttributeErrorBaseType):
                     if any(wrapper_to_check.is_mutually_exclusive_with(wrapper) for wrapper_to_check in wrapper_group):
                         continue
                     
+                    if wrapper in wrapper_group_unique:
+                        continue
+                    
                     wrapper_group.append(wrapper)
+                    wrapper_group_unique.add(wrapper)
                     continue
                 
-                wrapper_group = frozenset(wrapper_group)
-                wrapper_groups.add(wrapper_group)
+                wrapper_group_unique = frozenset(wrapper_group_unique)
+                if wrapper_group_unique in wrapper_groups_unique:
+                    continue
+                
+                wrapper_groups.append(wrapper_group)
+                wrapper_groups_unique.add(wrapper_group_unique)
             
             if not wrapper_groups:
                 wrapper_groups = None
@@ -232,9 +242,6 @@ class TestCase(RichAttributeErrorBaseType):
         
         else:
             for wrapper_group in wrapper_groups:
-                if (wrapper_group is not None):
-                    wrapper_group = tuple(wrapper_group)
-                
                 yield Handle(self, test, wrapper_group, environments)
     
     

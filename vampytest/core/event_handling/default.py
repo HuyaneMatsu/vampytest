@@ -13,7 +13,7 @@ from ..events import (
 from .base import EventHandlerManager
 from .default_output_writer import OutputWriter
 from .rendering_helpers.load_failure_rendering import render_load_failure_exception
-from .rendering_helpers.result_modifier_parameters import build_result_modifier_parameters
+from .rendering_helpers.case_modifiers import build_case_modifier
 from .rendering_helpers.writers import write_load_failure, write_result_failing, write_result_informal
 
 
@@ -220,12 +220,12 @@ class DefaultEventFormatter(RichAttributeErrorBaseType):
             keyword = '?'
             token_type = HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_TEXT_UNKNOWN
         
-        result_modifiers = build_result_modifier_parameters(result.get_modifier_parameters())
+        modifier = build_case_modifier(result.get_final_call_state())
         message_parts = test_file.entry.render_custom_sub_directory_into(
             message_parts,
             ''.join(
                 add_highlighted_part_into(
-                    token_type, f'{keyword} {result.case.name}{result_modifiers}', self.highlighter, []
+                    token_type, f'{keyword} {result.case.name}{modifier}', self.highlighter, []
                 )
             ),
             result.is_last() and result.case.is_last(),

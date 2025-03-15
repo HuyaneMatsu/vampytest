@@ -2,6 +2,8 @@ __all__ = ('Result',)
 
 from scarletio import RichAttributeErrorBaseType, export
 
+from ..wrappers import WrapperCalling
+
 from .reports import (
     ReportFailureAsserting, ReportFailureParameterMismatch, ReportFailureRaising, ReportFailureReturning, ReportOutput
 )
@@ -377,13 +379,13 @@ class Result(RichAttributeErrorBaseType):
         return (not self.continuous)
     
     
-    def get_modifier_parameters(self):
+    def get_final_call_state(self):
         """
-        Returns the test's modifier parameters.
+        Returns the test's final call state parameters.
         
         Returns
         -------
-        modifier_parameters : `None | (None | list<object>, None | dict<str, object)`
+        call_state : `None | CallState`
         """
         handle = self.handle
         if handle is None:
@@ -396,7 +398,7 @@ class Result(RichAttributeErrorBaseType):
         if not final_call_state:
             return None
         
-        return final_call_state.positional_parameters, final_call_state.keyword_parameters
+        return final_call_state
     
     
     def iter_reports(self):

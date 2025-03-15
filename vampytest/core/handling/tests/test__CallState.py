@@ -1,4 +1,4 @@
-from ...assertions import assert_eq, assert_in, assert_instance, assert_is, assert_is_not, assert_ne, assert_not_in
+from ...assertions import assert_eq, assert_in, assert_instance, assert_is, assert_is_not, assert_not_in
 from ...utils import _
 from ...wrappers import call_from
 
@@ -16,6 +16,7 @@ def _assert_fields_set(call_state):
     """
     assert_instance(call_state, CallState)
     assert_instance(call_state.keyword_parameters, dict, nullable = True)
+    assert_instance(call_state.name, str, nullable = True)
     assert_instance(call_state.positional_parameters, list, nullable = True)
 
 
@@ -41,9 +42,10 @@ def test__CallState__repr__clean():
     output = repr(call_state)
     
     assert_instance(output, str)
-    assert_in(call_state.__class__.__name__, output)
+    assert_in(type(call_state).__name__, output)
     assert_not_in('positional_parameters = ', output)
     assert_not_in('keyword_parameters = ', output)
+    assert_not_in('name = ', output)
 
 
 def test__CallState__repr__positional():
@@ -57,9 +59,10 @@ def test__CallState__repr__positional():
     output = repr(call_state)
     
     assert_instance(output, str)
-    assert_in(call_state.__class__.__name__, output)
+    assert_in(type(call_state).__name__, output)
     assert_in('positional_parameters = ', output)
     assert_not_in('keyword_parameters = ', output)
+    assert_not_in('name = ', output)
 
 
 def test__CallState__repr__keyword():
@@ -76,9 +79,10 @@ def test__CallState__repr__keyword():
     assert_in(call_state.__class__.__name__, output)
     assert_not_in('positional_parameters = ', output)
     assert_in('keyword_parameters = ', output)
+    assert_not_in('name = ', output)
 
 
-def test__CallState__repr__both():
+def test__CallState__repr__positional_and_keyword():
     """
     Tests whether ``CallState.__repr__`` works as intended.
     
@@ -92,54 +96,203 @@ def test__CallState__repr__both():
     assert_in(call_state.__class__.__name__, output)
     assert_in('positional_parameters = ', output)
     assert_in('keyword_parameters = ', output)
+    assert_not_in('name = ', output)
 
 
-def test__CallState__eq():
+
+def test__CallState__repr__named():
+    """
+    Tests whether ``CallState.__repr__`` works as intended.
+    
+    Case: with name.
+    """
+    call_state = CallState().with_name('orin')
+    
+    output = repr(call_state)
+    
+    assert_instance(output, str)
+    assert_in(call_state.__class__.__name__, output)
+    assert_not_in('positional_parameters = ', output)
+    assert_not_in('keyword_parameters = ', output)
+    assert_in('name = ', output)
+
+
+def _iter_options__eq():
+    yield (
+        (
+            (CallState.with_parameters, (['koishi'], {'satori': 'smug'})),
+            (CallState.with_name, ('orin',)),
+        ),
+        (
+            (CallState.with_parameters, (['koishi'], {'satori': 'smug'})),
+            (CallState.with_name, ('orin',)),
+        ),
+        True,
+    )
+    
+    yield (
+        (
+            (CallState.with_parameters, (['koishi'], {'satori': 'smug'})),
+            (CallState.with_name, ('orin',)),
+        ),
+        (
+            (CallState.with_parameters, (None, {'satori': 'smug'})),
+            (CallState.with_name, ('orin',)),
+        ),
+        False,
+    )
+    
+    yield (
+        (
+            (CallState.with_parameters, (['koishi'], {'satori': 'smug'})),
+            (CallState.with_name, ('orin',)),
+        ),
+        (
+            (CallState.with_parameters, (['koishi'], None)),
+            (CallState.with_name, ('orin',)),
+        ),
+        False,
+    )
+    
+    yield (
+        (
+            (CallState.with_parameters, (['koishi'], {'satori': 'smug'})),
+            (CallState.with_name, ('orin',)),
+        ),
+        (
+            (CallState.with_parameters, (['koishi'], {'satori': 'smug'})),
+            (CallState.with_name, ('okuu',)),
+        ),
+        False,
+    )
+    
+    yield (
+        (
+            (CallState.with_parameters, (['koishi'], {'satori': 'smug'})),
+            (CallState.with_name, ('orin',)),
+        ),
+        (
+            (CallState.with_name, ('orin',)),
+        ),
+        False,
+    )
+    
+    yield (
+        (
+            (CallState.with_parameters, (['koishi'], {'satori': 'smug'})),
+            (CallState.with_name, ('orin',)),
+        ),
+        (
+            (CallState.with_parameters, (['koishi'], {'satori': 'smug'})),
+        ),
+        False,
+    )
+    
+    yield (
+        (
+            (CallState.with_parameters, (['koishi'], {'satori': 'smug'})),
+            (CallState.with_name, ('orin',)),
+        ),
+        None,
+        False,
+    )
+
+
+@_(call_from(_iter_options__eq()).returning_last())
+def test__CallState__eq(prepare_functions_and_parameters_0, prepare_functions_and_parameters_1):
     """
     Tests whether ``CallState.__eq__`` works as intended.
+    
+    Parameters
+    ----------
+    prepare_functions_and_parameters_0 : `None | tuple<(FunctionType, tuple<object>)>`
+        Functions and parameters for the to prepare an instance for the test.
+    
+    prepare_functions_and_parameters_1 : `None | tuple<(FunctionType, tuple<object>)>`
+        Functions and parameters for the to prepare an instance for the test.
+    
+    Returns
+    -------
+    output : `bool`
     """
-    call_state = CallState().with_parameters(['koishi'], {'satori': 'smug'})
+    call_state_0 = CallState()
+    if (prepare_functions_and_parameters_0 is not None):
+        for prepare_function, parameters in prepare_functions_and_parameters_0:
+            call_state_0 = prepare_function(call_state_0, *parameters)
     
-    assert_eq(call_state, call_state)
-    assert_ne(call_state, object())
+    call_state_1 = CallState()
+    if (prepare_functions_and_parameters_1 is not None):
+        for prepare_function, parameters in prepare_functions_and_parameters_1:
+            call_state_1 = prepare_function(call_state_1, *parameters)
     
-    for with_parameters in (
-        (None, None), (['koishi'], None), (None, {'satori': 'smug'}), (['orin'], {'satori': 'smug'}),
-        (['koishi'], {'okuu': 'smug'}), (['koishi'], {'satori': 'parsee'}),):
-        test_call_state = CallState().with_parameters(*with_parameters)
-        assert_ne(test_call_state, call_state)
+    output = call_state_0 == call_state_1
+    assert_instance(output, bool)
+    return output
 
 
 def test__CallState__hash():
     """
     Tests whether ``CallState.__hash__`` works as intended.
     """
-    call_state = CallState().with_parameters(['koishi'], {'satori': 'smug'})
+    call_state = CallState().with_parameters(['koishi'], {'satori': 'smug'}).with_name('orin')
     
     assert_instance(hash(call_state), int)
 
 
 def _iter_options__bool():
-    yield CallState(), False
-    yield CallState().with_parameters(['koishi'], None), True
-    yield CallState().with_parameters(None, {'satori': 'smug'}), True
-    yield CallState().with_parameters(['koishi'], {'satori': 'smug'}), True
+    yield (
+        None,
+        False,
+    )
+    
+    yield (
+        (
+            (CallState.with_parameters, (['koishi'], None)),
+        ),
+        True,
+    )
+    
+    yield (
+        (
+            (CallState.with_parameters, (None, {'satori': 'smug'})),
+        ),
+        True,
+    )
+    
+    yield (
+        (
+            (CallState.with_parameters, (['koishi'], {'satori': 'smug'})),
+        ),
+        True,
+    )
+    
+    yield (
+        (
+            (CallState.with_name, ('orin',)),
+        ),
+        True,
+    )
 
 
 @_(call_from(_iter_options__bool()).returning_last())
-def test__CallState__bool(call_state):
+def test__CallState__bool(prepare_functions_and_parameters):
     """
     Tests whether ``CallState.__bool__`` works as intended.
     
     Parameters
     ----------
-    call_state : ``CallState``
-        The call state to gets its truth value of.
+    prepare_functions_and_parameters : `None | tuple<(FunctionType, tuple<object>)>`
+        Functions and parameters for the to prepare an instance for the test.
     
     Returns
     -------
     output : `bool`
     """
+    call_state = CallState()
+    if (prepare_functions_and_parameters is not None):
+        for prepare_function, parameters in prepare_functions_and_parameters:
+            call_state = prepare_function(call_state, *parameters)
+    
     return bool(call_state)
 
 
@@ -175,65 +328,192 @@ def test__CallState__copy__all_fields():
 
 def _iter_options__with_parameters():
     # Nothing
-    call_state_out = CallState()
-    yield CallState(), None, None, call_state_out
+    yield (
+        None,
+        (
+            (CallState.with_parameters, (None, None)),
+        ),
+        (
+            None,
+            None,
+            None,
+        )
+    )
     
-    # Empty
-    call_state_out = CallState()
-    yield CallState(), [], None, call_state_out
+    # empty list
+    yield (
+        None,
+        (
+            (CallState.with_parameters, ([], None)),
+        ),
+        (
+            None,
+            None,
+            None,
+        )
+    )
     
-    call_state_out = CallState()
-    yield CallState(), None, {}, call_state_out
+    # empty dict
+    yield (
+        None,
+        (
+            (CallState.with_parameters, (None, {})),
+        ),
+        (
+            None,
+            None,
+            None,
+        )
+    )
     
-    # Add (multiple, no need for simple)
-    call_state_out = CallState()
-    call_state_out.positional_parameters = ['koishi', 'orin']
-    yield CallState(), ['koishi', 'orin'], None, call_state_out
+    # Add list
+    yield (
+        None,
+        (
+            (CallState.with_parameters, (['koishi', 'orin'], None)),
+        ),
+        (
+            ['koishi', 'orin'],
+            None,
+            None,
+        )
+    )
     
-    call_state_out = CallState()
-    call_state_out.keyword_parameters = {'satori': 'smug', 'okuu': 'unyu'}
-    yield CallState(), None, {'satori': 'smug', 'okuu': 'unyu'}, call_state_out
+    # Add dict
+    yield (
+        None,
+        (
+            (CallState.with_parameters, (None, {'satori': 'smug', 'okuu': 'unyu'})),
+        ),
+        (
+            None,
+            {'satori': 'smug', 'okuu': 'unyu'},
+            None,
+        )
+    )
     
-    # Extend
-    call_state_out = CallState()
-    call_state_out.positional_parameters = ['koishi', 'orin']
-    yield CallState().with_parameters(['koishi'], None), ['orin'], None, call_state_out
+    # Extend list
+    yield (
+        (
+            (CallState.with_parameters, (['koishi'], None)),
+        ),
+        (
+            (CallState.with_parameters, (['orin'], None)),
+        ),
+        (
+            ['koishi', 'orin'],
+            None,
+            None,
+        )
+    )
     
-    call_state_out = CallState()
-    call_state_out.keyword_parameters = {'satori': 'smug', 'okuu': 'unyu'}
-    yield CallState().with_parameters(None, {'satori': 'smug'}), None, {'okuu': 'unyu'}, call_state_out
+    # Extend dict
+    yield (
+        (
+            (CallState.with_parameters, (None, {'satori': 'smug'})),
+        ),
+        (
+            (CallState.with_parameters, (None, {'okuu': 'unyu'})),
+        ),
+        (
+            None,
+            {'satori': 'smug', 'okuu': 'unyu'},
+            None,
+        )
+    )
     
-    # Duplicates
-    call_state_out = CallState()
-    call_state_out.positional_parameters = ['koishi', 'koishi']
-    yield CallState().with_parameters(['koishi'], None), ['koishi'], None, call_state_out
+    # Duplicate list
+    yield (
+        (
+            (CallState.with_parameters, (['koishi'], None)),
+        ),
+        (
+            (CallState.with_parameters, (['koishi'], None)),
+        ),
+        (
+            ['koishi', 'koishi'],
+            None,
+            None,
+        )
+    )
     
-    call_state_out = CallState()
-    call_state_out.keyword_parameters = {'satori': 'unyu'}
-    yield CallState().with_parameters(None, {'satori': 'smug'}), None, {'satori': 'unyu'}, call_state_out
+    # Duplicate dict
+    yield (
+        (
+            (CallState.with_parameters, (None, {'satori': 'smug'})),
+        ),
+        (
+            (CallState.with_parameters, (None, {'satori': 'unyu'})),
+        ),
+        (
+            None,
+            {'satori': 'unyu'},
+            None,
+        )
+    )
+    
+    # Keep name
+    yield (
+        (
+            (CallState.with_name, ('orin',)),
+        ),
+        (
+            (CallState.with_parameters, (None, None)),
+        ),
+        (
+            None,
+            None,
+            'orin',
+        )
+    )
+    
+    # Keep values
+    yield (
+        (
+            (CallState.with_parameters, (['koishi'], {'satori': 'smug'})),
+        ),
+        (
+            (CallState.with_name, ('orin',)),
+        ),
+        (
+            ['koishi'],
+            {'satori': 'smug'},
+            'orin',
+        )
+    )
 
 
 @_(call_from(_iter_options__with_parameters()).returning_last())
-def test__CallState__with_parameters(call_state, positional_parameters, keyword_parameters):
+def test__CallState__with_functions(prepare_functions_and_parameters, action_functions_and_parameters):
     """
     Tests whether ``CallState.with_parameters`` works as intended.
     
     Parameters
     ----------
-    call_state : ``CallState``
-        The call state to extend.
-    positional_parameters : `None`, `list` of `object`
-        Positional parameters to the the test function with.
-    keyword_parameters : `None`, `dict` of (`str`, `object`) items
-        Keyword parameters to the call the test function with.
+    prepare_functions_and_parameters : `None | tuple<(FunctionType, tuple<object>)>`
+        Functions and parameters for the to prepare an instance for the test.
+    
+    action_functions_and_parameters : `None | tuple<(FunctionType, tuple<object>)>`
+        Functions and parameters to execute on instance for the test.
     
     Returns
     -------
     output : ``CallState``
     """
-    output = call_state.with_parameters(positional_parameters, keyword_parameters)
+    call_state = CallState()
+    if (prepare_functions_and_parameters is not None):
+        for prepare_function, parameters in prepare_functions_and_parameters:
+            call_state = prepare_function(call_state, *parameters)
     
-    _assert_fields_set(output)
-    assert_is_not(call_state, output)
+    output_call_state = call_state
+    for prepare_function, parameters in action_functions_and_parameters:
+        output_call_state = prepare_function(output_call_state, *parameters)
     
-    return output
+    _assert_fields_set(call_state)
+    assert_is_not(call_state, output_call_state)
+    
+    return (
+        output_call_state.positional_parameters,
+        output_call_state.keyword_parameters,
+        output_call_state.name,
+    )

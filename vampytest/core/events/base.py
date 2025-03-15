@@ -34,7 +34,7 @@ class EventBase(RichAttributeErrorBaseType):
     
     def __repr__(self):
         """Returns the representation of the event."""
-        return f'<{self.__class__.__name__}>'
+        return f'<{type(self).__name__}>'
 
 
 class FileEventBase(EventBase):
@@ -68,7 +68,7 @@ class FileEventBase(EventBase):
     
     @copy_docs(EventBase.__repr__)
     def __repr__(self):
-        return f'<{self.__class__.__name__} file = {self.file!r}>'
+        return f'<{type(self).__name__} file = {self.file!r}>'
 
 
 class ResultEventBase(EventBase):
@@ -102,4 +102,4 @@ class ResultEventBase(EventBase):
     
     @copy_docs(EventBase.__repr__)
     def __repr__(self):
-        return f'<{self.__class__.__name__} result = {self.result!r}>'
+        return f'<{type(self).__name__} result = {self.result!r}>'

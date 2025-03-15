@@ -259,6 +259,43 @@ def _iter_options():
         ),
     )
     
+    # ReportFailureParameterMismatch -> named
+    
+    def _test_function(yukari):
+        pass
+    
+    parameters = CallableAnalyzer(_test_function).parameters
+    
+    yield (
+        ReportFailureParameterMismatch(ParameterMismatch(
+            parameters,
+            None,
+            None,
+            parameters,
+            None,
+            None,
+        )),
+        ('good', 'pear'),
+        'test__function',
+        None,
+        CallState().with_name('koishi'),
+        None,
+        None,
+        (
+            'Parameter mismatch at: good.pear:test__function\n'
+            '\n'
+            'Named: koishi\n'
+            '\n'
+            'Function parameters:\n'
+            '    yukari\n'
+            '\n'
+            'Given parameters: N/A\n'
+            '\n'
+            'Unsatisfied function parameters:\n'
+            '    yukari\n'
+        ),
+    )
+    
     # ReportFailureParameterMismatch -> highlighted
     
     def _test_function(yukari):

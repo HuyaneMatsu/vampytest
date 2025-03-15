@@ -15,10 +15,13 @@ class CallState(RichAttributeErrorBaseType):
     keyword_parameters : `None | dict<str, object>`
         Keyword parameters to the call the test function with.
     
+    name : `None | str`
+        The name of the call state if any.
+    
     positional_parameters : `None | list<object>`
         Positional parameters to the the test function with.
     """
-    __slots__ = ('keyword_parameters', 'positional_parameters')
+    __slots__ = ('keyword_parameters', 'name', 'positional_parameters')
     
     def __new__(cls):
         """
@@ -26,6 +29,7 @@ class CallState(RichAttributeErrorBaseType):
         """
         self = object.__new__(cls)
         self.keyword_parameters = None
+        self.name = None
         self.positional_parameters = None
         return self
     
@@ -35,6 +39,16 @@ class CallState(RichAttributeErrorBaseType):
         repr_parts = ['<', type(self).__name__]
         
         field_added = False
+        
+        name = self.name
+        if (name is not None):
+            if field_added:
+                repr_parts.append(',')
+            else:
+                field_added = True
+            
+            repr_parts.append(' name = ')
+            repr_parts.append(repr(name))
         
         positional_parameters = self.positional_parameters
         if (positional_parameters is not None):
@@ -69,6 +83,9 @@ class CallState(RichAttributeErrorBaseType):
         if self.keyword_parameters != other.keyword_parameters:
             return False
         
+        if self.name != other.name:
+            return False
+        
         if self.positional_parameters != other.positional_parameters:
             return False
         
@@ -84,6 +101,11 @@ class CallState(RichAttributeErrorBaseType):
             hash_value ^= 1 << 4
             hash_value ^= hash_dict(keyword_parameters)
         
+        name = self.name
+        if (name is not None):
+            hash_value ^= 1 << 12
+            hash_value ^= hash(name)
+        
         positional_parameters = self.positional_parameters
         if (positional_parameters is not None):
             hash_value ^= 1 << 8
@@ -95,6 +117,9 @@ class CallState(RichAttributeErrorBaseType):
     def __bool__(self):
         """Returns whether the call state holds anythings."""
         if (self.keyword_parameters is not None):
+            return True
+        
+        if (self.name is not None):
             return True
         
         if (self.positional_parameters is not None):
@@ -121,6 +146,7 @@ class CallState(RichAttributeErrorBaseType):
         
         new = object.__new__(type(self))
         new.keyword_parameters = keyword_parameters
+        new.name = self.name
         new.positional_parameters = positional_parameters
         return new
     
@@ -146,5 +172,34 @@ class CallState(RichAttributeErrorBaseType):
         
         new = object.__new__(type(self))
         new.keyword_parameters = keyword_parameters
+        new.name = self.name
+        new.positional_parameters = positional_parameters
+        return new
+
+    
+    def with_name(self, name):
+        """
+        Creates a new call state with merged parameters.
+        
+        Parameters
+        ----------
+        name : `str`
+            The name for the call state.
+        
+        Returns
+        -------
+        new : `instance<type<self>>`
+        """
+        positional_parameters = self.positional_parameters
+        if (positional_parameters is not None):
+            positional_parameters = positional_parameters.copy()
+        
+        keyword_parameters = self.keyword_parameters
+        if (keyword_parameters is not None):
+            keyword_parameters = keyword_parameters.copy()
+        
+        new = object.__new__(type(self))
+        new.keyword_parameters = keyword_parameters
+        new.name = name
         new.positional_parameters = positional_parameters
         return new

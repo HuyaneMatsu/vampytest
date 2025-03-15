@@ -19,9 +19,12 @@ MODE_RETURNING_GIVEN = 1 << 3
 MODE_RETURNING_LAST = 1 << 4
 MODE_RETURNING_TRANSFORMED = 1 << 5
 MODE_RETURNING_ITSELF = 1 << 6
+MODE_NAMED_GIVEN = 1 << 7
+MODE_NAMED_FIRST = 1 << 8
 
 MODE_RAISING_ALL = MODE_RAISING_GIVEN | MODE_RAISING_LAST
 MODE_RETURNING_ALL = MODE_RETURNING_GIVEN | MODE_RETURNING_LAST | MODE_RETURNING_TRANSFORMED | MODE_RETURNING_ITSELF
+MODE_NAMED_ALL = MODE_NAMED_GIVEN | MODE_NAMED_FIRST
 
 
 class WrapperCallingFrom(WrapperBase):
@@ -32,40 +35,62 @@ class WrapperCallingFrom(WrapperBase):
     ----------
     wrapped : `object`
         The wrapped test.
-    calling_from : `list` of `tuple<object>`
+    
+    calling_from : `list<tuple<object>>`
         Values to call the tests from.
+    
+    name : `None | str | list<str>` = `None`
+        Whether the test cases are named.
+    
     mode : `int`
         Bitwise flag containing the mode of handling returns.
+    
     raising_accept_subtypes : `bool`
         Whether exception subclasses are accepted as well if ``.is_raising``.
-    raising_exceptions : `None`, `set` of `BaseException`, `list` of `set` of `BaseException`
+    
+    raising_exceptions : `None | set<BaseException> | list<`set<BaseException>>`
         The raised exceptions to be expected to be raised if ``.is_raising``.
-    raising_where : `None`, `callable`
+    
+    raising_where : `None | callable`
         Additional check to check the raised exception if ``.is_raising`.
-    returning_value : `None`, `object`, `list` of `object`
+    
+    returning_value : `None | object | list<object>`
         The expected returned value of the test if ``.is_returning``.
     """
     __slots__ = (
-        'calling_from', 'mode', 'raising_exceptions', 'raising_accept_subtypes', 'raising_where', 'returning_value'
+        'calling_from', 'name', 'mode', 'raising_exceptions', 'raising_accept_subtypes', 'raising_where',
+        'returning_value'
     )
     
-    def __new__(cls, wrapped = None, *, calling_from = None, raising = None, returning = None):
+    def __new__(cls, wrapped = None, *, calling_from = None, named = None, raising = None, returning = None):
         """
         Creates a new combined test wrapper.
         
         Parameters
         ----------
-        wrapped : `None`, `object` = `None`, Optional
+        wrapped : `None<object>` = `None`, Optional
             The wrapped test if any.
-        calling_from : `list` of `tuple<object>`
+        
+        calling_from : `list<tuple<object>>`
             Values to call the tests from.
-        raising : `None`, `(int, set<BaseException> | list<set<BaseException>>, bool, None | callable)` = `None` \
+        
+        named : `None | (int, str | list<str>`) = `None`, Optional (Keyword only)
+            Whether the test cases are named.
+        
+        raising : `None | (int, set<BaseException> | list<set<BaseException>>, bool, None | callable)` = `None` \
                 , Optional (Keyword only)
             Whether the test is raising.
-        returning : `None`, `(int, object | list<object>)` = `None`, Optional (Keyword only)
+        
+        returning : `None | (int, object | list<object>)` = `None`, Optional (Keyword only)
             Whether the test is returning.
         """
         mode = 0
+        
+        if named is None:
+            name = None
+        else:
+            named_mode, name = named
+            mode |= named_mode
         
         if raising is None:
             raising_exceptions = None
@@ -83,10 +108,10 @@ class WrapperCallingFrom(WrapperBase):
             returning_mode, returning_value = returning
             mode |= returning_mode
         
-        
         self = object.__new__(cls)
         self.wrapped = wrapped
         self.calling_from = calling_from
+        self.name = name
         self.mode = mode
         self.raising_accept_subtypes = raising_accept_subtypes
         self.raising_exceptions = raising_exceptions
@@ -150,7 +175,15 @@ class WrapperCallingFrom(WrapperBase):
                 
                 repr_parts.append(', returning_value = ')
                 repr_parts.append(reprlib.repr(self.returning_value))
-        
+            
+            if mode & MODE_NAMED_ALL:
+                if field_added:
+                    repr_parts.append(',')
+                else:
+                    field_added = True
+                
+                repr_parts.append(' name = ')
+                repr_parts.append(self.name)
         
         return ''.join(repr_parts)
     
@@ -173,6 +206,9 @@ class WrapperCallingFrom(WrapperBase):
             if (returning_value is not None):
                 hash_value ^= try_hash_method(returning_value)
         
+        if self.is_named():
+            hash_value ^= try_hash_method(self.name)
+                
         return hash_value
     
     
@@ -200,6 +236,10 @@ class WrapperCallingFrom(WrapperBase):
         
         if self_mode & MODE_RETURNING_ALL:
             if self.returning_value != other.returning_value:
+                return False
+        
+        if self_mode & MODE_NAMED_ALL:
+            if self.name != other.name:
                 return False
         
         return True
@@ -242,31 +282,41 @@ class WrapperCallingFrom(WrapperBase):
     @copy_docs(WrapperBase.iter_wrappers)
     def iter_wrappers(self):
         mode = self.mode
-        if mode & MODE_RAISING_ALL:
-            if mode & MODE_RAISING_GIVEN:
-                raising_key_iterator = repeat(
-                    (self.raising_exceptions, self.raising_accept_subtypes, self.raising_where),
-                )
-            else:
-                raising_key_iterator = zip(
-                    self.raising_exceptions, repeat(self.raising_accept_subtypes), repeat(self.raising_where)
-                )
-        else:
-            raising_key_iterator = repeat(None)
         
-        if mode & MODE_RETURNING_ALL:
-            if mode & MODE_RETURNING_GIVEN:
-                returning_key_iterator = repeat((self.returning_value,),)
-            else:
-                returning_key_iterator = zip(self.returning_value)
+        if not mode & MODE_RAISING_ALL:
+            raising_key_iterator = repeat(None)  
+        elif mode & MODE_RAISING_GIVEN:
+            raising_key_iterator = repeat(
+                (self.raising_exceptions, self.raising_accept_subtypes, self.raising_where),
+            )
         else:
+            raising_key_iterator = zip(
+                self.raising_exceptions, repeat(self.raising_accept_subtypes), repeat(self.raising_where)
+            )
+        
+        if not mode & MODE_RETURNING_ALL:
             returning_key_iterator = repeat(None)
+        elif mode & MODE_RETURNING_GIVEN:
+            returning_key_iterator = repeat((self.returning_value,),)
+        else:
+            returning_key_iterator = zip(self.returning_value)
         
-        for calling_with_key, raising_key, returning_key in zip(
-            self.calling_from, raising_key_iterator, returning_key_iterator
+        if not mode & MODE_NAMED_ALL:
+            named_key_iterator = repeat(None)
+        elif mode & MODE_NAMED_GIVEN:
+            named_key_iterator = repeat((self.name,),)
+        else:
+            named_key_iterator = zip(self.name)
+        
+        for calling_with_key, named_key, raising_key, returning_key in zip(
+            self.calling_from, named_key_iterator, raising_key_iterator, returning_key_iterator
         ):
             yield WrapperCalling(
-                None, call_with = (calling_with_key, {}), raising = raising_key, returning = returning_key
+                None,
+                call_with = (calling_with_key, {}),
+                named = named_key,
+                raising = raising_key,
+                returning = returning_key,
             )
     
     
@@ -277,7 +327,7 @@ class WrapperCallingFrom(WrapperBase):
         
         Returns
         -------
-        raising_key : `None`, `tuple` (`int`, (`None`, `set` of `BaseException`), `bool`, (`None`, `callable`))
+        raising_key : `None | (int, None | set<BaseException> | list<set<BaseException>>, bool, None |callable)`
         """
         raising_mode = self.mode & MODE_RAISING_ALL
         if raising_mode:
@@ -291,12 +341,25 @@ class WrapperCallingFrom(WrapperBase):
         
         Returns
         -------
-        returning_key : `None`, `tuple` (`int`, `object`)
+        returning_key : `None | (int, object | list<object>)`
         """
         returning_mode = self.mode & MODE_RETURNING_ALL
         if returning_mode:
             return (returning_mode, self.returning_value)
     
+    
+    @property
+    def named_key(self):
+        """
+        Returns the wrapper's named key.
+        
+        Returns
+        -------
+        named_key : `None | (int, str | list<str>)`
+        """
+        named_mode = self.mode & MODE_NAMED_ALL
+        if named_mode:
+            return (named_mode, self.name)
     
     
     def raising(self, exception_type, *exception_types, accept_subtypes = True, where = None):
@@ -307,11 +370,14 @@ class WrapperCallingFrom(WrapperBase):
         ----------
         exception_type : `type<BaseException> | BaseException>
             Exception type to expect.
+        
         *exception_types : `tuple<type<BaseException>, BaseException, ...>`
             Additional exception types.
+        
         accept_subtypes : `bool` = `True`
             Whether subclasses are accepted as well.
-        where : `None`, `callable` = `None`, Optional (Keyword only)
+        
+        where : `None | callable` = `None`, Optional (Keyword only)
             Additional check to check the raised exception.
         
         Returns
@@ -334,6 +400,7 @@ class WrapperCallingFrom(WrapperBase):
         return type(self)(
             self.wrapped,
             calling_from = self.calling_from,
+            named = self.named_key,
             raising = (MODE_RAISING_GIVEN, exception_types, accept_subtypes, where),
             returning = self.returning_key,
         )
@@ -349,7 +416,8 @@ class WrapperCallingFrom(WrapperBase):
         ----------
         accept_subtypes : `bool` = `True`
             Whether subclasses are accepted as well.
-        where : `None`, `callable` = `None`, Optional (Keyword only)
+        
+        where : `None | callable` = `None`, Optional (Keyword only)
             Additional check to check the raised exception.
         
         Returns
@@ -366,7 +434,7 @@ class WrapperCallingFrom(WrapperBase):
         calling_from = self.calling_from
         if any(len(item) < 1 for item in calling_from):
             raise ValueError(
-                f'`raising_last` is only applicable if the wrapper has at least 1 for each call; '
+                f'`raising_last` is only applicable if the wrapper has at least 1 parameter for each call; '
                 f'self = {self!r}.'
             )
         
@@ -381,6 +449,7 @@ class WrapperCallingFrom(WrapperBase):
         return type(self)(
             self.wrapped,
             calling_from = calling_from,
+            named = self.named_key,
             raising = (MODE_RAISING_LAST, raises, accept_subtypes, where),
             returning = self.returning_key,
         )
@@ -402,6 +471,7 @@ class WrapperCallingFrom(WrapperBase):
         return type(self)(
             self.wrapped,
             calling_from = self.calling_from,
+            named = self.named_key,
             raising = self.raising_key,
             returning = (MODE_RETURNING_GIVEN, returning_value),
         )
@@ -425,7 +495,7 @@ class WrapperCallingFrom(WrapperBase):
         calling_from = self.calling_from
         if any(len(item) < 1 for item in calling_from):
             raise ValueError(
-                f'`returning_last` is only applicable if the wrapper has at least 1 for each call; '
+                f'`returning_last` is only applicable if the wrapper has at least 1 parameter for each call; '
                 f'self = {self!r}.'
             )
         
@@ -435,6 +505,7 @@ class WrapperCallingFrom(WrapperBase):
         return type(self)(
             self.wrapped,
             calling_from = calling_from,
+            named = self.named_key,
             raising = self.raising_key,
             returning = (MODE_RETURNING_LAST, returns),
         )
@@ -459,6 +530,7 @@ class WrapperCallingFrom(WrapperBase):
         return type(self)(
             self.wrapped,
             calling_from = self.calling_from,
+            named = self.named_key,
             raising = self.raising_key,
             returning = (MODE_RETURNING_TRANSFORMED, returns),
         )
@@ -489,8 +561,85 @@ class WrapperCallingFrom(WrapperBase):
         return type(self)(
             self.wrapped,
             calling_from = calling_from,
+            named = self.named_key,
             raising = self.raising_key,
             returning = (MODE_RETURNING_ITSELF, returns),
+        )
+    
+    
+    def named(self, name):
+        """
+        Creates a new named wrapper extending self..
+        
+        Parameters
+        ----------
+        name : `str`
+            The expected value to be returned.
+        
+        Returns
+        -------
+        new : `instance<type<self>>`
+        
+        Raises
+        ------
+        TypeError
+            - If the given `name` is not `str` instance.
+        """
+        if not isinstance(name, str):
+            raise TypeError(
+                f'`name` must be `str` instance, got {type(name).__name__}; name = {name!r}.'
+            )
+        
+        return type(self)(
+            self.wrapped,
+            calling_from = self.calling_from,
+            named = (MODE_NAMED_GIVEN, name),
+            raising = self.raising_key,
+            returning = self.returning_key,
+        )
+    
+    
+    def named_first(self):
+        """
+        Creates a new named wrapper extending self. Picks up the first parameter as name for the test case.
+        
+        Note that also removes the first parameter.
+        
+        Returns
+        -------
+        new : `instance<type<self>>`
+        
+        Raises
+        ------
+        ValueError
+            - If an item stores incorrect amount parameters.
+        TypeError
+            - If not all name is not `str` instance.
+        """
+        calling_from = self.calling_from
+        if any(len(item) < 1 for item in calling_from):
+            raise ValueError(
+                f'`named_first` is only applicable if the wrapper has at least 1 parameter for each call; '
+                f'self = {self!r}.'
+            )
+        
+        for item in calling_from:
+            name = item[0]
+            if not isinstance(name, str):
+                raise TypeError(
+                    f'All first parameters interpreted as `name` must be `str` instances, '
+                    f'got {type(name).__name__}; name = {name!r}.'
+                )
+        
+        names = [item[0] for item in calling_from]
+        calling_from = [item[1:] for item in calling_from]
+        
+        return type(self)(
+            self.wrapped,
+            calling_from = calling_from,
+            named = (MODE_NAMED_FIRST, names),
+            raising = self.raising_key,
+            returning = self.returning_key,
         )
     
     
@@ -510,7 +659,7 @@ class WrapperCallingFrom(WrapperBase):
         """
         if not hasattr(calling_from, '__iter__'):
             raise TypeError(
-                f'`calling_from` must be iterable, got {calling_from.__class__.__name__}; {calling_from!r}.'
+                f'`calling_from` must be iterable, got {type(calling_from).__name__}; {calling_from!r}.'
             )
         
         items = []
@@ -547,3 +696,14 @@ class WrapperCallingFrom(WrapperBase):
         is_returning : `bool`
         """
         return True if self.mode & MODE_RETURNING_ALL else False
+    
+    
+    def is_named(self):
+        """
+        Returns whether the test should have a custom name.
+        
+        Returns
+        -------
+        is_named : `bool`
+        """
+        return True if self.mode & MODE_NAMED_ALL else False

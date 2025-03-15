@@ -17,7 +17,9 @@ from .parameter_rendering import (
     _produce_assignation, _produce_value_representation, _render_bool_non_default_into,
     _render_parameter_representation_into, _render_types_parameter_representation_into
 )
-from .result_rendering_common import create_break, render_parameters_section_into, render_test_header_into
+from .result_rendering_common import (
+    create_break, render_case_name_section_into, render_parameters_section_into, render_test_header_into
+)
 
 
 def _render_break_and_output(separator_token_type, output, highlighter, into):
@@ -396,6 +398,14 @@ def _render_report_parameter_mismatch_into(
         highlighter,
         into,
     )
+    
+    # Since we do not wanna render the parameters in the header, we pass the call state there as `None`
+    # and then we render the case name section separately.
+    if (call_state is not None):
+        case_name = call_state.name
+        if (case_name is not None):
+            into = render_case_name_section_into(case_name, highlighter, into)
+    
     
     parameter_mismatch = report.parameter_mismatch
     

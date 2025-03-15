@@ -15,54 +15,83 @@ from .wrapper_conflict import WrapperConflict
 MODE_RAISING = 1 << 0
 MODE_RETURNING = 1 << 2
 MODE_CALL_WITH = 1 << 3
+MODE_NAMED = 1 << 4
 
 
 class WrapperCalling(WrapperBase):
     """
-    Combined wrapper supporting `call_with`, `returning` and `raising`.
+    Combined wrapper supporting `call_with`, `named`, `returning` and `raising`.
     
     Attributes
     ----------
     wrapped : `object`
         The wrapped test.
-    calling_keyword_parameters : `None`, `dict` of (`str`, `object`) items
+    
+    calling_keyword_parameters : `None | dict<str object>
         Keyword parameters to call the test with if ``.is_call_with``.
-    calling_positional_parameters : `None`, `tuple` of `object`
+    
+    calling_positional_parameters : `None | tuple<object>`
         Positional parameter to call the test with if ``.is_call_with``.
+    
     mode : `int`
         Bitwise flag containing the mode of calling and handling returns.
+    
+    name : `None | str`
+        The name of the test case.
+    
     raising_accept_subtypes : `bool`
         Whether exception subclasses are accepted as well if ``.is_raising``.
-    raising_exceptions : `None`, `set` of ``BaseException``
+    
+    raising_exceptions : `None | set<BaseException>`
         The raised exceptions to be expected to be raised if ``.is_raising``.
-    raising_where : `None`, `callable`
+    
+    raising_where : `None | callable`
         Additional check to check the raised exception if ``.is_raising`.
-    returning_value : `None`, `object`
+    
+    returning_value : `None | object`
         The expected returned value of the test if ``.is_returning``.
     """
     __slots__ = (
-        'calling_keyword_parameters', 'calling_positional_parameters', 'mode', 'raising_exceptions',
+        'calling_keyword_parameters', 'calling_positional_parameters', 'mode', 'name', 'raising_exceptions',
         'raising_accept_subtypes', 'raising_where', 'returning_value'
     )
     
-    def __new__(cls, wrapped = None, *, call_with = None, raising = None, returning = None):
+    def __new__(cls, wrapped = None, *, call_with = None, named = None, raising = None, returning = None):
         """
         Creates a new combined test wrapper.
         
         Parameters
         ----------
-        wrapped : `None`, `object` = `None`, Optional
+        wrapped : `None | object` = `None`, Optional
             The wrapped test if any.
-        call_with : `None`, `tuple` (`tuple` of `object`, `dict` of (`str`, `object`) items) = `None`
-                , Optional (Keyword only)
+        
+        call_with : `None | (tuple<object> | dict<str, object>)` = `None`, Optional (Keyword only)
             Whether the test should be called with parameters.
-        raising : `None`, `tuple` (`set` of ``BaseException``, `bool`, (`None`, `callable`)) = `None` \
-                , Optional (Keyword only)
+        
+        raising : `None | tuple<set<BaseException>, bool, None | callable>` = `None`, Optional (Keyword only)
             Whether the test is raising.
-        returning : `None`, `tuple` (`object`) = `None`, Optional (Keyword only)
+        
+        returning : `None | (object, ) = `None`, Optional (Keyword only)
             Whether the test is returning.
         """
         mode = 0
+        
+        if call_with is None:
+            calling_keyword_parameters = None
+            calling_positional_parameters = None
+        
+        else:
+            mode |= MODE_CALL_WITH
+            calling_positional_parameters, calling_keyword_parameters = call_with
+        
+        
+        if named is None:
+            name = None
+        
+        else:
+            mode |= MODE_NAMED
+            name, = named
+        
         
         if raising is None:
             raising_exceptions = None
@@ -82,21 +111,13 @@ class WrapperCalling(WrapperBase):
             returning_value, = returning
         
         
-        if call_with is None:
-            calling_keyword_parameters = None
-            calling_positional_parameters = None
-        
-        else:
-            mode |= MODE_CALL_WITH
-            calling_positional_parameters, calling_keyword_parameters = call_with
-        
-        
         self = object.__new__(cls)
         self.wrapped = wrapped
         
         self.calling_keyword_parameters = calling_keyword_parameters
         self.calling_positional_parameters = calling_positional_parameters
         self.mode = mode
+        self.name = name
         self.raising_accept_subtypes = raising_accept_subtypes
         self.raising_exceptions = raising_exceptions
         self.raising_where = raising_where
@@ -187,6 +208,15 @@ class WrapperCalling(WrapperBase):
                     repr_parts.append(' calling_keyword_parameters = ')
                     repr_parts.append(reprlib.repr(calling_keyword_parameters))
             
+            if mode & MODE_NAMED:
+                if field_added:
+                    repr_parts.append(',')
+                else:
+                    field_added = True
+                
+                repr_parts.append(' named = ')
+                repr_parts.append(repr(self.name))
+                
         return ''.join(repr_parts)
     
     
@@ -207,6 +237,9 @@ class WrapperCalling(WrapperBase):
         if self.is_call_with():
             hash_value ^= hash_tuple(self.calling_positional_parameters)
             hash_value ^= hash_dict(self.calling_keyword_parameters)
+        
+        if self.is_named():
+            hash_value ^= hash(self.name)
         
         return hash_value
     
@@ -239,6 +272,10 @@ class WrapperCalling(WrapperBase):
                 return False
             
             if self.calling_keyword_parameters != other.calling_keyword_parameters:
+                return False
+        
+        if self_mode & MODE_NAMED:
+            if self.name != other.name:
                 return False
         
         return True
@@ -318,7 +355,7 @@ class WrapperCalling(WrapperBase):
         
         Returns
         -------
-        raising_key : `None`, `tuple` (`set` of ``BaseException``, `bool`, (`None`, `callable`))
+        raising_key : `None | (set<BaseException, bool | None | callable)`
         """
         if self.is_raising():
             return (self.raising_exceptions, self.raising_accept_subtypes, self.raising_where)
@@ -331,7 +368,7 @@ class WrapperCalling(WrapperBase):
         
         Returns
         -------
-        returning_key : `None`, `tuple` (`object`)
+        returning_key : `None | (object, )`
         """
         if self.is_returning():
             return (self.returning_value, )
@@ -344,10 +381,23 @@ class WrapperCalling(WrapperBase):
         
         Returns
         -------
-        call_with_key : `None`, `tuple` (`tuple` of `object`, `dict` of (`str`, `object`) items)
+        call_with_key : `None | (tuple<object>, dict<str, object>)`
         """
         if self.is_call_with():
             return (self.calling_positional_parameters, self.calling_keyword_parameters)
+    
+    
+    @property
+    def named_key(self):
+        """
+        Returns the wrapper's raising key.
+        
+        Returns
+        -------
+        call_with_key : `None | (str, )`
+        """
+        if self.is_named():
+            return (self.name, )
     
     
     @classmethod
@@ -357,12 +407,15 @@ class WrapperCalling(WrapperBase):
         
         Parameters
         ----------
-        exception_type : `type<BaseException> | BaseException>
+        exception_type : `type<BaseException> | BaseException`
             Exception type to expect.
+        
         *exception_types : `tuple<type<BaseException>, BaseException, ...>`
             Additional exception types.
+        
         accept_subtypes : `bool` = `True`
             Whether subclasses are accepted as well.
+        
         where : `None`, `callable` = `None`, Optional (Keyword only)
             Additional check to check the raised exception.
         
@@ -394,12 +447,15 @@ class WrapperCalling(WrapperBase):
         
         Parameters
         ----------
-        exception_type : `type<BaseException> | BaseException>
+        exception_type : `type<BaseException> | BaseException`
             Exception type to expect.
+        
         *exception_types : `tuple<type<BaseException>, BaseException, ...>`
             Additional exception types.
+        
         accept_subtypes : `bool` = `True`
             Whether subclasses are accepted as well.
+        
         where : `None`, `callable` = `None`, Optional (Keyword only)
             Additional check to check the raised exception.
         
@@ -422,9 +478,10 @@ class WrapperCalling(WrapperBase):
         
         return type(self)(
             self.wrapped,
+            call_with = self.call_with_key,
+            named = self.named_key,
             raising = (exception_types, accept_subtypes, where),
             returning = self.returning_key,
-            call_with = self.call_with_key,
         )
     
     
@@ -462,9 +519,10 @@ class WrapperCalling(WrapperBase):
         """
         return type(self)(
             self.wrapped,
+            call_with = self.call_with_key,
+            named = self.named_key,
             raising = self.raising_key,
             returning = (returning_value, ),
-            call_with = self.call_with_key,
         )
     
     
@@ -542,9 +600,10 @@ class WrapperCalling(WrapperBase):
         
         return type(self)(
             self.wrapped,
+            call_with = self.call_with_key,
+            named = self.named_key,
             raising = self.raising_key,
             returning = (returning_value, ),
-            call_with = self.call_with_key,
         )
     
     
@@ -555,9 +614,10 @@ class WrapperCalling(WrapperBase):
         
         Parameters
         ----------
-        *calling_positional_parameters : `tuple` of `object`
+        *calling_positional_parameters : `tuple<object>`
             Positional parameter to call the test with.
-        **calling_keyword_parameters : `dict` of (`str`, `object`) items
+        
+        **calling_keyword_parameters : `dict<str, object>`
             Keyword parameters to call the test with.
         
         Returns
@@ -575,9 +635,10 @@ class WrapperCalling(WrapperBase):
         
         Parameters
         ----------
-        *calling_positional_parameters : `tuple` of `object`
+        *calling_positional_parameters : `tuple<object>
             Positional parameter to call the test with.
-        **calling_keyword_parameters : `dict` of (`str`, `object`) items
+        
+        **calling_keyword_parameters : `dict<str, object>`
             Keyword parameters to call the test with.
         
         Returns
@@ -586,9 +647,72 @@ class WrapperCalling(WrapperBase):
         """
         return type(self)(
             self.wrapped,
+            call_with = (calling_positional_parameters, calling_keyword_parameters),
+            named = self.named_key,
             raising = self.raising_key,
             returning = self.returning_key,
-            call_with = (calling_positional_parameters, calling_keyword_parameters),
+        )
+    
+    
+    
+    @classmethod
+    def named_constructor(cls, name):
+        """
+        Creates new named wrapper.
+        
+        Parameters
+        ----------
+        name : `str`
+            The name for the test case.
+        
+        Returns
+        -------
+        self : `instance<cls>`
+        
+        Raises
+        ------
+        TypeError
+            - If the given `name` is not `str` instance.
+        """
+        if not isinstance(name, str):
+            raise TypeError(
+                f'`name` must be `str` instance, got {type(name).__name__}; name = {name!r}.'
+            )
+        
+        return cls(
+            named = (name, ),
+        )
+    
+    
+    def named(self, name):
+        """
+        Creates a new named wrapper extending self.
+        
+        Parameters
+        ----------
+        name : `str`
+            The name for the test case.
+        
+        Returns
+        -------
+        new : `instance<type<self>>`
+        
+        Raises
+        ------
+        TypeError
+            - If the given `name` is not `str` instance.
+        """
+        if not isinstance(name, str):
+            raise TypeError(
+                f'`name` must be `str` instance, got {type(name).__name__}; name = {name!r}.'
+            )
+        
+        return type(self)(
+            self.wrapped,
+            call_with = self.call_with_key,
+            named = (name, ),
+            raising = self.raising_key,
+            returning = self.returning_key,
         )
     
     
@@ -623,3 +747,14 @@ class WrapperCalling(WrapperBase):
         is_call_with : `bool`
         """
         return True if self.mode & MODE_CALL_WITH else False
+
+    
+    def is_named(self):
+        """
+        Returns whether the test should have a custom name.
+        
+        Returns
+        -------
+        is_named : `bool`
+        """
+        return True if self.mode & MODE_NAMED else False
