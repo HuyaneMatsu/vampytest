@@ -39,6 +39,7 @@ Vampytest is a testing framework that allows, but is not limited to, writing rel
     - [Reversed assertions](#reversed-assertions)
   - [Parameterized tests](#parameterized-tests)
   - [Returning and raising tests](#returning-and-raising-tests)
+  - [Named test cases](#named-test-cases)
   - [Skipping tests](#skipping-tests)
   - [Reversing test results](#reversing-test-results)
   - [Garbage collection](#garbage-collection)
@@ -494,6 +495,9 @@ def test_over_or_equal_to_threshold(value):
     return value >= THRESHOLD
 ```
 
+<div align="right">[ <a href="#table-of-contents">↑ Back to top ↑</a> ]</div>
+
+---
 
 ### Skipping tests
 
