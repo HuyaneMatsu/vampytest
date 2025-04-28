@@ -1,4 +1,4 @@
-from scarletio import DEFAULT_ANSI_HIGHLIGHTER
+from scarletio import DEFAULT_ANSI_HIGHLIGHTER, get_highlight_streamer, iter_split_ansi_format_codes
 
 from ....assertions import assert_eq, assert_instance
 from ....utils import _
@@ -100,15 +100,19 @@ def test__render_parameters_section_into(title, positional_parameters, keyword_p
     -------
     output : `str`
     """
-    into = render_parameters_section_into(title, positional_parameters, keyword_parameters, highlighter, [])
+    highlight_streamer = get_highlight_streamer(highlighter)
+    into = render_parameters_section_into(title, positional_parameters, keyword_parameters, highlight_streamer, [])
+    into.extend(highlight_streamer.asend(None))
     
     assert_instance(into, list)
     for element in into:
         assert_instance(element, str)
     
+    output_string = ''.join(into)
+    split = [*iter_split_ansi_format_codes(output_string)]
     assert_eq(
-        any('\x1b' in element for element in into),
+        any(item[0] for item in split),
         (highlighter is not None),
     )
     
-    return ''.join([element for element in into if '\x1b' not in element])
+    return ''.join([item[1] for item in split if not item[0]])

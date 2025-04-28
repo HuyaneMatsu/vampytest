@@ -45,7 +45,7 @@ class WrapperGarbageCollect(WrapperBase):
             after = True if after else False
         else:
             raise TypeError(
-                f'`after` can be `bool`, got {after.__class__.__name__}; {after!r}.'
+                f'`after` can be `bool`, got {type(after).__name__}; {after!r}.'
             )
         
         if isinstance(before, bool):
@@ -54,7 +54,7 @@ class WrapperGarbageCollect(WrapperBase):
             before = True if before else False
         else:
             raise TypeError(
-                f'`before` can be `bool`, got {before.__class__.__name__}; {before!r}.'
+                f'`before` can be `bool`, got {type(before).__name__}; {before!r}.'
             )
         
         self = WrapperBase.__new__(cls)
@@ -70,7 +70,7 @@ class WrapperGarbageCollect(WrapperBase):
     
     @copy_docs(WrapperBase.__repr__)
     def __repr__(self):
-        return f'<{self.__class__.__name__} before = {self.before!r}, after = {self.after!r}>'
+        return f'<{type(self).__name__} before = {self.before!r}, after = {self.after!r}>'
     
     
     @copy_docs(WrapperBase.__eq__)

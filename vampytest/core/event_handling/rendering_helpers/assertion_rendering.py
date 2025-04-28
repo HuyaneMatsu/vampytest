@@ -1,6 +1,6 @@
 __all__ = ()
 
-from scarletio import HIGHLIGHT_TOKEN_TYPES, add_highlighted_part_into, add_highlighted_parts_into
+from scarletio import HIGHLIGHT_TOKEN_TYPES
 
 from ...assertions import (
     AssertionContains, AssertionEquals, AssertionIdentical, AssertionInstance, AssertionNotContains, AssertionNotEquals,
@@ -275,7 +275,7 @@ def _produce_operation_unknown():
     yield HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_NON_SPACE_UNIDENTIFIED, 'unknown'
 
 
-def _render_one_sided_operation_into(operation_producer, highlighter, into):
+def _render_one_sided_operation_into(operation_producer, highlight_streamer, into):
     """
     Shortcut for rendering a full one sided operation.
     
@@ -284,8 +284,8 @@ def _render_one_sided_operation_into(operation_producer, highlighter, into):
     operation_producer : `iterable<(int, str)>`
         Operation producer.
     
-    highlighter : `None | HighlightFormatterContext`
-        Highlighter to use.
+    highlight_streamer : `CoroutineGeneratorType`
+        Highlight streamer to highlight the produced tokens.
     
     into : `list<str>`
         A list to extend with the rendered strings.
@@ -294,13 +294,19 @@ def _render_one_sided_operation_into(operation_producer, highlighter, into):
     -------
     into : `list<str>`
     """
-    into = add_highlighted_parts_into(_produce_variable_assignation('operation'), highlighter, into)
-    into = add_highlighted_parts_into(operation_producer, highlighter, into)
-    into.append('\n')
+    for item in _produce_variable_assignation('operation'):
+        into.extend(highlight_streamer.asend(item))
+    for item in operation_producer:
+        into.extend(highlight_streamer.asend(item))
+    
+    into.extend(highlight_streamer.asend((
+        HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_LINE_BREAK,
+        '\n',
+    )))
     return into
 
 
-def _render_two_sided_operation_into(operation_producer, highlighter, into):
+def _render_two_sided_operation_into(operation_producer, highlight_streamer, into):
     """
     Shortcut for rendering a two sided operation.
     
@@ -309,8 +315,8 @@ def _render_two_sided_operation_into(operation_producer, highlighter, into):
     operation_producer : `iterable<(int, str)>`
         Operation producer.
     
-    highlighter : `None | HighlightFormatterContext`
-        Highlighter to use.
+    highlight_streamer : `CoroutineGeneratorType`
+        Highlight streamer to highlight the produced tokens.
     
     into : `list<str>`
         A list to extend with the rendered strings.
@@ -319,13 +325,34 @@ def _render_two_sided_operation_into(operation_producer, highlighter, into):
     -------
     into : `list<str>`
     """
-    into = add_highlighted_parts_into(_produce_variable_assignation('operation'), highlighter, into)
-    into = add_highlighted_part_into(HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_IDENTIFIER_VARIABLE, 'value_0', highlighter, into)
-    into = add_highlighted_part_into(HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_SPACE, ' ', highlighter, into)
-    into = add_highlighted_parts_into(operation_producer, highlighter, into)
-    into = add_highlighted_part_into(HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_SPACE, ' ', highlighter, into)
-    into = add_highlighted_part_into(HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_IDENTIFIER_VARIABLE, 'value_1', highlighter, into)
-    into.append('\n')
+    for item in _produce_variable_assignation('operation'):
+        into.extend(highlight_streamer.asend(item))
+    
+    into.extend(highlight_streamer.asend((
+        HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_IDENTIFIER_VARIABLE,
+        'value_0',
+    )))
+    into.extend(highlight_streamer.asend((
+        HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_SPACE,
+        ' ',
+    )))
+    
+    for item in operation_producer:
+        into.extend(highlight_streamer.asend(item))
+    
+    into.extend(highlight_streamer.asend((
+        HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_SPACE,
+        ' ',
+    )))
+    into.extend(highlight_streamer.asend((
+        HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_IDENTIFIER_VARIABLE,
+        'value_1',
+    )))
+
+    into.extend(highlight_streamer.asend((
+        HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_LINE_BREAK,
+        '\n',
+    )))
     return into
 
 

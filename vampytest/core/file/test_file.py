@@ -53,11 +53,12 @@ def is_test(name, value):
     if not is_test_name(name):
         return False
     
-    if isinstance(value, WrapperBase):
-        return value.has_bound_test()
-    
-    if isinstance(value, FunctionType):
+    value_type = type(value)
+    if value_type is FunctionType:
         return True
+    
+    if issubclass(value_type, WrapperBase):
+        return value.has_bound_test()
     
     return False
 

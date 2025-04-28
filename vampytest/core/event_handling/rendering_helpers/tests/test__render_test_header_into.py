@@ -1,4 +1,6 @@
-from scarletio import DEFAULT_ANSI_HIGHLIGHTER, HIGHLIGHT_TOKEN_TYPES
+from scarletio import (
+    DEFAULT_ANSI_HIGHLIGHTER, HIGHLIGHT_TOKEN_TYPES, get_highlight_streamer, iter_split_ansi_format_codes
+)
 
 from ....assertions import assert_eq, assert_instance
 from ....handling.call_state import CallState
@@ -126,6 +128,8 @@ def test__render_test_header_into(title, path_parts, name, documentation_lines, 
     -------
     output : `str`
     """
+    highlight_streamer = get_highlight_streamer(highlighter)
+    
     into = render_test_header_into(
         HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_TEXT_NEGATIVE,
         title,
@@ -133,17 +137,20 @@ def test__render_test_header_into(title, path_parts, name, documentation_lines, 
         name,
         documentation_lines,
         call_state,
-        highlighter,
+        highlight_streamer,
         [],
     )
+    into.extend(highlight_streamer.asend(None))
     
     assert_instance(into, list)
     for element in into:
         assert_instance(element, str)
     
+    output_string = ''.join(into)
+    split = [*iter_split_ansi_format_codes(output_string)]
     assert_eq(
-        any('\x1b' in element for element in into),
+        any(item[0] for item in split),
         (highlighter is not None),
     )
     
-    return ''.join([element for element in into if '\x1b' not in element])
+    return ''.join([item[1] for item in split if not item[0]])

@@ -1,3 +1,10 @@
+## 0.0.24 *\[2025-04-28\]*
+
+### Improvements
+
+- Do not use `isinstance` check when collecting tests in a module.
+     This to avoid custom calling custom `.__class__` descriptors. 
+
 ## 0.0.23 *\[2025-03-15\]*
 
 ### Improvements

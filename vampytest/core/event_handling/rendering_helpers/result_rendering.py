@@ -1,12 +1,12 @@
 __all__ = ()
 
-from scarletio import HIGHLIGHT_TOKEN_TYPES, add_highlighted_part_into
+from scarletio import HIGHLIGHT_TOKEN_TYPES
 
 from .report_rendering import render_failure_report_into, render_output_output_into
 from .result_rendering_common import render_test_header_into
 
 
-def render_result_reversed_into(result, highlighter, into):
+def render_result_reversed_into(result, highlight_streamer, into):
     """
     Creates a reversed failure message for the given test handle.
     
@@ -15,8 +15,8 @@ def render_result_reversed_into(result, highlighter, into):
     result : ``Result``
         Test result.
     
-    highlighter : `None | HighlightFormatterContext`
-        Highlighter to use.
+    highlight_streamer : `CoroutineGeneratorType`
+        Highlight streamer to highlight the produced tokens.
     
     into : `list<str>`
         A list to put the string parts into.
@@ -32,12 +32,12 @@ def render_result_reversed_into(result, highlighter, into):
         result.case.name,
         result.handle.get_test_documentation_lines(),
         result.handle.final_call_state,
-        highlighter,
+        highlight_streamer,
         into,
     )
 
 
-def render_result_wrapper_conflict_into(result, highlighter, into):
+def render_result_wrapper_conflict_into(result, highlight_streamer, into):
     """
     Renders wrapper conflict.
     
@@ -46,8 +46,8 @@ def render_result_wrapper_conflict_into(result, highlighter, into):
     result : ``Result``
         The result failing with wrapper conflict.
     
-    highlighter : `None | HighlightFormatterContext`
-        Highlighter to use.
+    highlight_streamer : `CoroutineGeneratorType`
+        Highlight streamer to highlight the produced tokens.
     
     into : `list<str>`
         List to render into.
@@ -63,35 +63,92 @@ def render_result_wrapper_conflict_into(result, highlighter, into):
         result.case.name,
         result.handle.get_test_documentation_lines(),
         None,
-        highlighter,
+        highlight_streamer,
         into,
     )
     
     wrapper_conflict = result.wrapper_conflict
     reason = wrapper_conflict.reason
     if (reason is not None):
-        into = add_highlighted_part_into(HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_TEXT_TITLE, 'Reason: ', highlighter, into)
-        into = add_highlighted_part_into(HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_TEXT_POSITIVE, reason, highlighter, into)
-        into.append('\n')
+        into.extend(highlight_streamer.asend((
+            HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_TEXT_TITLE,
+            'Reason: ',
+        )))
+        into.extend(highlight_streamer.asend((
+            HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_TEXT_POSITIVE,
+            reason,
+        )))
+        into.extend(highlight_streamer.asend((
+            HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_LINE_BREAK,
+            '\n',
+        )))
     
-    into = add_highlighted_part_into(HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_TEXT_TITLE, 'Between wrapper(s):', highlighter, into)
-    into.append('\n')
-    into = add_highlighted_part_into(HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_CONSOLE_MARKER_PREFIX, '-', highlighter, into)
-    into = add_highlighted_part_into(HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_SPACE, ' ', highlighter, into)
-    into.append(repr(wrapper_conflict.wrapper_0))
-    into.append('\n')
+    into.extend(highlight_streamer.asend((
+        HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_TEXT_TITLE,
+       'Between wrapper(s):',
+    )))
+    into.extend(highlight_streamer.asend((
+        HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_LINE_BREAK,
+        '\n',
+    )))
+    into.extend(highlight_streamer.asend((
+        HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_CONSOLE_MARKER_PREFIX,
+        '-',
+    )))
+    into.extend(highlight_streamer.asend((
+        HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_SPACE,
+        ' ',
+    )))
+    into.extend(highlight_streamer.asend((
+        HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_TEXT,
+        repr(wrapper_conflict.wrapper_0),
+    )))
+    into.extend(highlight_streamer.asend((
+        HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_LINE_BREAK,
+        '\n',
+    )))
     
     wrapper_1 = wrapper_conflict.wrapper_1
     if (wrapper_1 is not None):
-        into = add_highlighted_part_into(HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_CONSOLE_MARKER_PREFIX, '-', highlighter, into)
-        into = add_highlighted_part_into(HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_SPACE, ' ', highlighter, into)
-        into.append(repr(wrapper_1))
-        into.append('\n')
+        into.extend(highlight_streamer.asend((
+            HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_CONSOLE_MARKER_PREFIX,
+            '-',
+        )))
+        into.extend(highlight_streamer.asend((
+            HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_SPACE,
+            ' ',
+        )))
+        into.extend(highlight_streamer.asend((
+            HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_TEXT,
+            repr(wrapper_conflict.wrapper_1),
+        )))
+        into.extend(highlight_streamer.asend((
+            HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_LINE_BREAK,
+            '\n',
+        )))
     
     return into
 
 
-def render_result_failure_report_into(result, highlighter, into):
+def render_result_failure_report_into(result, highlight_streamer, into):
+    """
+    Renders a failure report.
+    
+    Parameter
+    ---------
+    result : ``Result``
+        The result failing with wrapper conflict.
+    
+    highlight_streamer : `CoroutineGeneratorType`
+        Highlight streamer to highlight the produced tokens.
+    
+    into : `list<str>`
+        List to render into.
+    
+    Returns
+    -------
+    into : `list<str>`
+    """
     return render_failure_report_into(
         result.get_failure_report(),
         result.case.path_parts,
@@ -99,12 +156,30 @@ def render_result_failure_report_into(result, highlighter, into):
         result.handle.get_test_documentation_lines(),
         result.handle.final_call_state,
         result.get_output_report(),
-        highlighter,
+        highlight_streamer,
         into,
     )
 
 
-def render_result_failing_into(result, highlighter, into):
+def render_result_failing_into(result, highlight_streamer, into):
+    """
+    Renders a failing result.
+    
+    Parameter
+    ---------
+    result : ``Result``
+        The result failing with wrapper conflict.
+    
+    highlight_streamer : `CoroutineGeneratorType`
+        Highlight streamer to highlight the produced tokens.
+    
+    into : `list<str>`
+        List to render into.
+    
+    Returns
+    -------
+    into : `list<str>`
+    """
     if result.is_conflicted():
         renderer = render_result_wrapper_conflict_into
     elif result.reversed:
@@ -112,10 +187,28 @@ def render_result_failing_into(result, highlighter, into):
     else:
         renderer = render_result_failure_report_into
     
-    return renderer(result, highlighter, into)
+    return renderer(result, highlight_streamer, into)
 
 
-def render_result_informal_into(result, highlighter, into):
+def render_result_informal_into(result, highlight_streamer, into):
+    """
+    Renders an informal result.
+    
+    Parameter
+    ---------
+    result : ``Result``
+        The result failing with wrapper conflict.
+    
+    highlight_streamer : `CoroutineGeneratorType`
+        Highlight streamer to highlight the produced tokens.
+    
+    into : `list<str>`
+        List to render into.
+    
+    Returns
+    -------
+    into : `list<str>`
+    """
     output_report = result.get_output_report()
     if (output_report is not None):
         into = render_output_output_into(
@@ -124,7 +217,7 @@ def render_result_informal_into(result, highlighter, into):
             result.case.name,
             result.handle.get_test_documentation_lines(),
             result.handle.final_call_state,
-            highlighter,
+            highlight_streamer,
             into,
         )
     

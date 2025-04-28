@@ -1,4 +1,4 @@
-from scarletio import DEFAULT_ANSI_HIGHLIGHTER
+from scarletio import DEFAULT_ANSI_HIGHLIGHTER, get_highlight_streamer, iter_split_ansi_format_codes
 
 from ....assertions import assert_eq, assert_instance
 from ....handling import CallState
@@ -101,23 +101,29 @@ def test__render_output_output_into(report, path_parts, name, documentation_line
     def create_break_mock(character):
         return character * 4
     
+    highlight_streamer = get_highlight_streamer(highlighter)
     create_break_code_original = create_break.__code__
     try:
         create_break.__code__ = create_break_mock.__code__
         
-        into = render_output_output_into(report, path_parts, name, documentation_lines, call_state, highlighter, [])
+        into = render_output_output_into(
+            report, path_parts, name, documentation_lines, call_state, highlight_streamer, []
+        )
     
     finally:
         create_break.__code__ = create_break_code_original
+    into.extend(highlight_streamer.asend(None))
     
     
     assert_instance(into, list)
     for element in into:
         assert_instance(element, str)
     
+    output_string = ''.join(into)
+    split = [*iter_split_ansi_format_codes(output_string)]
     assert_eq(
-        any('\x1b' in element for element in into),
+        any(item[0] for item in split),
         (highlighter is not None),
     )
     
-    return ''.join([element for element in into if '\x1b' not in element])
+    return ''.join([item[1] for item in split if not item[0]])

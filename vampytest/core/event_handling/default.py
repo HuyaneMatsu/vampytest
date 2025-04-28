@@ -3,7 +3,7 @@ __all__ = ('create_default_event_handler_manager',)
 from sys import platform as PLATFORM
 
 from scarletio import (
-    DEFAULT_ANSI_HIGHLIGHTER, HIGHLIGHT_TOKEN_TYPES, RichAttributeErrorBaseType, add_highlighted_part_into, export
+    DEFAULT_ANSI_HIGHLIGHTER, HIGHLIGHT_TOKEN_TYPES, RichAttributeErrorBaseType, export, get_highlight_streamer
 )
 
 from ..events import (
@@ -12,7 +12,7 @@ from ..events import (
 )
 from .base import EventHandlerManager
 from .default_output_writer import OutputWriter
-from .rendering_helpers.load_failure_rendering import render_load_failure_exception
+from .rendering_helpers.load_failure_rendering import render_load_failure_exception_into
 from .rendering_helpers.case_modifiers import build_case_modifier
 from .rendering_helpers.writers import write_load_failure, write_result_failing, write_result_informal
 
@@ -108,7 +108,7 @@ class DefaultEventFormatter(RichAttributeErrorBaseType):
         return ''.join(repr_parts)
     
     
-    def file_registration_done(self, event: FileRegistrationDoneEvent):
+    def file_registration_done(self, event : FileRegistrationDoneEvent):
         """
         Called when all files are registered.
         
@@ -122,7 +122,7 @@ class DefaultEventFormatter(RichAttributeErrorBaseType):
         output_writer.write_break_line()
     
     
-    def file_load_done(self, event: FileLoadDoneEvent):
+    def file_load_done(self, event : FileLoadDoneEvent):
         """
         Called when a test file is loaded.
         
@@ -133,14 +133,16 @@ class DefaultEventFormatter(RichAttributeErrorBaseType):
         """
         file = event.file
         if file.is_loaded_with_failure():
+            highlight_streamer = get_highlight_streamer(self.highlighter)
+            name = ''.join([
+                *highlight_streamer.asend((HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_TEXT_NEGATIVE, file.entry.get_name())),
+                *highlight_streamer.asend(None),
+            ])
+            
             message_parts = self._maybe_render_test_file_into(
                 [],
                 file.entry,
-                name = ''.join(
-                    add_highlighted_part_into(
-                        HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_TEXT_NEGATIVE, file.entry.get_name(), self.highlighter, []
-                    )
-                ),
+                name = name,
             )
             
             self.output_writer.write_line(''.join(message_parts))
@@ -179,7 +181,7 @@ class DefaultEventFormatter(RichAttributeErrorBaseType):
         return into
     
     
-    def test_done(self, event: TestDoneEvent):
+    def test_done(self, event : TestDoneEvent):
         """
         Called when a test is done.
         
@@ -221,20 +223,23 @@ class DefaultEventFormatter(RichAttributeErrorBaseType):
             token_type = HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_TEXT_UNKNOWN
         
         modifier = build_case_modifier(result.get_final_call_state())
+        
+        
+        highlight_streamer = get_highlight_streamer(self.highlighter)
+        name = ''.join([
+            *highlight_streamer.asend((token_type, f'{keyword} {result.case.name}{modifier}')),
+            *highlight_streamer.asend(None),
+        ])
         message_parts = test_file.entry.render_custom_sub_directory_into(
             message_parts,
-            ''.join(
-                add_highlighted_part_into(
-                    token_type, f'{keyword} {result.case.name}{modifier}', self.highlighter, []
-                )
-            ),
+            name,
             result.is_last() and result.case.is_last(),
         )
         
         self.output_writer.write_line(''.join(message_parts))
     
     
-    def file_testing_done(self, event: FileTestingDoneEvent):
+    def file_testing_done(self, event : FileTestingDoneEvent):
         """
         Called when all tests of a file is done
         
@@ -248,7 +253,7 @@ class DefaultEventFormatter(RichAttributeErrorBaseType):
             self.output_writer.write_line(''.join(message_parts))
     
     
-    def testing_end(self, event: TestingEndEvent):
+    def testing_end(self, event : TestingEndEvent):
         """
         Called when a test is done.
         
@@ -259,44 +264,48 @@ class DefaultEventFormatter(RichAttributeErrorBaseType):
         """
         output_writer = self.output_writer
         output_writer.write_break_line()
-        
         context = event.context
+        highlight_streamer = get_highlight_streamer(self.highlighter)
         
         load_failures = context.get_file_load_failures()
         for load_failure in load_failures:
-            write_load_failure(output_writer, load_failure, self.highlighter)
+            write_load_failure(output_writer, load_failure, highlight_streamer)
         
         for result in context.iter_failed_results():
-            write_result_failing(output_writer, result, self.highlighter)
+            write_result_failing(output_writer, result, highlight_streamer)
         
         failed_count = context.get_failed_test_count()
         if not failed_count:
             for result in context.iter_informal_results():
-                write_result_informal(output_writer, result, self.highlighter)
+                write_result_informal(output_writer, result, highlight_streamer)
         
         # build the summary line
         message_parts = []
-        highlighter = self.highlighter
         
         # Failed
         if failed_count:
             token_type = HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_TEXT_NEGATIVE
         else:
             token_type = HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_TEXT
-        message_parts = add_highlighted_part_into(
-            token_type, f'{failed_count} failed', highlighter, message_parts
-        )
+        
+        message_parts.extend(highlight_streamer.asend((
+            token_type,
+            f'{failed_count} failed',
+        )))
         
         # Separator
-        message_parts = add_highlighted_part_into(
-            HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_SPACE, ' ', highlighter, message_parts
-        )
-        message_parts = add_highlighted_part_into(
-            HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_TEXT, '|', highlighter, message_parts
-        )
-        message_parts = add_highlighted_part_into(
-            HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_SPACE, ' ', highlighter, message_parts
-        )
+        message_parts.extend(highlight_streamer.asend((
+            HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_SPACE,
+            ' ',
+        )))
+        message_parts.extend(highlight_streamer.asend((
+            HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_SPACE,
+            '|',
+        )))
+        message_parts.extend(highlight_streamer.asend((
+            HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_TEXT,
+            ' ',
+        )))
         
         # Skipped
         skipped_count = context.get_skipped_test_count()
@@ -304,20 +313,25 @@ class DefaultEventFormatter(RichAttributeErrorBaseType):
             token_type = HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_TEXT_NEUTRAL
         else:
             token_type = HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_TEXT
-        message_parts = add_highlighted_part_into(
-            token_type, f'{skipped_count} skipped', highlighter, message_parts
-        )
+        
+        message_parts.extend(highlight_streamer.asend((
+            token_type,
+            f'{skipped_count} skipped',
+        )))
         
         # Separator
-        message_parts = add_highlighted_part_into(
-            HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_SPACE, ' ', highlighter, message_parts
-        )
-        message_parts = add_highlighted_part_into(
-            HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_TEXT, '|', highlighter, message_parts
-        )
-        message_parts = add_highlighted_part_into(
-            HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_SPACE, ' ', highlighter, message_parts
-        )
+        message_parts.extend(highlight_streamer.asend((
+            HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_SPACE,
+            ' ',
+        )))
+        message_parts.extend(highlight_streamer.asend((
+            HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_SPACE,
+            '|',
+        )))
+        message_parts.extend(highlight_streamer.asend((
+            HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_TEXT,
+            ' ',
+        )))
         
         # passed
         passed_count = context.get_passed_test_count()
@@ -325,35 +339,40 @@ class DefaultEventFormatter(RichAttributeErrorBaseType):
             token_type = HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_TEXT_POSITIVE
         else:
             token_type = HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_TEXT
-        message_parts = add_highlighted_part_into(
-            token_type, f'{passed_count} passed', self.highlighter, message_parts
-        )
+        
+        message_parts.extend(highlight_streamer.asend((
+            token_type,
+            f'{passed_count} passed',
+        )))
         
         if load_failures:
             # Separator
-            message_parts = add_highlighted_part_into(
-                HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_SPACE, ' ', highlighter, message_parts
-            )
-            message_parts = add_highlighted_part_into(
-                HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_TEXT, '|', highlighter, message_parts
-            )
-            message_parts = add_highlighted_part_into(
-                HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_SPACE, ' ', highlighter, message_parts
-            )
+            message_parts.extend(highlight_streamer.asend((
+                HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_SPACE,
+                ' ',
+            )))
+            message_parts.extend(highlight_streamer.asend((
+                HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_SPACE,
+                '|',
+            )))
+            message_parts.extend(highlight_streamer.asend((
+                HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_TEXT,
+                ' ',
+            )))
             
             # load_failures
-            message_parts = add_highlighted_part_into(
+            message_parts.extend(highlight_streamer.asend((
                 HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_TEXT_NEGATIVE,
                 f'{len(load_failures)} files failed to load',
-                highlighter,
-                message_parts,
-            )
+            )))
+        
+        message_parts.extend(highlight_streamer.asend(None))
         
         output_writer.write(''.join(message_parts))
         output_writer.end_line()
     
     
-    def source_load_failure(self, event: SourceLoadFailureEvent):
+    def source_load_failure(self, event : SourceLoadFailureEvent):
         """
         Called when a source is failed to load.
         
@@ -365,5 +384,11 @@ class DefaultEventFormatter(RichAttributeErrorBaseType):
         output_writer = self.output_writer
         output_writer.write_line(f'Failed to import {event.source} from {event.context.runner._source_directory}')
         output_writer.write_break_line()
-        output_writer.write(render_load_failure_exception(event.exception, self.highlighter))
+        
+        message_parts = []
+        highlight_streamer = get_highlight_streamer(self.highlighter)
+        message_parts = render_load_failure_exception_into(event.exception, highlight_streamer, message_parts)
+        message_parts.extend(highlight_streamer.asend(None))
+        output_writer.write(''.join(message_parts))
+        
         output_writer.end_line()

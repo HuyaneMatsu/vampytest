@@ -1,4 +1,4 @@
-from scarletio import HIGHLIGHT_TOKEN_TYPES
+from scarletio import HIGHLIGHT_TOKEN_TYPES, get_highlight_streamer, iter_split_ansi_format_codes
 
 from ....assertions import assert_eq, assert_instance
 from ....utils import _
@@ -34,15 +34,19 @@ def test__render_two_sided_operation_into(operation, highlighter):
     -------
     output : `str`
     """
-    into = _render_two_sided_operation_into(operation, highlighter, [])
+    highlight_streamer = get_highlight_streamer(highlighter)
+    into = _render_two_sided_operation_into(operation, highlight_streamer, [])
+    into.extend(highlight_streamer.asend(None))
     
     assert_instance(into, list)
     for element in into:
         assert_instance(element, str)
     
+    output_string = ''.join(into)
+    split = [*iter_split_ansi_format_codes(output_string)]
     assert_eq(
-        any('\x1b' in element for element in into),
+        any(item[0] for item in split),
         (highlighter is not None),
     )
     
-    return ''.join([element for element in into if '\x1b' not in element])
+    return ''.join([item[1] for item in split if not item[0]])

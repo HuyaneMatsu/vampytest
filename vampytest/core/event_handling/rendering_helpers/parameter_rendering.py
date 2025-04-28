@@ -1,9 +1,7 @@
 __all__ = ()
 
-from scarletio import (
-    HIGHLIGHT_TOKEN_TYPES, add_highlighted_part_into, add_highlighted_parts_into,
-    get_token_type_and_repr_mode_for_variable
-)
+from scarletio import HIGHLIGHT_TOKEN_TYPES, get_token_type_and_repr_mode_for_variable
+
 
 def _produce_value_representation(value):
     """
@@ -73,7 +71,7 @@ def _produce_variable_assignation(variable_name):
     yield from _produce_assignation()
 
 
-def _render_parameter_representation_into(parameter_name, parameter_value, highlighter, into):
+def _render_parameter_representation_into(parameter_name, parameter_value, highlight_streamer, into):
     """
     Renders the given parameter into the given list of strings.
     
@@ -85,8 +83,8 @@ def _render_parameter_representation_into(parameter_name, parameter_value, highl
     parameter_value : `object`
         The parameter's value.
     
-    highlighter : `None | HighlightFormatterContext`
-        Highlighter to use.
+    highlight_streamer : `CoroutineGeneratorType`
+        Highlight streamer to highlight the produced tokens.
     
     into : `list<str>`
         A list to extend with the rendered strings.
@@ -96,10 +94,16 @@ def _render_parameter_representation_into(parameter_name, parameter_value, highl
     into : `list<str>`
     """
     if (parameter_name is not None):
-        into = add_highlighted_parts_into(_produce_variable_assignation(parameter_name), highlighter, into)
+        for item in _produce_variable_assignation(parameter_name):
+            into.extend(highlight_streamer.asend(item))
     
-    into = add_highlighted_parts_into(_produce_value_representation(parameter_value), highlighter, into)
-    into.append('\n')
+    for item in _produce_value_representation(parameter_value):
+        into.extend(highlight_streamer.asend(item))
+    
+    into.extend(highlight_streamer.asend((
+        HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_LINE_BREAK,
+        '\n',
+    )))
     return into
 
 
@@ -119,7 +123,7 @@ def _parameter_representation_sort_key(produced):
     return (len(produced), produced[0][1])
 
 
-def _render_types_parameter_representation_into(parameter_name, types, highlighter, into):
+def _render_types_parameter_representation_into(parameter_name, types, highlight_streamer, into):
     """
     Renders the given types parameter into the given list of strings.
     
@@ -131,8 +135,8 @@ def _render_types_parameter_representation_into(parameter_name, types, highlight
     types : `set<type | instance<type>>`
         The parameter's value.
     
-    highlighter : `None | HighlightFormatterContext`
-        Highlighter to use.
+    highlight_streamer : `CoroutineGeneratorType`
+        Highlight streamer to highlight the produced tokens.
     
     into : `list<str>`
         A list to extend with the rendered strings.
@@ -142,7 +146,8 @@ def _render_types_parameter_representation_into(parameter_name, types, highlight
     into : `list<str>`
     """
     if (parameter_name is not None):
-        into = add_highlighted_parts_into(_produce_variable_assignation(parameter_name), highlighter, into)
+        for item in _produce_variable_assignation(parameter_name):
+            into.extend(highlight_streamer.asend(item))
     
     representations = sorted(
         ((*_produce_value_representation(type_),) for type_ in types),
@@ -153,24 +158,32 @@ def _render_types_parameter_representation_into(parameter_name, types, highlight
         index = 0
         
         while True:
-            into = add_highlighted_parts_into(representations[index], highlighter, into)
+            for item in representations[index]:
+                into.extend(highlight_streamer.asend(item))
             
             index += 1
             if index == length:
                 break
             
-            into = add_highlighted_part_into(
-                HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_SPECIAL_PUNCTUATION, ',', highlighter, into
-            )
-            into = add_highlighted_part_into(HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_SPACE, ' ', highlighter, into)
+            into.extend(highlight_streamer.asend((
+                HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_SPECIAL_PUNCTUATION,
+                ',',
+            )))
+            into.extend(highlight_streamer.asend((
+                HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_SPACE,
+                ' ',
+            )))
             continue
     
-    into.append('\n')
+    into.extend(highlight_streamer.asend((
+        HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_LINE_BREAK,
+        '\n',
+    )))
     
     return into
 
 
-def _render_bool_non_default_into(parameter_name, parameter_value, default, highlighter, into):
+def _render_bool_non_default_into(parameter_name, parameter_value, default, highlight_streamer, into):
     """
     Renders a value value only if its true.
     
@@ -185,8 +198,8 @@ def _render_bool_non_default_into(parameter_name, parameter_value, default, high
     default : `bool`
         Default value.
     
-    highlighter : `None | HighlightFormatterContext`
-        Highlighter to use.
+    highlight_streamer : `CoroutineGeneratorType`
+        Highlight streamer to highlight the produced tokens.
     
     into : `list<str>`
         A list to extend with the rendered strings.
@@ -196,6 +209,6 @@ def _render_bool_non_default_into(parameter_name, parameter_value, default, high
     into : `list<str>`
     """
     if parameter_value != default:
-        into = _render_parameter_representation_into(parameter_name, parameter_value, highlighter, into)
+        into = _render_parameter_representation_into(parameter_name, parameter_value, highlight_streamer, into)
     
     return into

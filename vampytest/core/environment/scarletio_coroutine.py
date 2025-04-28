@@ -19,7 +19,7 @@ class ScarletioCoroutineEnvironment(DefaultEnvironment):
     
     Attributes
     ----------
-    timeout : `None`, `int`
+    timeout : `None | int`
         The maximal timeout to interrupt tests before.
         
         Defaults to creating a new event loop every time if set as `None`.
@@ -93,7 +93,7 @@ class ScarletioCoroutineEnvironment(DefaultEnvironment):
             The test to call
         positional_parameters : `list` of `object`
             Positional parameters to call the test with.
-        keyword_parameters : `dict` of (`str`, `object`) items
+        keyword_parameters : `dict<str, object>`
             Keyword parameters to call the test with.
         
         Returns

@@ -2,7 +2,7 @@ __all__ = ()
 
 from os import get_terminal_size
 
-from scarletio import HIGHLIGHT_TOKEN_TYPES, add_highlighted_part_into
+from scarletio import HIGHLIGHT_TOKEN_TYPES
 
 from ..default_output_writer import DEFAULT_BREAK_LINE_LENGTH
 
@@ -32,7 +32,9 @@ def create_break(character):
     return character * break_line_length
 
 
-def render_test_header_into(token_type, title, path_parts, name, documentation_lines, call_state, highlighter, into):
+def render_test_header_into(
+    token_type, title, path_parts, name, documentation_lines, call_state, highlight_streamer, into
+):
     """
     Renders the test's position into the given list.
     
@@ -56,8 +58,8 @@ def render_test_header_into(token_type, title, path_parts, name, documentation_l
     call_state : `None | CallState`
         Call state to render.
     
-    highlighter : `None | HighlightFormatterContext`
-        Highlighter to use.
+    highlight_streamer : `CoroutineGeneratorType`
+        Highlight streamer to highlight the produced tokens.
     
     into : `list<str>`
         A list to put the string parts into.
@@ -67,8 +69,14 @@ def render_test_header_into(token_type, title, path_parts, name, documentation_l
     into : `list<str>`
     """
     # title
-    into = add_highlighted_part_into(token_type, title + ' at:', highlighter, into)
-    into = add_highlighted_part_into(HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_SPACE, ' ', highlighter, into)
+    into.extend(highlight_streamer.asend((
+        token_type,
+        title + ' at:',
+    )))
+    into.extend(highlight_streamer.asend((
+        HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_SPACE,
+        ' ',
+    )))
     
     # location
     length = len(path_parts)
@@ -76,47 +84,68 @@ def render_test_header_into(token_type, title, path_parts, name, documentation_l
         index = 0
         while True:
             part = path_parts[index]
-            into = add_highlighted_part_into(
-                HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_TRACE_LOCATION_PATH, part, highlighter, into
-            )
+            
+            into.extend(highlight_streamer.asend((
+                HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_TRACE_LOCATION_PATH,
+                part,
+            )))
             index += 1
             if index == length:
                 break
             
-            into = add_highlighted_part_into(
-                HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_SPECIAL_OPERATOR_ATTRIBUTE, '.', highlighter, into
-            )
+            into.extend(highlight_streamer.asend((
+                HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_SPECIAL_OPERATOR_ATTRIBUTE,
+                '.',
+            )))
             continue
         
-        into = add_highlighted_part_into(
-            HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_SPECIAL_PUNCTUATION, ':', highlighter, into
-        )
+        into.extend(highlight_streamer.asend((
+            HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_SPECIAL_PUNCTUATION,
+            ':',
+        )))
     
-    into = add_highlighted_part_into(
-        HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_SPECIAL_PUNCTUATION, name, highlighter, into
-    )
-    into.append('\n')
+    into.extend(highlight_streamer.asend((
+        HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_SPECIAL_PUNCTUATION,
+        name,
+    )))
+    into.extend(highlight_streamer.asend((
+        HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_LINE_BREAK,
+        '\n',
+    )))
     
     # documentation
     if (documentation_lines is not None):
-        into.append('\n')
+        into.extend(highlight_streamer.asend((
+            HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_LINE_BREAK,
+            '\n',
+        )))
         
         for line in documentation_lines:
-            into = add_highlighted_part_into(
-                HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_CONSOLE_MARKER_PREFIX, '>', highlighter, into
-            )
+            into.extend(highlight_streamer.asend((
+                HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_CONSOLE_MARKER_PREFIX,
+                '>',
+            )))
             if line:
-                into = add_highlighted_part_into(HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_SPACE, ' ', highlighter, into)
-                into = add_highlighted_part_into(HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_STRING, line, highlighter, into)
+                into.extend(highlight_streamer.asend((
+                    HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_SPACE,
+                    ' ',
+                )))
+                into.extend(highlight_streamer.asend((
+                    HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_STRING,
+                    line,
+                )))
             
-            into.append('\n')
+            into.extend(highlight_streamer.asend((
+                HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_LINE_BREAK,
+                '\n',
+            )))
             continue
     
     # call_state (parameters)
     if (call_state is not None):
         case_name = call_state.name
         if (case_name is not None):
-            into = render_case_name_section_into(case_name, highlighter, into)
+            into = render_case_name_section_into(case_name, highlight_streamer, into)
         
         positional_parameters = call_state.positional_parameters
         keyword_parameters = call_state.keyword_parameters
@@ -126,14 +155,14 @@ def render_test_header_into(token_type, title, path_parts, name, documentation_l
                 'Parameters:',
                 positional_parameters,
                 keyword_parameters,
-                highlighter,
+                highlight_streamer,
                 into,
             )
     
     return into
 
 
-def render_case_name_section_into(name, highlighter, into):
+def render_case_name_section_into(name, highlight_streamer, into):
     """
     Renders the test case's name into the given list.
     
@@ -142,8 +171,8 @@ def render_case_name_section_into(name, highlighter, into):
     name : `str`
         The test case's name.
     
-    highlighter : `None | HighlightFormatterContext`
-        Highlighter to use.
+    highlight_streamer : `CoroutineGeneratorType`
+        Highlight streamer to highlight the produced tokens.
     
     into : `list<str>`
         A list to put the string parts into.
@@ -152,18 +181,31 @@ def render_case_name_section_into(name, highlighter, into):
     -------
     into : `list<str>`
     """
-    into.append('\n')
-    into = add_highlighted_part_into(
-        HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_TEXT_TITLE, 'Named:', highlighter, into
-    )
-    into = add_highlighted_part_into(HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_SPACE, ' ', highlighter, into)
-    into = add_highlighted_part_into(HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_TEXT_TITLE, name, highlighter, into)
-    into.append('\n')
+    into.extend(highlight_streamer.asend((
+        HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_LINE_BREAK,
+        '\n',
+    )))
+    into.extend(highlight_streamer.asend((
+        HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_TEXT_TITLE,
+        'Named:',
+    )))
+    into.extend(highlight_streamer.asend((
+        HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_SPACE,
+        ' ',
+    )))
+    into.extend(highlight_streamer.asend((
+        HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_TEXT_TITLE,
+        name,
+    )))
+    into.extend(highlight_streamer.asend((
+        HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_LINE_BREAK,
+        '\n',
+    )))
     return into
 
 
 def render_parameters_section_into(
-    title, positional_parameters, keyword_parameters, highlighter, into
+    title, positional_parameters, keyword_parameters, highlight_streamer, into
 ):
     """
     Renders the input parameters of to the given list.
@@ -179,8 +221,8 @@ def render_parameters_section_into(
     keyword_parameters : `None | dict<str, object>`
         Keyword parameters passed to the test.
     
-    highlighter : `None | HighlightFormatterContext`
-        Highlighter to use.
+    highlight_streamer : `CoroutineGeneratorType`
+        Highlight streamer to highlight the produced tokens.
     
     into : `list<str>`
         A list to put the string parts into.
@@ -190,31 +232,52 @@ def render_parameters_section_into(
     into : `list<str>`
     """
     # render title
-    into.append('\n')
-    into = add_highlighted_part_into(
-        HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_TEXT_TITLE, title, highlighter, into
-    )
+    into.extend(highlight_streamer.asend((
+        HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_LINE_BREAK,
+        '\n',
+    )))
+    
+    into.extend(highlight_streamer.asend((
+        HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_TEXT_TITLE,
+        title,
+    )))
     
     # render body
     if (positional_parameters is None) and (keyword_parameters is None):
-        into = add_highlighted_part_into(HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_SPACE, ' ', highlighter, into)
-        into = add_highlighted_part_into(
-            HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_NON_SPACE_UNIDENTIFIED, 'N/A', highlighter, into
-        )
-        into.append('\n')
+        into.extend(highlight_streamer.asend((
+            HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_SPACE,
+            ' ',
+        )))
+        into.extend(highlight_streamer.asend((
+            HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_NON_SPACE_UNIDENTIFIED,
+            'N/A',
+        )))
+        into.extend(highlight_streamer.asend((
+            HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_LINE_BREAK,
+            '\n',
+        )))
     
     else:
-        into.append('\n')
+        into.extend(highlight_streamer.asend((
+            HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_LINE_BREAK,
+            '\n',
+        )))
         
         if (positional_parameters is not None):
             for parameter_value in positional_parameters:
-                into = add_highlighted_part_into(HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_SPACE, '    ', highlighter, into)
-                into = _render_parameter_representation_into(None, parameter_value, highlighter, into)
+                into.extend(highlight_streamer.asend((
+                    HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_SPACE,
+                    '    ',
+                )))
+                into = _render_parameter_representation_into(None, parameter_value, highlight_streamer, into)
         
         
         if (keyword_parameters is not None):
             for (parameter_name, parameter_value) in keyword_parameters.items():
-                into = add_highlighted_part_into(HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_SPACE, '    ', highlighter, into)
-                into = _render_parameter_representation_into(parameter_name, parameter_value, highlighter, into)
+                into.extend(highlight_streamer.asend((
+                    HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_SPACE,
+                    '    ',
+                )))
+                into = _render_parameter_representation_into(parameter_name, parameter_value, highlight_streamer, into)
     
     return into
