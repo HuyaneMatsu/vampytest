@@ -1,6 +1,6 @@
 __all__ = ()
 
-from scarletio.utils.trace.trace import _render_exception_into
+from scarletio.utils.trace.trace import _produce_exception
 
 from ...runner.runner import __file__ as VAMPYTEST_RUNNER_FILE_PATH
 
@@ -33,28 +33,19 @@ def _ignore_invoke_test_frame(frame):
     return should_show_frame
 
 
-def render_load_failure_exception_into(exception, highlight_streamer, into):
+def produce_load_failure_exception(exception):
     """
     Renders load failure exception into the given list of strings.
     
+    This functions is an iterable generator.
+    
     Parameters
     ----------
-    exception : ``BaseException``
+    exception : `BaseException`
         The raised exception.
     
-    highlight_streamer : `CoroutineGeneratorType`
-        Highlight streamer to highlight the produced tokens.
-    
-    into : `list<str>`
-        A list to extend with the rendered strings.
-    
-    Returns
+    Yields
     -------
-    into : `list<str>`
+    token_type_and_part : `(int, str)`
     """
-    return _render_exception_into(
-        exception,
-        _ignore_invoke_test_frame,
-        highlight_streamer,
-        into,
-    )
+    yield from _produce_exception(exception, _ignore_invoke_test_frame)

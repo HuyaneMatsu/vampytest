@@ -4,7 +4,7 @@ from ....assertions import assert_eq, assert_instance
 from ....utils import _
 from ....wrappers import call_from
 
-from ..result_rendering_common import render_parameters_section_into
+from ..result_rendering_common import produce_parameters_section
 
 
 def _iter_options():
@@ -78,9 +78,9 @@ def _iter_options():
 
 
 @_(call_from(_iter_options()).returning_last())
-def test__render_parameters_section_into(title, positional_parameters, keyword_parameters, highlighter):
+def test__produce_parameters_section(title, positional_parameters, keyword_parameters, highlighter):
     """
-    Tests whether ``render_parameters_section_into`` works as intended.
+    Tests whether ``produce_parameters_section`` works as intended.
     
     Parameters
     ----------
@@ -93,7 +93,7 @@ def test__render_parameters_section_into(title, positional_parameters, keyword_p
     keyword_parameters : `None | dict<str, object>`
         Keyword parameters passed to the test.
     
-    highlighter : `None | HighlightFormatterContext`
+    highlighter : ``None | HighlightFormatterContext``
         Highlighter to use.
     
     Returns
@@ -101,14 +101,16 @@ def test__render_parameters_section_into(title, positional_parameters, keyword_p
     output : `str`
     """
     highlight_streamer = get_highlight_streamer(highlighter)
-    into = render_parameters_section_into(title, positional_parameters, keyword_parameters, highlight_streamer, [])
-    into.extend(highlight_streamer.asend(None))
+    output = []
+    for item in produce_parameters_section(title, positional_parameters, keyword_parameters):
+        output.extend(highlight_streamer.asend(item))
     
-    assert_instance(into, list)
-    for element in into:
+    output.extend(highlight_streamer.asend(None))
+    
+    for element in output:
         assert_instance(element, str)
     
-    output_string = ''.join(into)
+    output_string = ''.join(output)
     split = [*iter_split_ansi_format_codes(output_string)]
     assert_eq(
         any(item[0] for item in split),

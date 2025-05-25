@@ -2,7 +2,7 @@ __all__ = ()
 
 from scarletio import HIGHLIGHT_TOKEN_TYPES
 from scarletio.utils.trace.frame_proxy import get_exception_frames
-from scarletio.utils.trace.trace import _render_exception_into, _render_frames_into
+from scarletio.utils.trace.trace import _produce_exception, _produce_frames
 
 from ...assertions import AssertionRaising
 from ...assertions.exception import _ignore_assertion_frames
@@ -12,19 +12,21 @@ from ...result import (
     ReportFailureAsserting, ReportFailureParameterMismatch, ReportFailureRaising, ReportFailureReturning
 )
 
-from .assertion_rendering import render_assertion_into
+from .assertion_rendering import produce_assertion
 from .parameter_rendering import (
-    _produce_assignation, _produce_value_representation, _render_bool_non_default_into,
-    _render_parameter_representation_into, _render_types_parameter_representation_into
+    _produce_assignation, _produce_value_representation, _produce_bool_non_default,
+    _produce_parameter_representation, _produce_types_parameter_representation
 )
 from .result_rendering_common import (
-    create_break, render_case_name_section_into, render_parameters_section_into, render_test_header_into
+    create_break, produce_case_name_section, produce_parameters_section, produce_test_header
 )
 
 
-def _render_break_and_output(separator_token_type, output, highlight_streamer, into):
+def _produce_break_and_output(separator_token_type, output):
     """
     Renders a break line and the given output.
+    
+    This functions is an iterable generator.
     
     Parameters
     ----------
@@ -34,40 +36,22 @@ def _render_break_and_output(separator_token_type, output, highlight_streamer, i
     output : `str`
         Output to render.
     
-    highlight_streamer : `CoroutineGeneratorType`
-        Highlight streamer to highlight the produced tokens.
-    
-    into : `list<str>`
-        List to render into.
-    
-    Returns
+    Yields
     -------
-    into : `list<str>`
+    token_type_and_part : `(int, str)`
     """
-    into.extend(highlight_streamer.asend((
-        separator_token_type,
-        create_break('-'),
-    )))
-    into.extend(highlight_streamer.asend((
-        HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_LINE_BREAK,
-        '\n',
-    )))
-    into.extend(highlight_streamer.asend((
-        HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_TEXT,
-       output,
-    )))
+    yield separator_token_type, create_break('-')
+    yield HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_LINE_BREAK, '\n'
+    yield HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_TEXT, output
     if not output.endswith('\n'):
-        into.extend(highlight_streamer.asend((
-            HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_LINE_BREAK,
-            '\n',
-        )))
-    
-    return into
+        yield HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_LINE_BREAK, '\n'
     
 
-def render_output_output_into(report, path_parts, name, documentation_lines, call_state, highlight_streamer, into):
+def produce_output_report(report, path_parts, name, documentation_lines, call_state):
     """
     Renders output report.
+    
+    This functions is an iterable generator.
     
     Parameter
     ---------
@@ -83,79 +67,51 @@ def render_output_output_into(report, path_parts, name, documentation_lines, cal
     documentation_lines : `None | list<str>`
         Lines of the test's documentation.
     
-    call_state : `None | CallState`
+    call_state : ``None | CallState``
         Call state of the report.
     
-    highlight_streamer : `CoroutineGeneratorType`
-        Highlight streamer to highlight the produced tokens.
-    
-    into : `list<str>`
-        List to render into.
-    
-    Returns
+    Yields
     -------
-    into : `list<str>`
+    token_type_and_part : `(int, str)`
     """
-    into = render_test_header_into(
+    yield from produce_test_header(
         HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_TEXT_NEUTRAL,
         'Captured output', 
         path_parts,
         name,
         documentation_lines,
         call_state,
-        highlight_streamer,
-        into,
     )
-    into = _render_break_and_output(
-        HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_TEXT_NEUTRAL, report.output, highlight_streamer, into
-    )
-    return into
+    yield from _produce_break_and_output(HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_TEXT_NEUTRAL, report.output)
 
 
-def _maybe_render_output_report_into(report, highlight_streamer, into):
+def _maybe_produce_output_report(report):
     """
     Renders the captured output report as a section into the given list.
+    
+    This functions is an iterable generator.
     
     Parameters
     ----------
     report : ``ReportOutput``
         The report to render.
     
-    highlight_streamer : `CoroutineGeneratorType`
-        Highlight streamer to highlight the produced tokens.
-    
-    into : `list<str>`
-        A list to put the string parts into.
-    
-    Returns
+    Yields
     -------
-    into : `list<str>`
+    token_type_and_part : `(int, str)`
     """
     if (report is not None):
-        into.extend(highlight_streamer.asend((
-            HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_LINE_BREAK,
-            '\n',
-        )))
-        into.extend(highlight_streamer.asend((
-            HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_TEXT_TITLE,
-           'Captured output while running the test:',
-        )))
-        into.extend(highlight_streamer.asend((
-            HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_LINE_BREAK,
-            '\n',
-        )))
-        into = _render_break_and_output(
-            HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_TEXT_TITLE, report.output, highlight_streamer, into
-        )
-    
-    return into
+        yield HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_LINE_BREAK, '\n'
+        yield HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_TEXT_TITLE, 'Captured output while running the test:'
+        yield HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_LINE_BREAK, '\n'
+        yield from  _produce_break_and_output(HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_TEXT_TITLE, report.output)
 
 
-def _render_report_asserting_into(
-    report, path_parts, name, documentation_lines, call_state, output_report, highlight_streamer, into
-):
+def _produce_report_asserting(report, path_parts, name, documentation_lines, call_state, output_report):
     """
     Renders assertion failure report.
+    
+    This functions is an iterable generator.
     
     Parameter
     ---------
@@ -171,179 +127,88 @@ def _render_report_asserting_into(
     documentation_lines : `None | list<str>`
         Lines of the test's documentation.
     
-    call_state : `None | CallState`
+    call_state : ``None | CallState``
         Call state of the report.
     
-    output_report : `None | ReportOutput`
+    output_report : ``None | ReportOutput``
         Output report if any.
     
-    highlight_streamer : `CoroutineGeneratorType`
-        Highlight streamer to highlight the produced tokens.
-    
-    into : `list<str>`
-        List to render into.
-    
-    Returns
+    Yields
     -------
-    into : `list<str>`
+    token_type_and_part : `(int, str)`
     """
-    into = render_test_header_into(
+    yield from produce_test_header(
         HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_TEXT_NEGATIVE,
         'Assertion failed',
         path_parts,
         name,
         documentation_lines,
         call_state,
-        highlight_streamer,
-        into,
     )
+    yield HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_LINE_BREAK, '\n'
     
-    into.extend(highlight_streamer.asend((
-        HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_LINE_BREAK,
-        '\n',
-    )))
     assertion_exception = report.assertion_exception
-    into.extend(highlight_streamer.asend((
-        HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_TRACE_TITLE,
-        'Assertion traceback (most recent call last):',    )))
-    into.extend(highlight_streamer.asend((
-        HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_LINE_BREAK,
-        '\n',
-    )))
-    into = _render_frames_into(
-        get_exception_frames(assertion_exception),
-        _ignore_assertion_frames,
-        highlight_streamer,
-        into,
-    )
+    yield HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_TRACE_TITLE, 'Assertion traceback (most recent call last):'
+    yield HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_LINE_BREAK, '\n'
+    yield from _produce_frames(get_exception_frames(assertion_exception), _ignore_assertion_frames)
     
-    into.extend(highlight_streamer.asend((
-        HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_LINE_BREAK,
-        '\n',
-    )))
-    into = render_assertion_into(assertion_exception.assertion, highlight_streamer, into)
+    yield HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_LINE_BREAK, '\n'
+    yield from produce_assertion(assertion_exception.assertion)
     
     assertion = assertion_exception.assertion
     if isinstance(assertion, AssertionRaising):
         received_exception = assertion.received_exception
         if (received_exception is not None):
-            into.extend(highlight_streamer.asend((
-                HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_LINE_BREAK,
-                '\n',
-            )))
-            into.extend(highlight_streamer.asend((
-                HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_TEXT_NEGATIVE,
-                'Captured exception failing the assertion:',
-            )))
-            into.extend(highlight_streamer.asend((
-                HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_LINE_BREAK,
-                '\n',
-            )))
-            into.extend(highlight_streamer.asend((
-                HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_TEXT_NEGATIVE,
-                create_break('-'),            )))
-            into.extend(highlight_streamer.asend((
-                HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_LINE_BREAK,
-                '\n',
-            )))
-            into = _render_exception_into(
-                received_exception,
-                None,
-                highlight_streamer,
-                into,
-            )
+            yield HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_LINE_BREAK, '\n'
+            yield HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_TEXT_NEGATIVE, 'Captured exception failing the assertion:'
+            yield HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_LINE_BREAK, '\n'
+            yield HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_TEXT_NEGATIVE, create_break('-')
+            yield HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_LINE_BREAK, '\n'
+            yield from _produce_exception(received_exception, None)
     
     exception = assertion.exception
     if (exception is not None):
-        into.extend(highlight_streamer.asend((
-            HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_LINE_BREAK,
-            '\n',
-        )))
-        into.extend(highlight_streamer.asend((
-            HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_TEXT_NEGATIVE,
-            'Unexpected exception occurred withing the assertion:',
-        )))
-        into.extend(highlight_streamer.asend((
-            HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_LINE_BREAK,
-            '\n',
-        )))
-        into.extend(highlight_streamer.asend((
-            HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_TEXT_NEGATIVE,
-            create_break('-'),        )))
-        into.extend(highlight_streamer.asend((
-            HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_LINE_BREAK,
-            '\n',
-        )))
-        into = _render_exception_into(
-            exception,
-            None,
-            highlight_streamer,
-            into,
-        )
+        yield HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_LINE_BREAK, '\n'
+        yield HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_TEXT_NEGATIVE, 'Unexpected exception occurred withing the assertion:'
+        yield HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_LINE_BREAK, '\n'
+        yield HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_TEXT_NEGATIVE, create_break('-')
+        yield HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_LINE_BREAK, '\n'
+        yield from _produce_exception(exception, None)
     
-    into = _maybe_render_output_report_into(output_report, highlight_streamer, into)
-    return into
+    yield from _maybe_produce_output_report(output_report)
 
 
-def _render_function_parameters_into(parameters, highlight_streamer, into):
+def _produce_function_parameters(parameters):
     """
     Renders a function's parameters.
+    
+    This functions is an iterable generator.
     
     Parameters
     ----------
     parameters : `list<Parameter>`
         The parameter to render.
     
-    highlight_streamer : `CoroutineGeneratorType`
-        Highlight streamer to highlight the produced tokens.
-    
-    into : `list<str>`
-        Container to render into.
-    
-    Returns
+    Yields
     -------
-    into : `list<str>`
+    token_type_and_part : `(int, str)`
     """
-    into.extend(highlight_streamer.asend((
-        HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_LINE_BREAK,
-        '\n',
-    )))
+    yield HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_LINE_BREAK, '\n'
     previous = None
     
     for parameter in parameters:
         if (previous is not None):
             if previous.is_positional_only() and (not parameter.is_positional_only()):
-                into.extend(highlight_streamer.asend((
-                    HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_SPACE,
-                    '    ',
-                )))
-                into.extend(highlight_streamer.asend((
-                    HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_SPECIAL_OPERATOR,
-                    '/',
-                )))
-                into.extend(highlight_streamer.asend((
-                    HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_LINE_BREAK,
-                    '\n',
-                )))
+                yield HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_SPACE, '    '
+                yield HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_SPECIAL_OPERATOR, '/'
+                yield HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_LINE_BREAK, '\n'
             
             if previous.is_positional() and parameter.is_keyword_only():
-                into.extend(highlight_streamer.asend((
-                    HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_SPACE,
-                    '    ',
-                )))
-                into.extend(highlight_streamer.asend((
-                    HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_SPECIAL_OPERATOR,
-                    '*',
-                )))
-                into.extend(highlight_streamer.asend((
-                    HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_LINE_BREAK,
-                    '\n',
-                )))
+                yield HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_SPACE, '    '
+                yield HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_SPECIAL_OPERATOR, '*'
+                yield HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_LINE_BREAK, '\n'
         
-        into.extend(highlight_streamer.asend((
-            HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_SPACE,
-            '    ',
-        )))
+        yield HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_SPACE, '    '
         
         # * or ** ?
         if parameter.is_args():
@@ -354,74 +219,46 @@ def _render_function_parameters_into(parameters, highlight_streamer, into):
             prefix = None
         
         if (prefix is not None):
-            into.extend(highlight_streamer.asend((
-                HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_SPECIAL_OPERATOR,
-                prefix,
-            )))
+            yield HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_SPECIAL_OPERATOR, prefix
         
         # name
-        into.extend(highlight_streamer.asend((
-            HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_IDENTIFIER_VARIABLE,
-            parameter.name,
-        )))
+        yield HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_IDENTIFIER_VARIABLE, parameter.name
         
         # default
         if parameter.has_default:
-            for item in _produce_assignation():
-                into.extend(highlight_streamer.asend(item))
-            for item in _produce_value_representation(parameter.default):
-                into.extend(highlight_streamer.asend(item))
+            yield from _produce_assignation()
+            yield from _produce_value_representation(parameter.default)
         
         previous = parameter
-        into.extend(highlight_streamer.asend((
-            HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_LINE_BREAK,
-            '\n',
-        )))
-    
-    return into
+        yield HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_LINE_BREAK, '\n'
 
 
-def _render_unsatisfied_parameters_into(unsatisfied_parameters, highlight_streamer, into):
+def _produce_unsatisfied_parameters(unsatisfied_parameters):
     """
     Renders the unsatisfied parameters.
+    
+    This functions is an iterable generator.
     
     Parameters
     ----------
     unsatisfied_parameters : `list<Parameter>`
         The parameter to render.
     
-    highlight_streamer : `CoroutineGeneratorType`
-        Highlight streamer to highlight the produced tokens.
-    
-    into : `list<str>`
-        Container to render into.
-    
-    Returns
+    Yields
     -------
-    into : `list<str>`
+    token_type_and_part : `(int, str)`
     """
     for parameter in unsatisfied_parameters:
-        into.extend(highlight_streamer.asend((
-            HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_SPACE,
-            '    ',
-        )))
-        into.extend(highlight_streamer.asend((
-            HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_IDENTIFIER_VARIABLE,
-            parameter.name,
-        )))
-        into.extend(highlight_streamer.asend((
-            HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_LINE_BREAK,
-            '\n',
-        )))
-    
-    return into
+        yield HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_SPACE, '    '
+        yield HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_IDENTIFIER_VARIABLE, parameter.name
+        yield HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_LINE_BREAK, '\n'
 
 
-def _render_report_parameter_mismatch_into(
-    report, path_parts, name, documentation_lines, call_state, output_report, highlight_streamer, into
-):
+def _produce_report_parameter_mismatch(report, path_parts, name, documentation_lines, call_state, output_report):
     """
     Renders parameter mismatch failure report.
+    
+    This functions is an iterable generator.
     
     Parameter
     ---------
@@ -437,31 +274,23 @@ def _render_report_parameter_mismatch_into(
     documentation_lines : `None | list<str>`
         Lines of the test's documentation.
     
-    call_state : `None | CallState`
+    call_state : ``None | CallState``
         Call state of the report.
     
-    output_report : `None | ReportOutput`
+    output_report : ``None | ReportOutput``
         Output report if any.
     
-    highlight_streamer : `CoroutineGeneratorType`
-        Highlight streamer to highlight the produced tokens.
-    
-    into : `list<str>`
-        List to render into.
-    
-    Returns
+    Yields
     -------
-    into : `list<str>`
+    token_type_and_part : `(int, str)`
     """
-    into = render_test_header_into(
+    yield from produce_test_header(
         HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_TEXT_NEGATIVE,
         'Parameter mismatch', 
         path_parts,
         name,
         documentation_lines,
         None,
-        highlight_streamer,
-        into,
     )
     
     # Since we do not wanna render the parameters in the header, we pass the call state there as `None`
@@ -469,65 +298,36 @@ def _render_report_parameter_mismatch_into(
     if (call_state is not None):
         case_name = call_state.name
         if (case_name is not None):
-            into = render_case_name_section_into(case_name, highlight_streamer, into)
+            yield from produce_case_name_section(case_name)
     
     parameter_mismatch = report.parameter_mismatch
     
-    into.extend(highlight_streamer.asend((
-        HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_LINE_BREAK,
-        '\n',
-    )))
-    into.extend(highlight_streamer.asend((
-        HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_TEXT_TITLE,
-        'Function parameters:',
-    )))
-    into = _render_function_parameters_into(
-        parameter_mismatch.parameters,
-        highlight_streamer,
-        into,
-    )
+    yield HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_LINE_BREAK, '\n'
+    yield HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_TEXT_TITLE, 'Function parameters:'
+    yield from _produce_function_parameters(parameter_mismatch.parameters)
     
-    into = render_parameters_section_into(
+    yield from produce_parameters_section(
         'Given parameters:',
         parameter_mismatch.positional_parameters,
         parameter_mismatch.keyword_parameters,
-        highlight_streamer,
-        into
     )
     
     
     unsatisfied_parameters = parameter_mismatch.unsatisfied_parameters
     if (unsatisfied_parameters is not None):
-        into.extend(highlight_streamer.asend((
-            HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_LINE_BREAK,
-            '\n',
-        )))
-        into.extend(highlight_streamer.asend((
-            HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_TEXT_TITLE,
-            'Unsatisfied function parameters:'
-        )))
-        into.extend(highlight_streamer.asend((
-            HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_LINE_BREAK,
-            '\n',
-        )))
-        into = _render_unsatisfied_parameters_into(
-            unsatisfied_parameters,
-            highlight_streamer,
-            into,
-        )
+        yield HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_LINE_BREAK, '\n'
+        yield HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_TEXT_TITLE, 'Unsatisfied function parameters:'
+        yield HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_LINE_BREAK, '\n'
+        yield from _produce_unsatisfied_parameters(unsatisfied_parameters)
     
     extra_positional_parameters = parameter_mismatch.extra_positional_parameters
     extra_keyword_parameters = parameter_mismatch.extra_keyword_parameters
     if (extra_positional_parameters is not None) or (extra_keyword_parameters is not None):
-        into = render_parameters_section_into(
+        yield from produce_parameters_section(
             'Extra parameters:',
             extra_positional_parameters,
-            extra_keyword_parameters,
-            highlight_streamer,
-            into,
+            extra_keyword_parameters
         )
-    
-    return into
 
 
 def _ignore_invoke_test_frame(frame):
@@ -563,11 +363,11 @@ def _ignore_invoke_test_frame(frame):
     return should_show_frame
 
 
-def _render_report_raising_into(
-    report, path_parts, name, documentation_lines, call_state, output_report, highlight_streamer, into
-):
+def _produce_report_raising(report, path_parts, name, documentation_lines, call_state, output_report):
     """
     Renders raising failure report.
+    
+    This functions is an iterable generator.
     
     Parameter
     ---------
@@ -583,73 +383,46 @@ def _render_report_raising_into(
     documentation_lines : `None | list<str>`
         Lines of the test's documentation.
     
-    call_state : `None | CallState`
+    call_state : ``None | CallState``
         Call state of the report.
     
-    output_report : `None | ReportOutput`
+    output_report : ``None | ReportOutput``
         Output report if any.
     
-    highlight_streamer : `CoroutineGeneratorType`
-        Highlight streamer to highlight the produced tokens.
-    
-    into : `list<str>`
-        List to render into.
-    
-    Returns
+    Yields
     -------
-    into : `list<str>`
+    token_type_and_part : `(int, str)`
     """
-    into = render_test_header_into(
+    yield from produce_test_header(
         HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_TEXT_NEGATIVE,
         ('Missing exception' if report.exception_received is None else 'Unexpected exception'),
         path_parts,
         name,
         documentation_lines,
         call_state,
-        highlight_streamer,
-        into,
     )
     
     expected_exceptions = report.expected_exceptions
     if (expected_exceptions is not None):
-        into.extend(highlight_streamer.asend((
-            HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_LINE_BREAK,
-            '\n',
-        )))
-        into = _render_types_parameter_representation_into(
-            'expected_exceptions', expected_exceptions, highlight_streamer, into
-        )
-        into = _render_bool_non_default_into(
-            'accept_subtypes', report.accept_subtypes, True, highlight_streamer, into
-        )
+        yield HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_LINE_BREAK, '\n'
+        yield from _produce_types_parameter_representation('expected_exceptions', expected_exceptions)
+        yield from _produce_bool_non_default('accept_subtypes', report.accept_subtypes, True)
     
     
     exception_received = report.exception_received
     if (exception_received is not None):
-        into.extend(highlight_streamer.asend((
-            HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_TEXT_NEGATIVE,
-            create_break('-'),        )))
-        into.extend(highlight_streamer.asend((
-            HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_LINE_BREAK,
-            '\n',
-        )))
-        
-        into = _render_exception_into(
-            exception_received,
-            _ignore_invoke_test_frame,
-            highlight_streamer,
-            into,
-        )
+        yield HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_TEXT_NEGATIVE, create_break('-')
+        yield HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_LINE_BREAK, '\n'
+        yield from _produce_exception(exception_received, _ignore_invoke_test_frame)
     
-    into = _maybe_render_output_report_into(output_report, highlight_streamer, into)
-    return into
+    yield from _maybe_produce_output_report(output_report)
 
 
-def _render_report_returning_into(
-    report, path_parts, name, documentation_lines, call_state, output_report, highlight_streamer, into
-):
+def _produce_report_returning(report, path_parts, name, documentation_lines, call_state, output_report):
     """
     Renders returning failure report.
+    
+    This functions is an iterable generator.
     
     Parameter
     ---------
@@ -665,49 +438,36 @@ def _render_report_returning_into(
     documentation_lines : `None | list<str>`
         Lines of the test's documentation.
     
-    call_state : `None | CallState`
+    call_state : ``None | CallState``
         Call state of the report.
     
-    output_report : `None | ReportOutput`
+    output_report : ``None | ReportOutput``
         Output report if any.
     
-    highlight_streamer : `CoroutineGeneratorType`
-        Highlight streamer to highlight the produced tokens.
-    
-    into : `list<str>`
-        List to render into.
-    
-    Returns
+    Yields
     -------
-    into : `list<str>`
+    token_type_and_part : `(int, str)`
     """
-    into = render_test_header_into(
+    yield from produce_test_header(
         HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_TEXT_NEGATIVE,
         'Unexpected return',
         path_parts,
         name,
         documentation_lines,
         call_state,
-        highlight_streamer,
-        into,
     )
     
-    into.extend(highlight_streamer.asend((
-        HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_LINE_BREAK,
-        '\n',
-    )))
-    into = _render_parameter_representation_into('expected_return', report.expected_value, highlight_streamer, into)
-    into = _render_parameter_representation_into('received_return', report.received_value, highlight_streamer, into)
-    
-    into = _maybe_render_output_report_into(output_report, highlight_streamer, into)
-    return into
+    yield HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_LINE_BREAK, '\n'
+    yield from _produce_parameter_representation('expected_return', report.expected_value)
+    yield from _produce_parameter_representation('received_return', report.received_value)
+    yield from _maybe_produce_output_report(output_report)
 
 
-def _render_report_unknown_failure_into(
-    report, path_parts, name, documentation_lines, call_state, output_report, highlight_streamer, into
-):
+def _produce_report_unknown_failure(report, path_parts, name, documentation_lines, call_state, output_report):
     """
     Renders an unknown failure report.
+    
+    This functions is an iterable generator.
     
     Parameter
     ---------
@@ -723,50 +483,41 @@ def _render_report_unknown_failure_into(
     documentation_lines : `None | list<str>`
         Lines of the test's documentation.
     
-    call_state : `None | CallState`
+    call_state : ``None | CallState``
         Call state of the report.
     
-    output_report : `None | ReportOutput`
+    output_report : ``None | ReportOutput``
         Output report if any.
     
-    highlight_streamer : `CoroutineGeneratorType`
-        Highlight streamer to highlight the produced tokens.
-    
-    into : `list<str>`
-        List to render into.
-    
-    Returns
+    Yields
     -------
-    into : `list<str>`
+    token_type_and_part : `(int, str)`
     """
-    into = render_test_header_into(
+    yield from produce_test_header(
         HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_TEXT_UNKNOWN,
         type(report).__name__,
         path_parts,
         name,
         documentation_lines,
         call_state,
-        highlight_streamer,
-        into,
     )
     
-    into = _maybe_render_output_report_into(output_report, highlight_streamer, into)
-    return into
+    yield from _maybe_produce_output_report(output_report)
 
 
 FAILURE_REPORT_RENDERERS = {
-    ReportFailureAsserting: _render_report_asserting_into,
-    ReportFailureParameterMismatch: _render_report_parameter_mismatch_into,
-    ReportFailureRaising: _render_report_raising_into,
-    ReportFailureReturning: _render_report_returning_into,
+    ReportFailureAsserting: _produce_report_asserting,
+    ReportFailureParameterMismatch: _produce_report_parameter_mismatch,
+    ReportFailureRaising: _produce_report_raising,
+    ReportFailureReturning: _produce_report_returning,
 }
 
 
-def render_failure_report_into(
-    report, path_parts, name, documentation_lines, call_state, output_report, highlight_streamer, into
-):
+def produce_failure_report(report, path_parts, name, documentation_lines, call_state, output_report):
     """
     Renders the given failure report.
+    
+    This functions is an iterable generator.
     
     Parameters
     ----------
@@ -782,22 +533,16 @@ def render_failure_report_into(
     documentation_lines : `None | list<str>`
         Lines of the test's documentation.
     
-    call_state : `None | CallState`
+    call_state : ``None | CallState``
         Call state of the report.
     
-    output_report : `None | ReportOutput`
+    output_report : ``None | ReportOutput``
         Output report if any.
     
-    highlight_streamer : `CoroutineGeneratorType`
-        Highlight streamer to highlight the produced tokens.
-    
-    into : `list<str>`
-        List to render into.
-    
-    Returns
+    Yields
     -------
-    into : `list<str>`
+    token_type_and_part : `(int, str)`
     """
-    return FAILURE_REPORT_RENDERERS.get(type(report), _render_report_unknown_failure_into)(
-        report, path_parts, name, documentation_lines, call_state, output_report, highlight_streamer, into
+    yield from FAILURE_REPORT_RENDERERS.get(type(report), _produce_report_unknown_failure)(
+        report, path_parts, name, documentation_lines, call_state, output_report
     )

@@ -11,7 +11,7 @@ class WrapperConflict(RichAttributeErrorBaseType):
     ----------
     wrapper_0 : ``WrapperBase``
         The wrapper 1 with the conflict.
-    reason : `None`, `str`
+    reason : `None | str`
         The reason why the two wrappers are incompatible.
     wrapper_1 : `None`, ``WrapperBase``
         The wrapper 2 with the conflict.
@@ -28,7 +28,7 @@ class WrapperConflict(RichAttributeErrorBaseType):
             Wrapper one with the conflict.
         wrapper_1 : `None`, ``WrapperBase`` = `None`, Optional
             Wrapper two with the conflict.
-        reason : `None`, `str` = `None`, Optional (Keyword only)
+        reason : `None | str` = `None`, Optional (Keyword only)
             The reason why the two wrappers are incompatible.
         """
         self = object.__new__(cls)

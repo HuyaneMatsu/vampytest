@@ -1,5 +1,6 @@
 __all__ = ('create_default_event_handler_manager',)
 
+from itertools import chain
 from sys import platform as PLATFORM
 
 from scarletio import (
@@ -12,8 +13,8 @@ from ..events import (
 )
 from .base import EventHandlerManager
 from .default_output_writer import OutputWriter
-from .rendering_helpers.load_failure_rendering import render_load_failure_exception_into
-from .rendering_helpers.case_modifiers import build_case_modifier
+from .rendering_helpers.load_failure_rendering import produce_load_failure_exception
+from .rendering_helpers.case_modifiers import iter_build_case_modifier
 from .rendering_helpers.writers import write_load_failure, write_result_failing, write_result_informal
 
 
@@ -48,7 +49,7 @@ class DefaultEventFormatter(RichAttributeErrorBaseType):
     
     Attributes
     ----------
-    highlighter : `None | HighlightFormatterContext`
+    highlighter : ``None | HighlightFormatterContext``
         Highlighter to use.
     
     rendered_entries : `set<FileSystemEntry>`
@@ -65,7 +66,7 @@ class DefaultEventFormatter(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        highlighter : `None | HighlightFormatterContext`, Optional (Keyword only)
+        highlighter : ``None | HighlightFormatterContext``, Optional (Keyword only)
             Highlighter to use.
         
         output_writer : `OutputWriter`, Optional (Keyword only)
@@ -222,12 +223,15 @@ class DefaultEventFormatter(RichAttributeErrorBaseType):
             keyword = '?'
             token_type = HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_TEXT_UNKNOWN
         
-        modifier = build_case_modifier(result.get_final_call_state())
-        
-        
         highlight_streamer = get_highlight_streamer(self.highlighter)
         name = ''.join([
-            *highlight_streamer.asend((token_type, f'{keyword} {result.case.name}{modifier}')),
+            *highlight_streamer.asend((token_type, keyword)),
+            *highlight_streamer.asend((token_type,' ')),
+            *highlight_streamer.asend((token_type, result.case.name)),
+            *chain.from_iterable(
+                highlight_streamer.asend((token_type, part))
+                    for part in iter_build_case_modifier(result.get_final_call_state())
+            ),
             *highlight_streamer.asend(None),
         ])
         message_parts = test_file.entry.render_custom_sub_directory_into(
@@ -387,7 +391,10 @@ class DefaultEventFormatter(RichAttributeErrorBaseType):
         
         message_parts = []
         highlight_streamer = get_highlight_streamer(self.highlighter)
-        message_parts = render_load_failure_exception_into(event.exception, highlight_streamer, message_parts)
+        
+        for item in produce_load_failure_exception(event.exception):
+            message_parts.extend(highlight_streamer.asend(item))
+        
         message_parts.extend(highlight_streamer.asend(None))
         output_writer.write(''.join(message_parts))
         

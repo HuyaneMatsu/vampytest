@@ -4,62 +4,55 @@ from ....assertions import assert_eq, assert_instance
 from ....utils import _
 from ....wrappers import call_from
 
-from ..parameter_rendering import _render_parameter_representation_into
+from ..parameter_rendering import _produce_types_parameter_representation
 
 
 def _iter_options():
     yield (
         'remilia',
-        12,
+        {TypeError},
         None,
-        'remilia = 12\n',
+        'remilia = TypeError\n',
     )
     
     yield (
         'remilia',
-        'satori',
+        {TypeError, 14},
         None,
-        'remilia = \'satori\'\n',
-    )
-    
-    yield (
-        'remilia',
-        int,
-        None,
-        'remilia = int\n',
+        'remilia = 14, TypeError\n',
     )
     
     # with highlighter
     yield (
         'remilia',
-        int,
+        {TypeError, 14},
         DEFAULT_ANSI_HIGHLIGHTER,
-        'remilia = int\n',
+        'remilia = 14, TypeError\n',
     )
     
     # no name
     yield (
         None,
-        12,
+        {TypeError},
         None,
-        '12\n',
+        'TypeError\n',
     )
 
 
 @_(call_from(_iter_options()).returning_last())
-def test__render_parameter_representation_into(parameter_name, parameter_value, highlighter):
+def test__produce_types_parameter_representation(parameter_name, types, highlighter):
     """
-    Tests whether ``_render_parameter_representation_into`` works as intended.
+    Tests whether ``_produce_types_parameter_representation`` works as intended.
     
     Parameters
     ----------
     parameter_name : `str`
         The parameter's name.
     
-    parameter_value : `object`
+    types : `set<type | instance<type>>`
         The parameter's value.
     
-    highlighter : `None | HighlightFormatterContext`
+    highlighter : ``None | HighlightFormatterContext``
         Highlighter to use.
     
     Returns
@@ -67,14 +60,16 @@ def test__render_parameter_representation_into(parameter_name, parameter_value, 
     output : `str`
     """
     highlight_streamer = get_highlight_streamer(highlighter)
-    into = _render_parameter_representation_into(parameter_name, parameter_value, highlight_streamer, [])
-    into.extend(highlight_streamer.asend(None))
+    output = []
+    for item in _produce_types_parameter_representation(parameter_name, types):
+        output.extend(highlight_streamer.asend(item))
     
-    assert_instance(into, list)
-    for element in into:
+    output.extend(highlight_streamer.asend(None))
+    
+    for element in output:
         assert_instance(element, str)
     
-    output_string = ''.join(into)
+    output_string = ''.join(output)
     split = [*iter_split_ansi_format_codes(output_string)]
     assert_eq(
         any(item[0] for item in split),

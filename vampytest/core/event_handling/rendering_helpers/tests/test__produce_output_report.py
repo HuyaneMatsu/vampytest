@@ -6,7 +6,7 @@ from ....result import ReportOutput
 from ....utils import _
 from ....wrappers import call_from
 
-from ..report_rendering import render_output_output_into
+from ..report_rendering import produce_output_report
 from ..result_rendering_common import create_break
 
 
@@ -24,7 +24,7 @@ def _iter_options():
             '----\n'
             'hello\n'
             'nyanner\n'
-        )
+        ),
     )
     
     # with documentation & call state
@@ -49,7 +49,7 @@ def _iter_options():
             '----\n'
             'hello\n'
             'nyanner\n'
-        )
+        ),
     )
     
     # with highlighter
@@ -65,14 +65,14 @@ def _iter_options():
             '----\n'
             'hello\n'
             'nyanner\n'
-        )
+        ),
     )
 
 
 @_(call_from(_iter_options()).returning_last())
-def test__render_output_output_into(report, path_parts, name, documentation_lines, call_state, highlighter):
+def test__produce_output_report(report, path_parts, name, documentation_lines, call_state, highlighter):
     """
-    Tests whether ``render_output_output_into`` works as intended.
+    Tests whether ``produce_output_report`` works as intended.
     
     Parameters
     ----------
@@ -88,10 +88,10 @@ def test__render_output_output_into(report, path_parts, name, documentation_line
     documentation_lines : `None | list<str>`
         Lines of the test's documentation.
     
-    call_state : `None | CallState`
+    call_state : ``None | CallState``
         Call state of the report.
     
-    highlighter : `None | HighlightFormatterContext`
+    highlighter : ``None | HighlightFormatterContext``
         Highlighter to use.
     
     Returns
@@ -103,23 +103,22 @@ def test__render_output_output_into(report, path_parts, name, documentation_line
     
     highlight_streamer = get_highlight_streamer(highlighter)
     create_break_code_original = create_break.__code__
+    output = []
+    
     try:
         create_break.__code__ = create_break_mock.__code__
         
-        into = render_output_output_into(
-            report, path_parts, name, documentation_lines, call_state, highlight_streamer, []
-        )
-    
+        for item in produce_output_report(report, path_parts, name, documentation_lines, call_state):
+            output.extend(highlight_streamer.asend(item))
     finally:
         create_break.__code__ = create_break_code_original
-    into.extend(highlight_streamer.asend(None))
     
+    output.extend(highlight_streamer.asend(None))
     
-    assert_instance(into, list)
-    for element in into:
+    for element in output:
         assert_instance(element, str)
     
-    output_string = ''.join(into)
+    output_string = ''.join(output)
     split = [*iter_split_ansi_format_codes(output_string)]
     assert_eq(
         any(item[0] for item in split),

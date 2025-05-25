@@ -1,11 +1,11 @@
 __all__ = ()
 
 from scarletio import HIGHLIGHT_TOKEN_TYPES
-from scarletio.utils.trace.trace import _render_exception_into
+from scarletio.utils.trace.trace import _produce_exception
 
 from ...file.load_failure import _ignore_module_import_frame
 
-from .result_rendering import render_result_failing_into, render_result_informal_into
+from .result_rendering import produce_result_failing, produce_result_informal
 
 
 def write_load_failure(output_writer, load_failure, highlight_streamer):
@@ -43,12 +43,8 @@ def write_load_failure(output_writer, load_failure, highlight_streamer):
             '\n',
         )))
     
-    message_parts = _render_exception_into(
-        load_failure.exception,
-        _ignore_module_import_frame,
-        highlight_streamer,
-        message_parts,
-    )
+    for item in _produce_exception(load_failure.exception, _ignore_module_import_frame):
+        message_parts.extend(highlight_streamer.asend(item))
     
     output_writer.write_line(''.join(message_parts))
     output_writer.write_break_line()
@@ -70,7 +66,9 @@ def write_result_failing(output_writer, result, highlight_streamer):
         Highlight streamer to highlight the produced tokens.
     """
     message_parts = []
-    message_parts = render_result_failing_into(result, highlight_streamer, message_parts)
+    for item in produce_result_failing(result):
+        message_parts.extend(highlight_streamer.asend(item))
+        
     output_writer.write_line(''.join(message_parts))
     output_writer.write_break_line()
 
@@ -91,7 +89,9 @@ def write_result_informal(output_writer, result, highlight_streamer):
         Highlight streamer to highlight the produced tokens.
     """
     message_parts = []
-    message_parts = render_result_informal_into(result, highlight_streamer, message_parts)
+    for item in produce_result_informal(result):
+        message_parts.extend(highlight_streamer.asend(item))
+    
     if message_parts:
         output_writer.write_line(''.join(message_parts))
         output_writer.write_break_line()

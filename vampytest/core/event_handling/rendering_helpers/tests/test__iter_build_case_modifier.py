@@ -3,7 +3,7 @@ from ....handling import CallState
 from ....utils import _
 from ....wrappers import call_from
 
-from ..case_modifiers import build_case_modifier
+from ..case_modifiers import iter_build_case_modifier
 
 
 def _iter_options():
@@ -39,9 +39,9 @@ def _iter_options():
 
 
 @_(call_from(_iter_options()).returning_last())
-def test__build_case_modifier(call_state):
+def test__iter_build_case_modifier(call_state):
     """
-    Tests whether ``build_case_modifier`` works as intended.
+    Tests whether ``iter_build_case_modifier`` works as intended.
     
     Parameters
     ----------
@@ -55,6 +55,9 @@ def test__build_case_modifier(call_state):
     -------
     output : `str`
     """
-    output = build_case_modifier(call_state)
-    assert_instance(output, str)
-    return output
+    output = [*iter_build_case_modifier(call_state)]
+    
+    for element in output:
+        assert_instance(element, str)
+    
+    return ''.join(output)

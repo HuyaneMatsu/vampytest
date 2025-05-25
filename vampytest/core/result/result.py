@@ -385,7 +385,7 @@ class Result(RichAttributeErrorBaseType):
         
         Returns
         -------
-        call_state : `None | CallState`
+        call_state : ``None | CallState``
         """
         handle = self.handle
         if handle is None:

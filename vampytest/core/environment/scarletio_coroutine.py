@@ -19,7 +19,7 @@ class ScarletioCoroutineEnvironment(DefaultEnvironment):
     
     Attributes
     ----------
-    timeout : `None | int`
+    timeout : `None | float`
         The maximal timeout to interrupt tests before.
         
         Defaults to creating a new event loop every time if set as `None`.
@@ -45,7 +45,7 @@ class ScarletioCoroutineEnvironment(DefaultEnvironment):
             S
             Defaults to creating a new event loop every time if given as `None`.
             
-        timeout : `None`, `str` = `DEFAULT_TIMEOUT`, Optional (Keyword only)
+        timeout : `None | float` = `DEFAULT_TIMEOUT`, Optional (Keyword only)
             The maximal timeout to interrupt tests before.
         """
         self = object.__new__(cls)

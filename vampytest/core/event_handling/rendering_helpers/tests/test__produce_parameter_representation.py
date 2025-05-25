@@ -4,86 +4,62 @@ from ....assertions import assert_eq, assert_instance
 from ....utils import _
 from ....wrappers import call_from
 
-from ..parameter_rendering import _render_bool_non_default_into
+from ..parameter_rendering import _produce_parameter_representation
 
 
 def _iter_options():
     yield (
         'remilia',
-        True,
-        False,
+        12,
         None,
-        'remilia = True\n',
+        'remilia = 12\n',
     )
     
     yield (
         'remilia',
-        False,
-        False,
+        'satori',
         None,
-        '',
+        'remilia = \'satori\'\n',
     )
     
     yield (
         'remilia',
-        True,
-        True,
+        int,
         None,
-        '',
-    )
-    
-    yield (
-        'remilia',
-        False,
-        True,
-        None,
-        'remilia = False\n',
+        'remilia = int\n',
     )
     
     # with highlighter
     yield (
         'remilia',
-        False,
-        True,
+        int,
         DEFAULT_ANSI_HIGHLIGHTER,
-        'remilia = False\n',
+        'remilia = int\n',
     )
     
     # no name
     yield (
         None,
-        True,
-        False,
+        12,
         None,
-        'True\n',
-    )
-    
-    yield (
-        None,
-        False,
-        False,
-        None,
-        '',
+        '12\n',
     )
 
 
 @_(call_from(_iter_options()).returning_last())
-def test__render_bool_non_default_into(parameter_name, parameter_value, default, highlighter):
+def test__produce_parameter_representation(parameter_name, parameter_value, highlighter):
     """
-    Tests whether ``_render_bool_non_default_into`` works as intended.
+    Tests whether ``_produce_parameter_representation`` works as intended.
     
     Parameters
     ----------
     parameter_name : `str`
         The parameter's name.
     
-    parameter_value : `bool`
+    parameter_value : `object`
         The parameter's value.
     
-    default : `bool`
-        Default value.
-    
-    highlighter : `None | HighlightFormatterContext`
+    highlighter : ``None | HighlightFormatterContext``
         Highlighter to use.
     
     Returns
@@ -91,14 +67,16 @@ def test__render_bool_non_default_into(parameter_name, parameter_value, default,
     output : `str`
     """
     highlight_streamer = get_highlight_streamer(highlighter)
-    into = _render_bool_non_default_into(parameter_name, parameter_value, default, highlight_streamer, [])
-    into.extend(highlight_streamer.asend(None))
+    output = []
+    for item in _produce_parameter_representation(parameter_name, parameter_value):
+        output.extend(highlight_streamer.asend(item))
     
-    assert_instance(into, list)
-    for element in into:
+    output.extend(highlight_streamer.asend(None))
+    
+    for element in output:
         assert_instance(element, str)
     
-    output_string = ''.join(into)
+    output_string = ''.join(output)
     split = [*iter_split_ansi_format_codes(output_string)]
     assert_eq(
         any(item[0] for item in split),

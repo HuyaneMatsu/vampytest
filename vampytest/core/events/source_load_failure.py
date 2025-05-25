@@ -14,7 +14,7 @@ class SourceLoadFailureEvent(EventBase):
     ----------
     context : ``RunnerContext``
         The respective test runner context.
-    exception : ``BaseException``
+    exception : `BaseException`
         The occurred exception.
     source : `str`
         The source's name.
@@ -33,7 +33,7 @@ class SourceLoadFailureEvent(EventBase):
             The respective test running context.
         source : `str`
             The source's name.
-        exception : ``BaseException``
+        exception : `BaseException`
             The occurred exception.
         """
         self = object.__new__(cls)

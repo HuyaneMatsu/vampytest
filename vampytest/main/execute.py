@@ -70,7 +70,7 @@ def execute_from_parameters(parameters):
     
     Parameters
     ----------
-    parameters : `list` of `str`
+    parameters : `list<str>`
         Command line parameters.
     
     Returns

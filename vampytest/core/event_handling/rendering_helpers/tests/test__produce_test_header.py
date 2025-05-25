@@ -7,7 +7,7 @@ from ....handling.call_state import CallState
 from ....utils import _
 from ....wrappers import call_from
 
-from ..result_rendering_common import render_test_header_into
+from ..result_rendering_common import produce_test_header
 
 
 def _iter_options():
@@ -100,9 +100,9 @@ def _iter_options():
 
 
 @_(call_from(_iter_options()).returning_last())
-def test__render_test_header_into(title, path_parts, name, documentation_lines, call_state, highlighter):
+def test__produce_test_header(title, path_parts, name, documentation_lines, call_state, highlighter):
     """
-    Tests whether ``render_test_header_into`` works as intended.
+    Tests whether ``produce_test_header`` works as intended.
     
     Parameters
     ----------
@@ -118,10 +118,10 @@ def test__render_test_header_into(title, path_parts, name, documentation_lines, 
     documentation_lines : `None | list<str>`
         Lines of the test's documentation.
     
-    call_state : `None | CallState`
+    call_state : ``None | CallState``
         Call state to render.
     
-    highlighter : `None | HighlightFormatterContext`
+    highlighter : ``None | HighlightFormatterContext``
         Highlighter to use.
     
     Returns
@@ -130,23 +130,24 @@ def test__render_test_header_into(title, path_parts, name, documentation_lines, 
     """
     highlight_streamer = get_highlight_streamer(highlighter)
     
-    into = render_test_header_into(
+    output = []
+    
+    for item in produce_test_header(
         HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_TEXT_NEGATIVE,
         title,
         path_parts,
         name,
         documentation_lines,
         call_state,
-        highlight_streamer,
-        [],
-    )
-    into.extend(highlight_streamer.asend(None))
+    ):
+        output.extend(highlight_streamer.asend(item))
     
-    assert_instance(into, list)
-    for element in into:
+    output.extend(highlight_streamer.asend(None))
+    
+    for element in output:
         assert_instance(element, str)
     
-    output_string = ''.join(into)
+    output_string = ''.join(output)
     split = [*iter_split_ansi_format_codes(output_string)]
     assert_eq(
         any(item[0] for item in split),

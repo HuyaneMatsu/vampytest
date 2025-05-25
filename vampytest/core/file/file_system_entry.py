@@ -348,14 +348,14 @@ class FileSystemEntry(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        into : `list` of `str`
+        into : `list<str>`
             List to render self into.
-        name : `None`, `str` = `None`, Optional (Keyword only)
+        name : `None | str` = `None`, Optional (Keyword only)
             Custom name to use.
         
         Returns
         -------
-        into : `list` of `str`
+        into : `list<str>`
         """
         for parent in self.iter_parents_skip_first():
             if parent.is_last():
@@ -384,7 +384,7 @@ class FileSystemEntry(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        into : `list` of `str`
+        into : `list<str>`
             List to render self into.
         name : `str`
             The name of the sub-directory.
@@ -393,7 +393,7 @@ class FileSystemEntry(RichAttributeErrorBaseType):
         
         Returns
         -------
-        into : `list` of `str`
+        into : `list<str>`
         """
         for parent in self.iter_parents_skip_first():
             if parent.is_last():

@@ -9,7 +9,7 @@ from ....result import (
     ReportBase, ReportOutput
 
 )
-from ..report_rendering import render_failure_report_into
+from ..report_rendering import produce_failure_report
 from ..result_rendering_common import create_break
 
 
@@ -549,11 +549,11 @@ def _iter_options():
 
 
 @_(call_from(_iter_options()).returning_last())
-def test__render_failure_report_into(
+def test__produce_failure_report(
     report, path_parts, name, documentation_lines, call_state, output_report, highlighter
 ):
     """
-    Tests whether ``render_failure_report_into`` works as intended.
+    Tests whether ``produce_failure_report`` works as intended.
     
     Parameters
     ----------
@@ -569,13 +569,13 @@ def test__render_failure_report_into(
     documentation_lines : `None | list<str>`
         Lines of the test's documentation.
     
-    call_state : `None | CallState`
+    call_state : ``None | CallState``
         Call state of the report.
     
-    output_report : `None | ReportOutput`
+    output_report : ``None | ReportOutput``
         Output report if any.
     
-    highlighter : `None | HighlightFormatterContext`
+    highlighter : ``None | HighlightFormatterContext``
         Highlighter to use.
     
     Returns
@@ -586,26 +586,23 @@ def test__render_failure_report_into(
         return character * 4
     
     highlight_streamer = get_highlight_streamer(highlighter)
+    output = []
     
     create_break_code_original = create_break.__code__
     try:
         create_break.__code__ = create_break_mock.__code__
         
-        into = render_failure_report_into(
-            report, path_parts, name, documentation_lines, call_state, output_report, highlight_streamer, []
-        )
-    
+        for item in produce_failure_report(report, path_parts, name, documentation_lines, call_state, output_report):
+            output.extend(highlight_streamer.asend(item))
     finally:
         create_break.__code__ = create_break_code_original
     
-    into.extend(highlight_streamer.asend(None))
+    output.extend(highlight_streamer.asend(None))
     
-    
-    assert_instance(into, list)
-    for element in into:
+    for element in output:
         assert_instance(element, str)
     
-    output_string = ''.join(into)
+    output_string = ''.join(output)
     split = [*iter_split_ansi_format_codes(output_string)]
     assert_eq(
         any(item[0] for item in split),

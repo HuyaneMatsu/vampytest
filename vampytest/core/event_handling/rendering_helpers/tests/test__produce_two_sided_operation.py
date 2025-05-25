@@ -4,7 +4,7 @@ from ....assertions import assert_eq, assert_instance
 from ....utils import _
 from ....wrappers import call_from
 
-from ..assertion_rendering import _render_two_sided_operation_into
+from ..assertion_rendering import _produce_two_sided_operation
 
 
 def _iter_options():
@@ -18,16 +18,16 @@ def _iter_options():
 
 
 @_(call_from(_iter_options()).returning_last())
-def test__render_two_sided_operation_into(operation, highlighter):
+def test__produce_two_sided_operation(operation, highlighter):
     """
-    Tests whether ``_render_two_sided_operation_into`` works as intended.
+    Tests whether ``_produce_two_sided_operation`` works as intended.
     
     Parameters
     ----------
     operation : `str`
         The operation between the two sides.
     
-    highlighter : `None | HighlightFormatterContext`
+    highlighter : ``None | HighlightFormatterContext``
         Highlighter to use.
     
     Returns
@@ -35,14 +35,17 @@ def test__render_two_sided_operation_into(operation, highlighter):
     output : `str`
     """
     highlight_streamer = get_highlight_streamer(highlighter)
-    into = _render_two_sided_operation_into(operation, highlight_streamer, [])
-    into.extend(highlight_streamer.asend(None))
+    output = []
     
-    assert_instance(into, list)
-    for element in into:
+    for item in _produce_two_sided_operation(operation):
+        output.extend(highlight_streamer.asend(item))
+    
+    output.extend(highlight_streamer.asend(None))
+    
+    for element in output:
         assert_instance(element, str)
     
-    output_string = ''.join(into)
+    output_string = ''.join(output)
     split = [*iter_split_ansi_format_codes(output_string)]
     assert_eq(
         any(item[0] for item in split),

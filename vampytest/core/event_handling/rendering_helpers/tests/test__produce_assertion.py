@@ -8,7 +8,7 @@ from ....assertions import (
 from ....utils import _
 from ....wrappers import call_from
 
-from ..assertion_rendering import render_assertion_into
+from ..assertion_rendering import produce_assertion
 
 
 def _iter_options():
@@ -565,16 +565,16 @@ def _iter_options():
 
 
 @_(call_from(_iter_options()).returning_last())
-def test__render_assertion_into(assertion, highlighter):
+def test__produce_assertion(assertion, highlighter):
     """
-    Tests whether ``render_assertion_into`` works as intended.
+    Tests whether ``produce_assertion`` works as intended.
     
     Parameters
     ----------
     assertion : ``AssertionBase``
         The assertion to render.
     
-    highlighter : `None | HighlightFormatterContext`
+    highlighter : ``None | HighlightFormatterContext``
         Highlighter to use.
     
     Returns
@@ -582,14 +582,17 @@ def test__render_assertion_into(assertion, highlighter):
     output : `str`
     """
     highlight_streamer = get_highlight_streamer(highlighter)
-    into = render_assertion_into(assertion, highlight_streamer, [])
-    into.extend(highlight_streamer.asend(None))
+    output = []
     
-    assert_instance(into, list)
-    for element in into:
+    for item in produce_assertion(assertion):
+        output.extend(highlight_streamer.asend(item))
+        
+    output.extend(highlight_streamer.asend(None))
+    
+    for element in output:
         assert_instance(element, str)
     
-    output_string = ''.join(into)
+    output_string = ''.join(output)
     split = [*iter_split_ansi_format_codes(output_string)]
     assert_eq(
         any(item[0] for item in split),

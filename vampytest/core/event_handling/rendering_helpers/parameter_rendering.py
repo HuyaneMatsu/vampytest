@@ -16,7 +16,7 @@ def _produce_value_representation(value):
     
     Yields
     -------
-    token_type, part : `(int, str)`
+    token_type_and_part : `(int, str)`
     """
     token_type, use_name = get_token_type_and_repr_mode_for_variable(value)
     if use_name:
@@ -50,7 +50,7 @@ def _produce_assignation():
     
     Yields
     -------
-    token_type, part : `(int, str)`
+    token_type_and_part : `(int, str)`
     """
     yield HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_SPACE, ' '
     yield HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_SPECIAL_OPERATOR, '='
@@ -65,15 +65,17 @@ def _produce_variable_assignation(variable_name):
     
     Yields
     -------
-    token_type, part : `(int, str)`
+    token_type_and_part : `(int, str)`
     """
     yield HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_IDENTIFIER_VARIABLE, variable_name
     yield from _produce_assignation()
 
 
-def _render_parameter_representation_into(parameter_name, parameter_value, highlight_streamer, into):
+def _produce_parameter_representation(parameter_name, parameter_value):
     """
     Renders the given parameter into the given list of strings.
+    
+    This function is an iterable generator.
     
     Parameters
     ----------
@@ -83,28 +85,16 @@ def _render_parameter_representation_into(parameter_name, parameter_value, highl
     parameter_value : `object`
         The parameter's value.
     
-    highlight_streamer : `CoroutineGeneratorType`
-        Highlight streamer to highlight the produced tokens.
-    
-    into : `list<str>`
-        A list to extend with the rendered strings.
-    
-    Returns
+    Yields
     -------
-    into : `list<str>`
+    token_type_and_part : `(int, str)`
     """
     if (parameter_name is not None):
-        for item in _produce_variable_assignation(parameter_name):
-            into.extend(highlight_streamer.asend(item))
+        yield from _produce_variable_assignation(parameter_name)
     
-    for item in _produce_value_representation(parameter_value):
-        into.extend(highlight_streamer.asend(item))
+    yield from _produce_value_representation(parameter_value)
     
-    into.extend(highlight_streamer.asend((
-        HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_LINE_BREAK,
-        '\n',
-    )))
-    return into
+    yield HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_LINE_BREAK, '\n'
 
 
 def _parameter_representation_sort_key(produced):
@@ -123,9 +113,11 @@ def _parameter_representation_sort_key(produced):
     return (len(produced), produced[0][1])
 
 
-def _render_types_parameter_representation_into(parameter_name, types, highlight_streamer, into):
+def _produce_types_parameter_representation(parameter_name, types):
     """
     Renders the given types parameter into the given list of strings.
+    
+    This function is an iterable generator.
     
     Parameters
     ----------
@@ -135,19 +127,12 @@ def _render_types_parameter_representation_into(parameter_name, types, highlight
     types : `set<type | instance<type>>`
         The parameter's value.
     
-    highlight_streamer : `CoroutineGeneratorType`
-        Highlight streamer to highlight the produced tokens.
-    
-    into : `list<str>`
-        A list to extend with the rendered strings.
-    
-    Returns
+    Yields
     -------
-    into : `list<str>`
+    token_type_and_part : `(int, str)`
     """
     if (parameter_name is not None):
-        for item in _produce_variable_assignation(parameter_name):
-            into.extend(highlight_streamer.asend(item))
+        yield from _produce_variable_assignation(parameter_name)
     
     representations = sorted(
         ((*_produce_value_representation(type_),) for type_ in types),
@@ -158,34 +143,24 @@ def _render_types_parameter_representation_into(parameter_name, types, highlight
         index = 0
         
         while True:
-            for item in representations[index]:
-                into.extend(highlight_streamer.asend(item))
+            yield from representations[index]
             
             index += 1
             if index == length:
                 break
             
-            into.extend(highlight_streamer.asend((
-                HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_SPECIAL_PUNCTUATION,
-                ',',
-            )))
-            into.extend(highlight_streamer.asend((
-                HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_SPACE,
-                ' ',
-            )))
+            yield HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_SPECIAL_PUNCTUATION, ',',
+            yield HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_SPACE, ' '
             continue
     
-    into.extend(highlight_streamer.asend((
-        HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_LINE_BREAK,
-        '\n',
-    )))
-    
-    return into
+    yield HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_LINE_BREAK, '\n'
 
 
-def _render_bool_non_default_into(parameter_name, parameter_value, default, highlight_streamer, into):
+def _produce_bool_non_default(parameter_name, parameter_value, default):
     """
     Renders a value value only if its true.
+    
+    This function is an iterable generator.
     
     Parameters
     ----------
@@ -198,17 +173,9 @@ def _render_bool_non_default_into(parameter_name, parameter_value, default, high
     default : `bool`
         Default value.
     
-    highlight_streamer : `CoroutineGeneratorType`
-        Highlight streamer to highlight the produced tokens.
-    
-    into : `list<str>`
-        A list to extend with the rendered strings.
-    
-    Returns
+    Yields
     -------
-    into : `list<str>`
+    token_type_and_part : `(int, str)`
     """
     if parameter_value != default:
-        into = _render_parameter_representation_into(parameter_name, parameter_value, highlight_streamer, into)
-    
-    return into
+        yield from _produce_parameter_representation(parameter_name, parameter_value)

@@ -1,3 +1,9 @@
+## 0.0.25 *\[2025-05-25\]*
+
+### Improvements
+
+- Update requirements.
+
 ## 0.0.24 *\[2025-04-28\]*
 
 ### Improvements
