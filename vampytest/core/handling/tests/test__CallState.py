@@ -76,7 +76,7 @@ def test__CallState__repr__keyword():
     output = repr(call_state)
     
     assert_instance(output, str)
-    assert_in(call_state.__class__.__name__, output)
+    assert_in(type(call_state).__name__, output)
     assert_not_in('positional_parameters = ', output)
     assert_in('keyword_parameters = ', output)
     assert_not_in('name = ', output)
@@ -93,7 +93,7 @@ def test__CallState__repr__positional_and_keyword():
     output = repr(call_state)
     
     assert_instance(output, str)
-    assert_in(call_state.__class__.__name__, output)
+    assert_in(type(call_state).__name__, output)
     assert_in('positional_parameters = ', output)
     assert_in('keyword_parameters = ', output)
     assert_not_in('name = ', output)
@@ -111,7 +111,7 @@ def test__CallState__repr__named():
     output = repr(call_state)
     
     assert_instance(output, str)
-    assert_in(call_state.__class__.__name__, output)
+    assert_in(type(call_state).__name__, output)
     assert_not_in('positional_parameters = ', output)
     assert_not_in('keyword_parameters = ', output)
     assert_in('name = ', output)

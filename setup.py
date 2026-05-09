@@ -23,7 +23,7 @@ setup(
         
         'Intended Audience :: Developers',
         
-        'Operating System :: OS Independent',
+        'Operating System :: POSIX :: Linux',
         
         'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
@@ -47,7 +47,7 @@ setup(
     },
     include_package_data = False,
     install_requires = [
-        'scarletio>=1.0.92',
+        'scarletio>=1.0.97',
     ],
     license = 'DBAD',
     long_description = README,

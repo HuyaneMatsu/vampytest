@@ -11,7 +11,7 @@ class WrapperReverse(WrapperBase):
 
     Attributes
     ----------
-    wrapped : `None`, `object`
+    wrapped : `None | object`
         The wrapped test.
     """
     __slots__ = ()
@@ -19,7 +19,7 @@ class WrapperReverse(WrapperBase):
     @copy_docs(WrapperBase.__repr__)
     def __repr__(self):
         """Returns the conditional skip wrapper's representation."""
-        return f'<{self.__class__.__name__}'
+        return f'<{type(self).__name__}'
     
     
     @copy_docs(WrapperBase.__eq__)

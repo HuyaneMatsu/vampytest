@@ -2,9 +2,9 @@ __all__ = ('ScarletioCoroutineEnvironment',)
 
 from time import sleep as sync_sleep
 
-from scarletio import copy_docs, EventThread
+from scarletio import copy_docs, EventThread, Task
 
-from ..handling import ResultState
+from ..handling import RESULT_STATE_MODE_RAISE, ResultState
 
 from .constants import ENVIRONMENT_TYPE_COROUTINE
 from .default import DefaultEnvironment
@@ -63,16 +63,30 @@ class ScarletioCoroutineEnvironment(DefaultEnvironment):
             if create_event_loop:
                 event_loop = EventThread(daemon = True, name = 'scarletio.run', start_later = False)
             
+            task = Task(event_loop, self._run_async(test, positional_parameters, keyword_parameters))
             try:
                 return event_loop.run(
-                    self._run_async(test, positional_parameters, keyword_parameters),
+                    task,
                     timeout = self.timeout,
                 )
             except KeyboardInterrupt as exception:
                 # In case it is frozen lets provide a better output. Better than nothing.
+                
+                try:
+                    result_state = task.get_result()
+                except BaseException as secondary_exception:
+                    exception.__cause__ = secondary_exception
+                else:
+                    if result_state.mode == RESULT_STATE_MODE_RAISE:
+                        exception.__cause__ = result_state.result
+                
                 raise KeyboardInterrupt(
-                    f'`{type(self).__name__}.run` interrupted while running {test!r}.'
+                    f'`{type(self).__name__}.run` interrupted while running {test!r}.',
                 ) from exception
+            
+            finally:
+                task = None
+        
         finally:
             if create_event_loop:
                 if (event_loop is not None):
@@ -111,7 +125,7 @@ class ScarletioCoroutineEnvironment(DefaultEnvironment):
     
     @copy_docs(DefaultEnvironment.__repr__)
     def __repr__(self):
-        repr_parts = ['<', self.__class__.__name__]
+        repr_parts = ['<', type(self).__name__]
         
         event_loop = self.event_loop
         if (event_loop is not None):

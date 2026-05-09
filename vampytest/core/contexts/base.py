@@ -18,7 +18,7 @@ class ContextBase(RichAttributeErrorBaseType):
     
     def __repr__(self):
         """Returns the context's representation."""
-        return ''.join(['<', self.__class__.__name__, '>'])
+        return ''.join(['<', type(self).__name__, '>'])
     
     
     def start(self):

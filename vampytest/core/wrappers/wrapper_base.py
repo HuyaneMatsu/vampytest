@@ -120,7 +120,7 @@ class WrapperBase(RichAttributeErrorBaseType):
         return ''.join(repr_parts)
         ```
         """
-        repr_parts = ['<', self.__class__.__name__]
+        repr_parts = ['<', type(self).__name__]
         
         wrapped = self.wrapped
         if (wrapped is None):

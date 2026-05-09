@@ -67,7 +67,7 @@ def test__ParameterMismatch__repr__clean():
     output = repr(parameter_mismatch)
     assert_instance(output, str)
     
-    assert_in(parameter_mismatch.__class__.__name__, output)
+    assert_in(type(parameter_mismatch).__name__, output)
     assert_in('parameters = ', output)
     assert_not_in('positional_parameters = ', output)
     assert_not_in('keyword_parameters = ', output)
@@ -106,7 +106,7 @@ def test__ParameterMismatch__repr__full():
     output = repr(parameter_mismatch)
     assert_instance(output, str)
     
-    assert_in(parameter_mismatch.__class__.__name__, output)
+    assert_in(type(parameter_mismatch).__name__, output)
     assert_in('parameters = ', output)
     assert_in('positional_parameters = ', output)
     assert_in('keyword_parameters = ', output)

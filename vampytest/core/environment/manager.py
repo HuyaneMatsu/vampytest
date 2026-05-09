@@ -33,7 +33,7 @@ class EnvironmentManager(RichAttributeErrorBaseType):
     
     def __repr__(self):
         """Returns the testing environment's representation."""
-        return f'<{self.__class__.__name__} environments_by_identifier = {self._environments_by_identifier!r}>'
+        return f'<{type(self).__name__} environments_by_identifier = {self._environments_by_identifier!r}>'
     
     
     def get_environment_for_test(self, test):

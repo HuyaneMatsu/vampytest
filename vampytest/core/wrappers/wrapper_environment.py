@@ -13,7 +13,7 @@ class WrapperEnvironment(WrapperBase):
 
     Attributes
     ----------
-    wrapped : `None`, `object`
+    wrapped : `None | object`
         The wrapped test.
     environment : ``DefaultEnvironment``
         Environment to use while running the test.
@@ -43,7 +43,7 @@ class WrapperEnvironment(WrapperBase):
     
     @copy_docs(WrapperBase.__repr__)
     def __repr__(self):
-        return f'<{self.__class__.__name__} environment = {self.environment!r}'
+        return f'<{type(self).__name__} environment = {self.environment!r}'
     
     
     @copy_docs(WrapperBase.__eq__)

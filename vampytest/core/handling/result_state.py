@@ -1,4 +1,5 @@
-__all__ = ('ResultState',)
+__all__ = ('RESULT_STATE_MODE_NONE', 'RESULT_STATE_MODE_RAISE', 'RESULT_STATE_MODE_RETURN', 'ResultState',)
+
 
 from scarletio import RichAttributeErrorBaseType, export
 
@@ -19,7 +20,7 @@ class ResultState(RichAttributeErrorBaseType):
     ----------
     mode : `int`
         The result's mode.
-    result : `None`, `object`
+    result : `None | object`
         The resulted value.
     """
     __slots__ = ('mode', 'result')
@@ -36,7 +37,7 @@ class ResultState(RichAttributeErrorBaseType):
     
     def __repr__(self):
         """Returns the representation of the result state."""
-        repr_parts = ['<', self.__class__.__name__]
+        repr_parts = ['<', type(self).__name__]
         
         mode = self.mode
         if mode == RESULT_STATE_MODE_NONE:
@@ -110,7 +111,7 @@ class ResultState(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        returned_value : `None`, `object`
+        returned_value : `None | object`
             The returned value by the test.
         
         Returns
@@ -144,7 +145,7 @@ class ResultState(RichAttributeErrorBaseType):
         if not isinstance(raised_exception, BaseException):
             raise TypeError(
                 f'`raised_exception` can only be `{BaseException.__name__}` instance. '
-                f'Got {raised_exception.__class__.__name__}; {raised_exception!r}.'
+                f'Got {type(raised_exception).__name__}; {raised_exception!r}.'
             )
         
         new = object.__new__(type(self))

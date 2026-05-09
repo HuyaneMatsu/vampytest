@@ -34,7 +34,7 @@ class ContextGarbageCollect(ContextBase):
     
     @copy_docs(ContextBase.__repr__)
     def __repr__(self):
-        return ''.join(['<', self.__class__.__name__, '>'])
+        return ''.join(['<', type(self).__name__, '>'])
     
     
     @copy_docs(ContextBase.start)

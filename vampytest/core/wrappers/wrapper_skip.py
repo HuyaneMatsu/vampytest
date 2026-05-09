@@ -11,14 +11,14 @@ class WrapperSkip(WrapperBase):
 
     Attributes
     ----------
-    wrapped : `None`, `object`
+    wrapped : `None | object`
         The wrapped test.
     """
     __slots__ = ()
     
     @copy_docs(WrapperBase.__repr__)
     def __repr__(self):
-        return f'<{self.__class__.__name__}'
+        return f'<{type(self).__name__}'
     
     
     @copy_docs(WrapperBase.__eq__)

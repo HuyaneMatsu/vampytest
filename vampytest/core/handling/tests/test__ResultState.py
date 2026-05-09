@@ -46,7 +46,7 @@ def test__ResultState__repr__clean():
     output = repr(result_state)
     
     assert_instance(output, str)
-    assert_in(result_state.__class__.__name__, output)
+    assert_in(type(result_state).__name__, output)
     assert_not_in('returned_value = ', output)
     assert_not_in('raised_exception = ', output)
 
@@ -62,7 +62,7 @@ def test__ResultState__repr__return():
     output = repr(result_state)
     
     assert_instance(output, str)
-    assert_in(result_state.__class__.__name__, output)
+    assert_in(type(result_state).__name__, output)
     assert_in('returned_value = ', output)
     assert_not_in('raised_exception = ', output)
 
@@ -78,7 +78,7 @@ def test__ResultState__repr__raise():
     output = repr(result_state)
     
     assert_instance(output, str)
-    assert_in(result_state.__class__.__name__, output)
+    assert_in(type(result_state).__name__, output)
     assert_not_in('returned_value = ', output)
     assert_in('raised_exception = ', output)
 

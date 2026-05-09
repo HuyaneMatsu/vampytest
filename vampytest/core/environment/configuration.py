@@ -238,5 +238,5 @@ def _check_environment_type(environment):
         
         raise TypeError(
             f'`environment` can be `{DefaultEnvironment.__name__}`, '
-            f'got {environment.__class__.__name__}; {environment!r}.'
+            f'got {type(environment).__name__}; {environment!r}.'
         )

@@ -13,7 +13,7 @@ class WrapperGarbageCollect(WrapperBase):
     
     Attributes
     ----------
-    wrapped : `None`, `object`
+    wrapped : `None | object`
         The wrapped test.
     after : `bool`
         Whether garbage should be collected after the test.

@@ -1,6 +1,8 @@
 __all__ = ()
 
-from scarletio import HIGHLIGHT_TOKEN_TYPES
+from difflib import SequenceMatcher
+
+from scarletio import HIGHLIGHT_TOKEN_TYPES, get_token_type_and_repr_mode_for_variable
 from scarletio.utils.trace.frame_proxy import get_exception_frames
 from scarletio.utils.trace.trace import _produce_exception, _produce_frames
 
@@ -14,8 +16,9 @@ from ...result import (
 
 from .assertion_rendering import produce_assertion
 from .parameter_rendering import (
-    _produce_assignation, _produce_value_representation, _produce_bool_non_default,
-    _produce_parameter_representation, _produce_types_parameter_representation
+    _produce_assignation, _produce_assignment_representation_maybe_exception,
+    _produce_assignment_representation_with_mismatch, _produce_bool_non_default, _produce_parameter_representation,
+    _produce_types_parameter_representation, _produce_value_representation
 )
 from .result_rendering_common import (
     create_break, produce_case_name_section, produce_parameters_section, produce_test_header
@@ -458,8 +461,74 @@ def _produce_report_returning(report, path_parts, name, documentation_lines, cal
     )
     
     yield HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_LINE_BREAK, '\n'
-    yield from _produce_parameter_representation('expected_return', report.expected_value)
-    yield from _produce_parameter_representation('received_return', report.received_value)
+    
+    expected_value = report.expected_value
+    received_value = report.received_value
+    if type(expected_value) is not type(received_value):
+        yield from _produce_parameter_representation('expected_return', expected_value)
+        yield from _produce_parameter_representation('received_return', received_value)
+    
+    else:
+        expected_value_token_type, expected_value_use_name = get_token_type_and_repr_mode_for_variable(expected_value)
+        expected_value_representation_exception_type = None
+        if expected_value_use_name:
+            expected_value_representation = received_value.__name__
+        else:
+            try:
+                expected_value_representation = repr(expected_value)
+            except Exception as exception:
+                expected_value_representation = None
+                expected_value_representation_exception_type = type(exception)
+        
+        received_value_token_type, received_value_use_name = get_token_type_and_repr_mode_for_variable(received_value)
+        received_value_representation_exception_type = None
+        if received_value_use_name:
+            received_value_representation = received_value.__name__
+        else:
+            try:
+                received_value_representation = repr(received_value)
+            except Exception as exception:
+                received_value_representation = None
+                received_value_representation_exception_type = type(exception)
+        
+        if (expected_value_representation is None) or (received_value_representation is None):
+            yield from _produce_assignment_representation_maybe_exception(
+                'expected_return',
+                expected_value_token_type,
+                type(expected_value),
+                expected_value_representation,
+                expected_value_representation_exception_type,
+            )
+            yield from _produce_assignment_representation_maybe_exception(
+                'received_return',
+                received_value_token_type,
+                type(received_value),
+                received_value_representation,
+                received_value_representation_exception_type,
+            )
+        
+        else:
+            matching_blocks = SequenceMatcher(
+                None, expected_value_representation, received_value_representation
+            ).get_matching_blocks()
+            
+            yield from _produce_assignment_representation_with_mismatch(
+                'expected_return',
+                expected_value_token_type,
+                HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_DIFFERENCE_INSERTED,
+                expected_value_representation,
+                matching_blocks,
+                0,
+            )
+            yield from _produce_assignment_representation_with_mismatch(
+                'received_return',
+                received_value_token_type,
+                HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_DIFFERENCE_DELETED,
+                received_value_representation,
+                matching_blocks,
+                1,
+            )
+    
     yield from _maybe_produce_output_report(output_report)
 
 

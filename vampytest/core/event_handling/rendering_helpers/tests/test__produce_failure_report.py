@@ -14,8 +14,6 @@ from ..result_rendering_common import create_break
 
 
 def _iter_options():
-    # ReportFailureAsserting -> default
-    
     # produce some cool traceback :D
     def _invoke_assertion(assertion):
         try:
@@ -26,6 +24,7 @@ def _iter_options():
         raise RuntimeError
     
     yield (
+        'ReportFailureAsserting -> default',
         ReportFailureAsserting(_invoke_assertion(AssertionEquals(0, 1))),
         ('good', 'pear'),
         'test__function',
@@ -46,8 +45,9 @@ def _iter_options():
         ),
     )
     
-    # ReportFailureAsserting -> with extras.
+    
     yield (
+        'ReportFailureAsserting -> with extras.',
         ReportFailureAsserting(AssertionException(AssertionEquals(0, 1))),
         ('good', 'pear'),
         'test__function',
@@ -77,7 +77,6 @@ def _iter_options():
         ),
     )
     
-    # ReportFailureAsserting -> exception in raising
     
     def _get_exception():
         try:
@@ -91,6 +90,7 @@ def _iter_options():
     assertion.exception = _get_exception()
     
     yield (
+        'ReportFailureAsserting -> exception in raising',
         ReportFailureAsserting(AssertionException(assertion)),
         ('good', 'pear'),
         'test__function',
@@ -115,7 +115,7 @@ def _iter_options():
             'IndexError: 5\n'
         ),
     )
-    # ReportFailureAsserting -> AssertionRaising -> other exception
+    
     
     def _get_exception():
         try:
@@ -129,6 +129,7 @@ def _iter_options():
     assertion.received_exception = _get_exception()
     
     yield (
+        'ReportFailureAsserting -> AssertionRaising -> other exception',
         ReportFailureAsserting(AssertionException(assertion)),
         ('good', 'pear'),
         'test__function',
@@ -153,8 +154,9 @@ def _iter_options():
         ),
     )
     
-    # ReportFailureAsserting -> with highlighter
+    
     yield (
+        'ReportFailureAsserting -> with highlighter',
         ReportFailureAsserting(AssertionException(AssertionEquals(0, 1))),
         ('good', 'pear'),
         'test__function',
@@ -173,7 +175,6 @@ def _iter_options():
         ),
     )
     
-    # ReportFailureParameterMismatch -> default
     
     def _test_function(yukari):
         pass
@@ -181,6 +182,7 @@ def _iter_options():
     parameters = CallableAnalyzer(_test_function).parameters
     
     yield (
+        'ReportFailureParameterMismatch -> default',
         ReportFailureParameterMismatch(ParameterMismatch(
             parameters,
             None,
@@ -208,7 +210,6 @@ def _iter_options():
         ),
     )
     
-    # ReportFailureParameterMismatch -> filled
     
     # A little bit of everything :3
     def _test_function(yuyuko, youmu = None, *, ran, chen):
@@ -216,6 +217,7 @@ def _iter_options():
     
     parameters = CallableAnalyzer(_test_function).parameters
     yield (
+        'ReportFailureParameterMismatch -> filled',
         ReportFailureParameterMismatch(ParameterMismatch(
             parameters,
             ['pizza', 'steamed buns', 'tea'],
@@ -259,7 +261,6 @@ def _iter_options():
         ),
     )
     
-    # ReportFailureParameterMismatch -> named
     
     def _test_function(yukari):
         pass
@@ -267,6 +268,7 @@ def _iter_options():
     parameters = CallableAnalyzer(_test_function).parameters
     
     yield (
+        'ReportFailureParameterMismatch -> named',
         ReportFailureParameterMismatch(ParameterMismatch(
             parameters,
             None,
@@ -296,7 +298,6 @@ def _iter_options():
         ),
     )
     
-    # ReportFailureParameterMismatch -> highlighted
     
     def _test_function(yukari):
         pass
@@ -304,6 +305,7 @@ def _iter_options():
     parameters = CallableAnalyzer(_test_function).parameters
     
     yield (
+        'ReportFailureParameterMismatch -> highlighted',
         ReportFailureParameterMismatch(ParameterMismatch(
             parameters,
             None,
@@ -331,7 +333,6 @@ def _iter_options():
         ),
     )
     
-    # ReportFailureRaising -> default
     
     # To insert traceback :D
     def _get_received_exception():
@@ -344,6 +345,7 @@ def _iter_options():
     
     
     yield (
+        'ReportFailureRaising -> default',
         ReportFailureRaising(
             {ValueError},
             False,
@@ -368,9 +370,9 @@ def _iter_options():
         ),
     )
     
-    # ReportFailureRaising -> no expected
     
     yield (
+        'ReportFailureRaising -> no expected',
         ReportFailureRaising(
             None,
             False,
@@ -390,9 +392,9 @@ def _iter_options():
         ),
     )
     
-    # ReportFailureRaising -> no received
     
     yield (
+        'ReportFailureRaising -> no received',
         ReportFailureRaising(
             {ValueError},
             False,
@@ -412,9 +414,9 @@ def _iter_options():
         ),
     )
     
-    # ReportFailureRaising -> with extras
     
     yield (
+        'ReportFailureRaising -> with extras',
         ReportFailureRaising(
             {ValueError},
             False,
@@ -448,9 +450,9 @@ def _iter_options():
         ),
     )
     
-    # ReportFailureRaising -> with highlighter
     
     yield (
+        'ReportFailureRaising -> with highlighter',
         ReportFailureRaising(
             {ValueError},
             False,
@@ -473,9 +475,9 @@ def _iter_options():
         ),
     )
     
-    # ReportFailureReturning -> default
     
     yield (
+        'ReportFailureReturning -> default',
         ReportFailureReturning(
             1,
             2,
@@ -494,9 +496,9 @@ def _iter_options():
         ),
     )
     
-    # ReportFailureReturning -> with extras
     
     yield (
+        'ReportFailureReturning -> with extras',
         ReportFailureReturning(
             1,
             2,
@@ -526,9 +528,9 @@ def _iter_options():
         ),
     )
     
-    # ReportFailureReturning -> with highlighter
     
     yield (
+        'ReportFailureReturning -> with highlighter',
         ReportFailureReturning(
             1,
             2,
@@ -548,7 +550,7 @@ def _iter_options():
     )
 
 
-@_(call_from(_iter_options()).returning_last())
+@_(call_from(_iter_options()).named_first().returning_last())
 def test__produce_failure_report(
     report, path_parts, name, documentation_lines, call_state, output_report, highlighter
 ):

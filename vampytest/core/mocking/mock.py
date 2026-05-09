@@ -56,7 +56,7 @@ def mock_globals(to_mock, recursion = -1, values = None, **keyword_parameters):
         return _mock_function_globals(to_mock, recursion, keyword_parameters)
     
     raise TypeError(
-        f'Cannot mock {to_mock.__class__.__name__}; {to_mock!r}.'
+        f'Cannot mock {type(to_mock).__name__}; {to_mock!r}.'
     )
 
 

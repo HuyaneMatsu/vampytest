@@ -11,7 +11,7 @@ class WrapperSkipConditional(WrapperSkip):
 
     Attributes
     ----------
-    wrapped : `None`, `object`
+    wrapped : `None | object`
         The wrapped test.
     skip : `bool`
         Whether the test should be skipped.
@@ -36,7 +36,7 @@ class WrapperSkipConditional(WrapperSkip):
     
     @copy_docs(WrapperSkip.__repr__)
     def __repr__(self):
-        return f'<{self.__class__.__name__} skip={self.skip}>'
+        return f'<{type(self).__name__} skip = {self.skip!r}>'
     
     
     @copy_docs(WrapperSkip.__eq__)

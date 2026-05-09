@@ -12,7 +12,7 @@ class WrapperChainer(WrapperBase):
     """
     Attributes
     ----------
-    wrapped : `None`, `object`
+    wrapped : `None | object`
         The wrapped test.
     wrappers : `set` of ``WrapperBase``
         The applied wrappers.
@@ -25,7 +25,7 @@ class WrapperChainer(WrapperBase):
         
         Parameters
         ----------
-        wrapped : `None`, `object` = `None`, Optional
+        wrapped : `None | object` = `None`, Optional
             The wrapped test if any.
         """
         self = object.__new__(cls)

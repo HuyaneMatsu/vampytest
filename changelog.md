@@ -1,3 +1,9 @@
+## 0.0.26 *\[2026-05-09\]*
+
+- Improve interrupt traceback when cancelling a coroutine function.
+- Remove confusion between local directories and other packages.
+- `ReportFailureReturning` now highlights difference.
+
 ## 0.0.25 *\[2025-05-25\]*
 
 ### Improvements
