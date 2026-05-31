@@ -1,3 +1,7 @@
+## 0.0.27 *\[2026-05-30\]*
+
+- Make `mock_globals` share `globals` maps between functions sharing the same maps beforehand.
+
 ## 0.0.26 *\[2026-05-09\]*
 
 - Improve interrupt traceback when cancelling a coroutine function.

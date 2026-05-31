@@ -33,15 +33,19 @@ def _iter_options():
         None,
         None,
         (
-            'Assertion failed at: good.pear:test__function\n'
-            '\n'
-            'Assertion traceback (most recent call last):\n'
-            f'  File "{__file__}", line {_invoke_assertion.__code__.co_firstlineno + 2}, in {_invoke_assertion.__name__}\n'
-            '    assertion.invoke()\n'
-            '\n'
-            'operation = value_0 == value_1\n'
-            'value_0 = 0\n'
-            'value_1 = 1\n'
+            f'Assertion failed at: good.pear:test__function\n'
+            f'\n'
+            f'Assertion traceback (most recent call last):\n'
+            f'    File "{__file__}", line {_invoke_assertion.__code__.co_firstlineno + 2}, in {_invoke_assertion.__name__}\n'
+            f'        18   | def _invoke_assertion(assertion):\n'
+            f'        19   |     try:\n'
+            f'        20 >>>         assertion.invoke()\n'
+            f'        21   |     except AssertionException as exception:\n'
+            f'        22   |         return exception\n'
+            f'\n'
+            f'operation = value_0 == value_1\n'
+            f'value_0 = 0\n'
+            f'value_1 = 1\n'
         ),
     )
     
@@ -99,20 +103,24 @@ def _iter_options():
         None,
         DEFAULT_ANSI_HIGHLIGHTER,
         (
-            'Assertion failed at: good.pear:test__function\n'
-            '\n'
-            'Assertion traceback (most recent call last):\n'
-            '\n'
-            'operation = value_0 == value_1\n'
-            'value_0 = 0\n'
-            'value_1 = 1\n'
-            '\n'
-            'Unexpected exception occurred withing the assertion:\n'
-            '----\n'
-            'Traceback (most recent call last):\n'
-            f'  File "{__file__}", line {_get_exception.__code__.co_firstlineno + 2}, in {_get_exception.__name__}\n'
-            '    raise IndexError(5)\n'
-            'IndexError: 5\n'
+            f'Assertion failed at: good.pear:test__function\n'
+            f'\n'
+            f'Assertion traceback (most recent call last):\n'
+            f'\n'
+            f'operation = value_0 == value_1\n'
+            f'value_0 = 0\n'
+            f'value_1 = 1\n'
+            f'\n'
+            f'Unexpected exception occurred withing the assertion:\n'
+            f'----\n'
+            f'Traceback (most recent call last):\n'
+            f'    File "{__file__}", line {_get_exception.__code__.co_firstlineno + 2}, in {_get_exception.__name__}\n'
+            f'        85   | def _get_exception():\n'
+            f'        86   |     try:\n'
+            f'        87 >>>         raise IndexError(5)\n'
+            f'        88   |     except IndexError as exception:\n'
+            f'        89   |         return exception\n'
+            f'IndexError: 5\n'
         ),
     )
     
@@ -138,19 +146,23 @@ def _iter_options():
         None,
         DEFAULT_ANSI_HIGHLIGHTER,
         (
-            'Assertion failed at: good.pear:test__function\n'
-            '\n'
-            'Assertion traceback (most recent call last):\n'
-            '\n'
-            'operation = try except\n'
-            'expected_exceptions = KeyError\n'
-            '\n'
-            'Captured exception failing the assertion:\n'
-            '----\n'
-            'Traceback (most recent call last):\n'
-            f'  File "{__file__}", line {_get_exception.__code__.co_firstlineno + 2}, in {_get_exception.__name__}\n'
-            '    raise IndexError(5)\n'
-            'IndexError: 5\n'
+            f'Assertion failed at: good.pear:test__function\n'
+            f'\n'
+            f'Assertion traceback (most recent call last):\n'
+            f'\n'
+            f'operation = try except\n'
+            f'expected_exceptions = KeyError\n'
+            f'\n'
+            f'Captured exception failing the assertion:\n'
+            f'----\n'
+            f'Traceback (most recent call last):\n'
+            f'    File "{__file__}", line {_get_exception.__code__.co_firstlineno + 2}, in {_get_exception.__name__}\n'
+            f'        128   | def _get_exception():\n'
+            f'        129   |     try:\n'
+            f'        130 >>>         raise IndexError(5)\n'
+            f'        131   |     except IndexError as exception:\n'
+            f'        132   |         return exception\n'
+            f'IndexError: 5\n'
         ),
     )
     
@@ -358,15 +370,19 @@ def _iter_options():
         None,
         None,
         (
-            'Unexpected exception at: good.pear:test__function\n'
-            '\n'
-            'expected_exceptions = ValueError\n'
-            'accept_subtypes = False\n'
-            '----\n'
-            'Traceback (most recent call last):\n'
-            f'  File "{__file__}", line {_get_received_exception.__code__.co_firstlineno + 2}, in {_get_received_exception.__name__}\n'
-            '    raise IndexError(5)\n'
-            'IndexError: 5\n'
+            f'Unexpected exception at: good.pear:test__function\n'
+            f'\n'
+            f'expected_exceptions = ValueError\n'
+            f'accept_subtypes = False\n'
+            f'----\n'
+            f'Traceback (most recent call last):\n'
+            f'    File "{__file__}", line {_get_received_exception.__code__.co_firstlineno + 2}, in {_get_received_exception.__name__}\n'
+            f'        350   | def _get_received_exception():\n'
+            f'        351   |     try:\n'
+            f'        352 >>>         raise IndexError(5)\n'
+            f'        353   |     except IndexError as exception:\n'
+            f'        354   |         return exception\n'
+            f'IndexError: 5\n'
         ),
     )
     

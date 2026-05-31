@@ -53,14 +53,14 @@ def mock_globals(to_mock, recursion = -1, values = None, **keyword_parameters):
         keyword_parameters.update(values)
     
     if isinstance(to_mock, FunctionType):
-        return _mock_function_globals(to_mock, recursion, keyword_parameters)
+        return _mock_function_globals(to_mock, recursion, keyword_parameters, {})
     
     raise TypeError(
         f'Cannot mock {type(to_mock).__name__}; {to_mock!r}.'
     )
 
 
-def _create_mocked_globals(potential_globals, recursion, old_globals, new_values):
+def _create_mocked_globals(potential_globals, recursion, old_globals, new_values, mocked_globals_map):
     """
     Mocks the old globals dictionary returning the new ones.
     
@@ -68,30 +68,45 @@ def _create_mocked_globals(potential_globals, recursion, old_globals, new_values
     ----------
     potential_globals : `Generator`
         Generator over the potential globals we want to grab.
+    
     recursion : `int`
         Recursion level.
+    
     old_globals : `dict<str, object>`
         The old globals to mock.
+    
     new_values : `dict<str, object>`
         The new values to mock with.
+    
+    mocked_globals_map : `dict<int, dict<str, object>>`
+        A map of already patched globals.
     
     Returns
     -------
     mew_globals : `dict<str, object>`
     """
-    new_globals = {}
+    globals_id = id(old_globals)
+    try:
+        new_globals = mocked_globals_map[globals_id]
+    except KeyError:
+        mocked_globals_map[globals_id] = new_globals = {}
+    
+        # There is a python error I cannot reproduce with simple tests, but apparently some shit tries to access
+        # `__builtins__` over actual globals
+        try:
+            builtins = old_globals['__builtins__']
+        except KeyError:
+            pass
+        else:
+            new_globals['__builtins__'] = builtins
+    
     recursion -= 1
     
-    # There is a python error I cannot reproduce with simple tests, but apparently some shit tries to access
-    # `__builtins__` over actual globals
-    try:
-        builtins = old_globals['__builtins__']
-    except KeyError:
-        pass
-    else:
-        new_globals['__builtins__'] = builtins
-    
     for name in potential_globals:
+        # Already mocked, ignore it.
+        if name in new_globals:
+            continue
+        
         try:
             value = old_globals[name]
         except KeyError:
@@ -106,14 +121,14 @@ def _create_mocked_globals(potential_globals, recursion, old_globals, new_values
         except KeyError:
             if recursion > 0:
                 if isinstance(value, FunctionType):
-                    value = _mock_function_globals(value, recursion, new_values)
+                    value = _mock_function_globals(value, recursion, new_values, mocked_globals_map)
         
         new_globals[name] = value
     
     return new_globals
 
 
-def _mock_function_globals(to_mock, recursion, new_values):
+def _mock_function_globals(to_mock, recursion, new_values, mocked_globals_map):
     """
     Mocks a function's globals.
     
@@ -121,10 +136,15 @@ def _mock_function_globals(to_mock, recursion, new_values):
     ----------
     to_mock : `FunctionType`
         The function to mock.
+    
     recursion : `int`
         Recursion level.
+    
     new_values : `dict<str, object>`
         The new values to mock with.
+    
+    mocked_globals_map : `dict<int, dict<str, object>>`
+        A map of already patched globals.
     
     Returns
     -------
@@ -133,7 +153,9 @@ def _mock_function_globals(to_mock, recursion, new_values):
     """
     mocked = FunctionType(
         to_mock.__code__,
-        _create_mocked_globals(_iter_potential_globals_of(to_mock), recursion, to_mock.__globals__, new_values),
+        _create_mocked_globals(
+            _iter_potential_globals_of(to_mock), recursion, to_mock.__globals__, new_values, mocked_globals_map
+        ),
         to_mock.__name__,
         to_mock.__defaults__,
         to_mock.__closure__,

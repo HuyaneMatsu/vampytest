@@ -101,7 +101,7 @@ def test__mock_globals__inline_generator_no_fail():
     """
     mocked = mock_globals(e)
     
-    # We dont care about the output
+    # We don't care about the output
     mocked()
 
 
@@ -115,3 +115,29 @@ def test__mock_globals__inline_generator_mock_nested():
     
     output = mocked()
     assert_eq(output, [2, 2])
+
+
+SHARED = None
+
+
+def g_get(value):
+    g_set(value)
+    return SHARED
+
+
+def g_set(value):
+    global SHARED
+    SHARED = value
+
+
+def test__mock_globals__shared_globals():
+    """
+    Tests whether ``mock_globals`` works as intended.
+    
+    Case: sharing the same globals between multiple functions should.
+    """
+    mocked = mock_globals(g_get, 2)
+    
+    input_value = 2
+    output = mocked(input_value)
+    assert_eq(output, input_value)
