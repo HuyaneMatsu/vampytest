@@ -3,8 +3,8 @@ __all__ = ()
 from scarletio import HIGHLIGHT_TOKEN_TYPES
 
 from ...assertions import (
-    AssertionContains, AssertionEquals, AssertionIdentical, AssertionInstance, AssertionNotContains, AssertionNotEquals,
-    AssertionNotIdentical, AssertionRaising, AssertionSubtype, AssertionValueEvaluationFalse,
+    AssertionContains, AssertionEquals, AssertionHas, AssertionIdentical, AssertionInstance, AssertionNotContains,
+    AssertionNotEquals, AssertionNotIdentical, AssertionRaising, AssertionSubtype, AssertionValueEvaluationFalse,
     AssertionValueEvaluationTrue
 )
 
@@ -402,6 +402,36 @@ def _produce_assertion_equals(assertion):
     yield from _produce_two_sided_assertion(assertion, _produce_operation_equals())
 
 
+def _produce_assertion_has(assertion):
+    """
+    Renders a has assertion.
+    
+    This function is an iterable generator.
+    
+    Parameters
+    ----------
+    assertion : ``AssertionHas``
+        The assertion to render.
+    
+    Yields
+    -------
+    token_type_and_part : `(int, str)`
+    """
+    # This is the first scenario where the values are swapped compared to python.
+    # So for now it not required to specify own shared logic for it.
+    # It is more orderly correct to do "big -> small", "big has small" than the other way around.
+    yield from _produce_variable_assignation('operation')
+    yield HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_IDENTIFIER_VARIABLE, 'value_1'
+    yield HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_SPACE, ' '
+    yield HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_SPECIAL_OPERATOR_WORD, 'in'
+    yield HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_SPACE, ' '
+    yield HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_IDENTIFIER_VARIABLE, 'value_0'
+    yield HIGHLIGHT_TOKEN_TYPES.TOKEN_TYPE_LINE_BREAK, '\n'
+    yield from _produce_parameter_representation('value_0', assertion.value_0)
+    yield from _produce_parameter_representation('value_1', assertion.value_1)
+    yield from _produce_bool_non_default('reverse', assertion.reverse, False)
+
+
 def _produce_assertion_evaluation_false(assertion):
     """
     Renders a false evaluation assertion.
@@ -497,7 +527,6 @@ def _produce_assertion_not_equals(assertion):
     token_type_and_part : `(int, str)`
     """
     yield from _produce_two_sided_assertion(assertion, _produce_operation_not_equals())
-
 
 
 def _produce_assertion_not_identical(assertion):
@@ -604,6 +633,7 @@ def _produce_assertion_unknown(assertion):
 ASSERTION_RENDERERS = {
     AssertionContains : _produce_assertion_contains,
     AssertionEquals : _produce_assertion_equals,
+    AssertionHas : _produce_assertion_has,
     AssertionValueEvaluationFalse : _produce_assertion_evaluation_false,
     AssertionIdentical : _produce_assertion_identical,
     AssertionInstance : _produce_assertion_instance,

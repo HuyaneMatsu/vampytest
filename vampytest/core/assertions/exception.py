@@ -33,7 +33,7 @@ def _ignore_assertion_frames(frame):
     
     if file_name == VAMPYTEST_TOP_LEVEL_FILE_PATH:
         if name in (
-            'assert_contains', 'assert_equals', 'assert_false', 'assert_identical', 'assert_instance',
+            'assert_contains', 'assert_equals', 'assert_false', 'assert_has', 'assert_identical', 'assert_instance',
             'assert_not_contains', 'assert_not_equals', 'assert_not_identical', 'assert_subtype', 'assert_true'
         ):
             if line == 'return assertion.invoke()':

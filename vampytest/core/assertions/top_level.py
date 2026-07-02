@@ -1,14 +1,15 @@
 __all__ = (
-    'assert_', 'assert_contains', 'assert_eq', 'assert_equals', 'assert_false', 'assert_id', 'assert_identical',
-    'assert_in', 'assert_instance', 'assert_is', 'assert_is_not', 'assert_ne', 'assert_not', 'assert_not_contains',
-    'assert_not_eq', 'assert_not_equals', 'assert_not_id', 'assert_not_identical', 'assert_not_in', 'assert_not_is',
-    'assert_raises', 'assert_subtype', 'assert_true'
+    'assert_', 'assert_contains', 'assert_eq', 'assert_equals', 'assert_false', 'assert_has', 'assert_id',
+    'assert_identical', 'assert_in', 'assert_instance', 'assert_is', 'assert_is_not', 'assert_ne', 'assert_not',
+    'assert_not_contains', 'assert_not_eq', 'assert_not_equals', 'assert_not_id', 'assert_not_identical',
+    'assert_not_in', 'assert_not_is', 'assert_raises', 'assert_subtype', 'assert_true'
 )
 
 
 from .assertion_contains import AssertionContains
 from .assertion_equals import AssertionEquals
 from .assertion_false import AssertionValueEvaluationFalse
+from .assertion_has import AssertionHas
 from .assertion_identical import AssertionIdentical
 from .assertion_instance import AssertionInstance
 from .assertion_not_contains import AssertionNotContains
@@ -86,6 +87,30 @@ def assert_false(value, *, reverse = False):
         The condition failed.
     """
     assertion = AssertionValueEvaluationFalse(value, reverse = reverse)
+    return assertion.invoke()
+
+
+def assert_has(value_0, value_1, *, reverse = False):
+    """
+    Asserts whether the first value has the second.
+    
+    Parameters
+    ----------
+    value_0 : `object`
+        The first value to assert with.
+    
+    value_1 : `object`
+        The second value to assert with.
+    
+    reverse : `bool` = `False`, Optional (Keyword only)
+        Whether the condition should be reversed.
+    
+    Raises
+    ------
+    AssertionException
+        The condition failed.
+    """
+    assertion = AssertionHas(value_0, value_1, reverse = reverse)
     return assertion.invoke()
 
 

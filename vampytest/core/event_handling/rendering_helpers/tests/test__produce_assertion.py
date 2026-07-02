@@ -2,7 +2,7 @@ from scarletio import DEFAULT_ANSI_HIGHLIGHTER, get_highlight_streamer, iter_spl
 
 from ....assertions import (
     AssertionBase, AssertionContains, AssertionEquals, AssertionIdentical, AssertionInstance, AssertionNotContains,
-    AssertionNotEquals, AssertionNotIdentical, AssertionRaising, AssertionSubtype, AssertionValueEvaluationFalse,
+    AssertionNotEquals, AssertionHas, AssertionNotIdentical, AssertionRaising, AssertionSubtype, AssertionValueEvaluationFalse,
     AssertionValueEvaluationTrue, assert_eq, assert_instance
 )
 from ....utils import _
@@ -39,19 +39,6 @@ def _iter_options():
         ),
     )
     
-    # AssertionContains -> highlighted
-    assertion = AssertionContains(0, [1])
-    
-    yield (
-        assertion,
-        DEFAULT_ANSI_HIGHLIGHTER,
-        (
-            'operation = value_0 in value_1\n'
-            'value_0 = 0\n'
-            'value_1 = [1]\n'
-        ),
-    )
-    
     # AssertionEquals -> default
     assertion = AssertionEquals(0, 1)
     
@@ -76,6 +63,59 @@ def _iter_options():
             'value_0 = 12\n'
             'value_1 = 12\n'
             'reverse = True\n'
+        ),
+    )
+    
+    # AssertionHas -> highlighted
+    assertion = AssertionHas([1], 0)
+    
+    yield (
+        assertion,
+        DEFAULT_ANSI_HIGHLIGHTER,
+        (
+            'operation = value_1 in value_0\n'
+            'value_0 = [1]\n'
+            'value_1 = 0\n'
+        ),
+    )
+    
+    # AssertionHas -> default
+    assertion = AssertionHas([1], 0)
+    
+    yield (
+        assertion,
+        None,
+        (
+            'operation = value_1 in value_0\n'
+            'value_0 = [1]\n'
+            'value_1 = 0\n'
+        ),
+    )
+    
+    # AssertionHas -> reverse
+    assertion = AssertionHas([12], 12, reverse = True)
+    
+    yield (
+        assertion,
+        None,
+        (
+            'operation = value_1 in value_0\n'
+            'value_0 = [12]\n'
+            'value_1 = 12\n'
+            'reverse = True\n'
+        ),
+    )
+    
+    # AssertionHas -> highlighted
+    assertion = AssertionHas([1], 0)
+    
+    yield (
+        assertion,
+        DEFAULT_ANSI_HIGHLIGHTER,
+        (
+            'operation = value_1 in value_0\n'
+            'value_0 = [1]\n'
+            'value_1 = 0\n'
         ),
     )
     
@@ -283,6 +323,46 @@ def _iter_options():
             'operation = value_0 != value_1\n'
             'value_0 = 12\n'
             'value_1 = 12\n'
+        ),
+    )
+    
+    # AssertionNotContains -> default
+    assertion = AssertionNotContains(0, [12])
+    
+    yield (
+        assertion,
+        None,
+        (
+            'operation = value_0 not in value_1\n'
+            'value_0 = 0\n'
+            'value_1 = [12]\n'
+        ),
+    )
+    
+    # AssertionNotContains -> reverse
+    assertion = AssertionNotContains(12, [1], reverse = True)
+    
+    yield (
+        assertion,
+        None,
+        (
+            'operation = value_0 not in value_1\n'
+            'value_0 = 12\n'
+            'value_1 = [1]\n'
+            'reverse = True\n'
+        ),
+    )
+    
+    # AssertionNotContains -> highlighted
+    assertion = AssertionNotContains(0, [12])
+    
+    yield (
+        assertion,
+        DEFAULT_ANSI_HIGHLIGHTER,
+        (
+            'operation = value_0 not in value_1\n'
+            'value_0 = 0\n'
+            'value_1 = [12]\n'
         ),
     )
     

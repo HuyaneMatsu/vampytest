@@ -23,6 +23,7 @@ from .assertion_conditional_base import *
 from .assertion_contains import *
 from .assertion_equals import *
 from .assertion_false import *
+from .assertion_has import *
 from .assertion_identical import *
 from .assertion_instance import *
 from .assertion_not_contains import *
@@ -43,6 +44,7 @@ __all__ = (
     *assertion_contains.__all__,
     *assertion_equals.__all__,
     *assertion_false.__all__,
+    *assertion_has.__all__,
     *assertion_identical.__all__,
     *assertion_instance.__all__,
     *assertion_not_contains.__all__,

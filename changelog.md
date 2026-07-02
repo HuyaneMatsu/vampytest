@@ -1,3 +1,7 @@
+## 0.0.28 *\[2026-07-02\]*
+
+- Add `assert_has`.
+
 ## 0.0.27 *\[2026-05-30\]*
 
 - Make `mock_globals` share `globals` maps between functions sharing the same maps beforehand.
