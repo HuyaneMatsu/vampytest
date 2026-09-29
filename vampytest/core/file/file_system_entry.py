@@ -39,7 +39,7 @@ class FileSystemEntry(RichAttributeErrorBaseType):
         '__weakref__', '_directory', '_directory_path', '_entries', '_full_path', '_name', '_parent_reference',
         '_self_reference', '_used'
     )
-        
+    
     def __new__(cls, path, name, limit_lookup_to):
         """
         Creates a new File system entry.
@@ -103,6 +103,8 @@ class FileSystemEntry(RichAttributeErrorBaseType):
         
         return self
     
+    
+    __hash__ = object.__hash__
     
     def __bool__(self):
         """Returns whether the entry is used anywhere."""

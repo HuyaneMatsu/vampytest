@@ -191,6 +191,7 @@ These assertions include checking for equality, inequality, truthiness, exceptio
 |-------------------|----------------------------------------------------------|
 | `assert_eq`       | `assert_equals`                                          |
 | `assert_false`    | `assert_not`                                             |
+| `assert_has`      | `N/A`                                                    |
 | `assert_in`       | `assert_contains`                                        |
 | `assert_instance` | N / A                                                    |
 | `assert_is`       | `assert_id`, `assert_identical`                          |
@@ -229,6 +230,7 @@ vampytest.assert_false(f)
 ```py3
 # Asserts g in h
 vampytest.assert_in(g, h)
+vampytest.assert_has(h, g)
 
 # Asserts i not in j
 vampytest.assert_not_in(i, j)

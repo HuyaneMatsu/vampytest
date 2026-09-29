@@ -47,7 +47,7 @@ setup(
     },
     include_package_data = False,
     install_requires = [
-        'scarletio>=1.0.97',
+        'scarletio>=1.0.100',
     ],
     license = 'DBAD',
     long_description = README,

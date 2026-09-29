@@ -24,7 +24,7 @@ class AssertionConditionalBase(AssertionBase):
     state : `str`
         The condition's state.
     """
-    __slots__ = ('reverse')
+    __slots__ = ('reverse',)
     
     def __new__(cls, *, reverse = False):
         """

@@ -1,12 +1,24 @@
+## 0.0.29 *\[2026-09-30\]*
+
+### Bug fixes
+
+- Fix `AssertionConditionalBase` had its `__slots__` set incorrectly.
+
 ## 0.0.28 *\[2026-07-02\]*
+
+### Improvements
 
 - Add `assert_has`.
 
 ## 0.0.27 *\[2026-05-30\]*
 
+### Improvements
+
 - Make `mock_globals` share `globals` maps between functions sharing the same maps beforehand.
 
 ## 0.0.26 *\[2026-05-09\]*
+
+### Improvements
 
 - Improve interrupt traceback when cancelling a coroutine function.
 - Remove confusion between local directories and other packages.
